@@ -219,6 +219,7 @@ export default function AnalyticsPage() {
                   { name: 'Wins', value: stats.wins },
                   { name: 'Losses', value: stats.losses },
                 ]}
+                dataKey="value"
                 cx="50%" cy="50%"
                 outerRadius={100}
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}

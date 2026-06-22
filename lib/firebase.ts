@@ -1,6 +1,5 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, query, orderBy, getDocs, limit } from 'firebase/firestore';
-import { getAnalytics } from 'firebase/analytics';
 import { Trade, TradingStats, Signal } from '@/types';
 
 const firebaseConfig = {
@@ -14,15 +13,17 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = initializeApp(firebaseConfig);
-
-let analytics: any = null;
-if (typeof window !== 'undefined') {
-  analytics = getAnalytics(app);
-}
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
-export { analytics };
+
+export const getAnalytics = async () => {
+  if (typeof window !== 'undefined') {
+    const { getAnalytics: ga } = await import('firebase/analytics');
+    return ga(app);
+  }
+  return null;
+};
 
 export const getTrades = async (limitCount: number = 100): Promise<Trade[]> => {
   const q = query(

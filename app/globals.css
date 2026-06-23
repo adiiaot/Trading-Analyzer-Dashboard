@@ -4,76 +4,64 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-  .glass-card {
-    background: rgba(26, 31, 58, 0.4);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(45, 53, 97, 0.5);
-    border-radius: 12px;
-    padding: 24px;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .glass-card:hover {
-    background: rgba(26, 31, 58, 0.6);
-    border-color: rgba(0, 255, 136, 0.3);
-    box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
-    transform: translateY(-2px);
-  }
-
-  .neon-glow {
-    box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
-  }
-
-  .badge-win {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    background: rgba(0, 255, 136, 0.1);
-    color: #00FF88;
-  }
-
-  .badge-loss {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    background: rgba(255, 61, 113, 0.1);
-    color: #FF3D71;
-  }
-}
-
-* {
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+:root {
+  --bg-primary: #0f1419;
+  --bg-secondary: #1a1f2e;
+  --bg-tertiary: #252d3d;
+  --text-primary: #e8eef5;
+  --text-secondary: #a0aac4;
+  --text-muted: #6b7487;
+  --accent-gold: #d4af37;
+  --accent-green: #26a69a;
+  --accent-red: #ef5350;
+  --accent-blue: #5299d3;
 }
 
 body {
-  background-color: #0A0E27;
-  color: #FFFFFF;
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  background-color: #0f1419;
+  color: #e8eef5;
+  font-family: 'Inter', sans-serif;
 }
 
-.font-mono-num {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.glass {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.gold-text {
+  color: #d4af37;
+}
+
+.gold-border {
+  border-color: #d4af37;
+}
+
+.success-text {
+  color: #26a69a;
+}
+
+.danger-text {
+  color: #ef5350;
 }
 
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1A1F3A;
+  background: #1a1f2e;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2D3561;
+  background: #3a4556;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #718096;
+  background: #4a5566;
 }

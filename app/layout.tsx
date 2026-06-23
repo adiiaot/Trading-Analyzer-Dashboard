@@ -1,16 +1,19 @@
-import React from 'react';
-import type { Metadata } from 'next';
-import './globals.css';
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'Analyzer Bot Dashboard',
-  description: 'XAU/USD Trading Signal Dashboard',
+  title: "Trading Command Center - XAU/USD",
+  description: "Professional trading platform for XAU/USD scalp trading with live data, analytics, and learning hub.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-dark-bg">
+      <body className="bg-bg-primary text-text-primary">
         {children}
       </body>
     </html>

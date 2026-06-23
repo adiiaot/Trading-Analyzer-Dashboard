@@ -1,5 +1,7 @@
 # Analyzer Dashboard
 
+> **Live:** [analyzer-dashboard-kohl.vercel.app](https://analyzer-dashboard-kohl.vercel.app)
+
 Next.js 14 dashboard for the AOT Analyzer Bot — real-time trading signals, AI-powered trade analysis, and chart screenshot verification.
 
 ## Features

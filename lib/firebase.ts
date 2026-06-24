@@ -1,6 +1,21 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, collection, query, orderBy, getDocs, limit } from 'firebase/firestore';
-import { Trade, TradingStats, Signal } from '@/types';
+import {
+  getFirestore,
+  collection,
+  query,
+  orderBy,
+  getDocs,
+  limit,
+  onSnapshot,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  addDoc,
+  Timestamp,
+  where,
+} from 'firebase/firestore';
+import type { Trade, TradingStats, Signal } from '@/types';
 
 const firebaseConfig = {
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -32,7 +47,7 @@ export const getTrades = async (limitCount: number = 100): Promise<Trade[]> => {
     limit(limitCount)
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => doc.data() as Trade);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Trade));
 };
 
 export const getSignals = async (limitCount: number = 50): Promise<Signal[]> => {
@@ -42,7 +57,39 @@ export const getSignals = async (limitCount: number = 50): Promise<Signal[]> => 
     limit(limitCount)
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => doc.data() as Signal);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Signal));
+};
+
+export const subscribeTrades = (callback: (trades: Trade[]) => void) => {
+  const q = query(collection(db, 'trades'), orderBy('timestamp', 'desc'), limit(100));
+  return onSnapshot(q, (snapshot) => {
+    const trades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Trade));
+    callback(trades);
+  });
+};
+
+export const subscribeSignals = (callback: (signals: Signal[]) => void) => {
+  const q = query(collection(db, 'signals'), orderBy('timestamp', 'desc'), limit(50));
+  return onSnapshot(q, (snapshot) => {
+    const signals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Signal));
+    callback(signals);
+  });
+};
+
+export const addTrade = async (trade: Omit<Trade, 'id'>) => {
+  const docRef = await addDoc(collection(db, 'trades'), {
+    ...trade,
+    timestamp: trade.timestamp || Timestamp.now().toDate().toISOString(),
+  });
+  return docRef.id;
+};
+
+export const updateTrade = async (id: string, data: Partial<Trade>) => {
+  await updateDoc(doc(db, 'trades', id), data);
+};
+
+export const deleteTrade = async (id: string) => {
+  await deleteDoc(doc(db, 'trades', id));
 };
 
 export const calculateStats = (trades: Trade[]): TradingStats => {
@@ -64,7 +111,7 @@ export const calculateStats = (trades: Trade[]): TradingStats => {
     total_trades: trades.length,
     wins: wins.length,
     losses: losses.length,
-    win_rate: wins.length / trades.length,
+    win_rate: trades.length > 0 ? wins.length / trades.length : 0,
     total_pnl: parseFloat(total_pnl.toFixed(2)),
     profit_factor: loss_pnl > 0 ? parseFloat((win_pnl / loss_pnl).toFixed(2)) : 0,
     avg_win: wins.length > 0 ? parseFloat((win_pnl / wins.length).toFixed(2)) : 0,

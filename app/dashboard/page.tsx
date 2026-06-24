@@ -1,88 +1,106 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Trade, TradingStats } from '@/types';
-import { Header } from '@/components/layout/Header';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { StatsCards } from '@/components/dashboard/StatsCards';
-import { PerformanceChart } from '@/components/dashboard/PerformanceChart';
-import { WinLossDistribution } from '@/components/dashboard/WinLossDistribution';
-import { MonthlyPerformance } from '@/components/dashboard/MonthlyPerformance';
-import { RecentTrades } from '@/components/dashboard/RecentTrades';
-import { KeyInsights } from '@/components/dashboard/KeyInsights';
-import { Spinner } from '@/components/ui/Spinner';
+import { motion } from "framer-motion";
+import { Send, MessageCircle, BarChart3, HelpCircle } from "lucide-react";
+import { TradingAccountCard } from "./components/TradingAccountCard";
+import { PricePanel } from "./components/PricePanel";
+import { QuickStats } from "./components/QuickStats";
+import { TradingChart } from "./components/TradingChart";
+import { OpenPositionsTable } from "./components/OpenPositionsTable";
+import { SignalFeed } from "./components/SignalFeed";
+import { MarketSentiment } from "./components/MarketSentiment";
+
+const stagger = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+};
+
+const section = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+};
 
 export default function DashboardPage() {
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [stats, setStats] = useState<TradingStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [tradesRes, statsRes] = await Promise.all([
-          fetch('/api/trades?limit=200'),
-          fetch('/api/stats'),
-        ]);
-
-        const tradesData = await tradesRes.json();
-        const statsData = await statsRes.json();
-
-        setTrades(tradesData.trades || []);
-        setStats(statsData.stats);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  if (isLoading) return <Spinner />;
-
-  const currentCapital = 10 + (stats?.total_pnl || 0);
-
   return (
-    <div className="min-h-screen bg-dark-bg">
-      <Header />
-      <div className="flex">
-        <Sidebar />
-        <main className="flex-1 p-6 space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <h1 className="text-h1 text-text-primary">Dashboard</h1>
-            <p className="text-text-secondary text-body">Real-time trading metrics & performance</p>
-          </motion.div>
+    <motion.div initial="hidden" animate="visible" variants={stagger} className="space-y-5">
+      <motion.div variants={section} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h1 className="text-lg md:text-xl font-bold text-text-primary">Command Center</h1>
+          <p className="text-sm text-text-muted">XAU/USD — Mr PFX Scalping Strategy</p>
+        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, duration: 0.3 }}
+          className="flex items-center gap-2 text-sm"
+        >
+          <motion.span
+            animate={{ opacity: [1, 0.3, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="w-2 h-2 rounded-full bg-status-win"
+          />
+          <span className="text-text-muted">Live</span>
+        </motion.div>
+      </motion.div>
 
-          {/* Row 1: 6 KPI Cards */}
-          {stats && <StatsCards stats={stats} currentCapital={currentCapital} />}
+      <motion.div variants={section}><PricePanel /></motion.div>
+      <motion.div variants={section}><QuickStats /></motion.div>
 
-          {/* Row 2: Performance Chart */}
-          {trades.length > 0 && <PerformanceChart trades={trades} />}
+      <motion.div variants={section} className="grid grid-cols-1 lg:grid-cols-4 gap-5">
+        <div className="lg:col-span-1"><TradingAccountCard /></div>
+        <div className="lg:col-span-3"><TradingChart /></div>
+      </motion.div>
 
-          {/* Row 3: Win/Loss Distribution + Monthly Performance */}
-          {stats && trades.length > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <WinLossDistribution stats={stats} />
-              <MonthlyPerformance trades={trades} />
+      <motion.div variants={section} className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2 space-y-5"><OpenPositionsTable /></div>
+        <div className="lg:col-span-1 space-y-5">
+          <SignalFeed />
+          <MarketSentiment />
+        </div>
+      </motion.div>
+
+      <motion.div variants={section}>
+        <div className="card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Send className="w-4 h-4 text-accent-gold" />
+              <h3 className="text-sm font-bold text-text-primary">Telegram Bot</h3>
             </div>
-          )}
-
-          {/* Row 4: Recent Trades */}
-          {trades.length > 0 && <RecentTrades trades={trades} />}
-
-          {/* Row 5: Key Insights */}
-          {stats && <KeyInsights stats={stats} />}
-        </main>
-      </div>
-    </div>
+            <a
+              href="https://t.me/aot_analyzer_bot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs px-3 py-1.5 rounded-lg bg-accent-gold/10 text-accent-gold hover:bg-accent-gold/20 transition-all font-semibold"
+            >
+              Open Bot
+            </a>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {[
+              { cmd: "/signal", desc: "Generate signal", icon: BarChart3 },
+              { cmd: "/stats", desc: "Trading stats", icon: BarChart3 },
+              { cmd: "/journal", desc: "Add journal entry", icon: MessageCircle },
+              { cmd: "/help", desc: "All commands", icon: HelpCircle },
+            ].map((c) => (
+              <a
+                key={c.cmd}
+                href={`https://t.me/aot_analyzer_bot?start=${c.cmd.replace("/", "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-overlay hover:bg-accent-gold/10 transition-all text-xs"
+              >
+                <c.icon className="w-3.5 h-3.5 text-accent-gold shrink-0" />
+                <div>
+                  <p className="font-mono text-text-primary font-semibold">{c.cmd}</p>
+                  <p className="text-text-muted">{c.desc}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
+
+

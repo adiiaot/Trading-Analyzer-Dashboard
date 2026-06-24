@@ -27,15 +27,15 @@ export function SignalCard({
   pnl,
   expiresAt,
 }: SignalCardProps) {
-  const statusColors = {
+  const statusColors: Record<string, "win" | "loss" | "gold" | "warn" | "info"> = {
     pending: "info",
     filling: "gold",
-    filled: "success",
-    expired: "danger",
+    filled: "win",
+    expired: "loss",
     closed: "info",
-  } as const;
+  };
 
-  const statusEmojis = {
+  const statusEmojis: Record<string, string> = {
     pending: "⏳",
     filling: "🟢",
     filled: "✓",
@@ -44,7 +44,7 @@ export function SignalCard({
   };
 
   return (
-    <Card className="gold-border mb-4" style={{ borderLeft: "4px solid #d4af37" }}>
+    <Card className="mb-4" style={{ borderLeft: "4px solid #f0b429" }}>
       <div className="flex justify-between items-start mb-4">
         <div>
           <h4 className="font-bold text-lg text-text-primary">Signal #{signalId}</h4>
@@ -58,7 +58,7 @@ export function SignalCard({
         </div>
       </div>
 
-      <div className="bg-bg-tertiary p-3 rounded-lg mb-3">
+      <div className="bg-surface-overlay p-3 rounded-lg mb-3">
         <p className="text-xs text-text-secondary mb-2">Buy Limit Orders:</p>
         <div className="space-y-2">
           {orders.map((order, idx) => (
@@ -72,10 +72,10 @@ export function SignalCard({
               <Badge
                 variant={
                   order.status === "filled"
-                    ? "success"
+                    ? "win"
                     : order.status === "pending"
                     ? "info"
-                    : "danger"
+                    : "loss"
                 }
                 className="text-xs"
               >
@@ -88,7 +88,7 @@ export function SignalCard({
 
       <div className="flex justify-between items-center text-xs">
         {pnl !== undefined && (
-          <p className={pnl >= 0 ? "success-text font-bold" : "danger-text font-bold"}>
+          <p className={pnl >= 0 ? "text-status-win font-bold" : "text-status-loss font-bold"}>
             {pnl >= 0 ? "+" : ""}{pnl.toFixed(2)} P&L
           </p>
         )}

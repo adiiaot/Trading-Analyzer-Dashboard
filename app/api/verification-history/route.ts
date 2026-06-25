@@ -1,11 +1,20 @@
-import { getTrades } from '@/lib/firebase';
 import { NextResponse } from 'next/server';
+import { getAdminDb } from '@/lib/firebase-admin';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const trades = await getTrades(100);
+    const db = getAdminDb();
+    const snapshot = await db
+      .collection('trades')
+      .orderBy('timestamp', 'desc')
+      .limit(100)
+      .get();
 
-    const data = trades.map((trade, idx) => ({
+    const trades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+
+    const data = trades.map((trade: any) => ({
       date: new Date(trade.timestamp).toLocaleDateString(),
       score: Math.floor(Math.random() * 40) + 60,
       mode: (Math.random() > 0.5 ? 'api_only' : 'api_with_screenshot') as 'api_only' | 'api_with_screenshot',
@@ -14,10 +23,10 @@ export async function GET() {
     }));
 
     const avgScore = data.length > 0
-      ? data.reduce((sum, d) => sum + d.score, 0) / data.length
+      ? data.reduce((sum: number, d: any) => sum + d.score, 0) / data.length
       : 0;
     const successRate = data.length > 0
-      ? data.filter(d => d.successful).length / data.length
+      ? data.filter((d: any) => d.successful).length / data.length
       : 0;
 
     return NextResponse.json({ success: true, data, avgScore, successRate });

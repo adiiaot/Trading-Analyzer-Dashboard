@@ -19,7 +19,7 @@ export const TradeAnalyzer = ({ trades, signals }: TradeAnalyzerProps) => {
 
     setIsLoading(true);
     try {
-      const signal = signals.find(s => s.id === selectedTrade.signal_id);
+      const signal = signals.find(s => s.id === selectedTrade.signalId);
 
       const response = await fetch('/api/analyze-trade-nvidia', {
         method: 'POST',
@@ -53,7 +53,7 @@ export const TradeAnalyzer = ({ trades, signals }: TradeAnalyzerProps) => {
             <option value="">Choose a trade...</option>
             {trades.map(trade => (
               <option key={trade.id} value={trade.id}>
-                Trade {trade.id.slice(-6)} - ${trade.entry_price} → ${trade.exit_price}
+                Trade {trade.id.slice(-6)} - ${trade.entryPrice} → ${trade.exitPrice}
               </option>
             ))}
           </select>

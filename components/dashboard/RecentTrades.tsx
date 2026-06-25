@@ -52,17 +52,17 @@ export const RecentTrades = ({ trades }: RecentTradesProps) => {
                   {formatTimeAgo(trade.timestamp)}
                 </td>
                 <td className="py-3 px-4 text-text-primary font-mono-num">
-                  ${trade.entry_price.toFixed(2)}
+                  ${trade.entryPrice?.toFixed(2) ?? 'N/A'}
                 </td>
                 <td className="py-3 px-4 text-text-primary font-mono-num">
-                  ${trade.exit_price.toFixed(2)}
+                  ${trade.exitPrice?.toFixed(2) ?? 'N/A'}
                 </td>
                 <td className={`py-3 px-4 text-right font-semibold font-mono-num ${
-                  trade.pnl >= 0 ? 'text-neon-green' : 'text-alert-loss'
+                  (trade.pnl ?? 0) >= 0 ? 'text-neon-green' : 'text-alert-loss'
                 }`}>
                   <span className="flex items-center justify-end gap-1">
-                    ${trade.pnl.toFixed(2)}
-                    {trade.pnl >= 0
+                    ${(trade.pnl ?? 0).toFixed(2)}
+                    {(trade.pnl ?? 0) >= 0
                       ? <TrendingUp className="w-4 h-4 inline" />
                       : <TrendingDown className="w-4 h-4 inline" />
                     }
@@ -70,11 +70,11 @@ export const RecentTrades = ({ trades }: RecentTradesProps) => {
                 </td>
                 <td className="py-3 px-4">
                   <span className={trade.result === 'win' ? 'badge-win' : 'badge-loss'}>
-                    {trade.result.toUpperCase()}
+                    {(trade.result ?? 'N/A').toUpperCase()}
                   </span>
                 </td>
                 <td className="py-3 px-4 text-text-secondary">
-                  {trade.hold_time_seconds ? `${Math.floor(trade.hold_time_seconds / 60)}m ${trade.hold_time_seconds % 60}s` : 'N/A'}
+                  {trade.holdTimeSeconds ? `${Math.floor(trade.holdTimeSeconds / 60)}m ${trade.holdTimeSeconds % 60}s` : 'N/A'}
                 </td>
               </motion.tr>
             ))}

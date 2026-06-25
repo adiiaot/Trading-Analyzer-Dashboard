@@ -47,24 +47,24 @@ export function OpenPositionsTable() {
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
                     pos.direction === "BUY"
                       ? "bg-status-win/10 text-status-win"
-                      : "bg-status-loss/10 text-loss"
+                      : "bg-status-loss/10 text-status-loss"
                   }`}>
                     {pos.direction}
                   </span>
                 </td>
                 <td className="py-3 px-4 text-right font-mono text-text-primary">{pos.entry.toFixed(2)}</td>
                 <td className="py-3 px-4 text-right font-mono text-text-primary">{pos.current.toFixed(2)}</td>
-                <td className={`py-3 px-4 text-right font-mono ${pos.pips >= 0 ? "text-status-win" : "text-status-loss"}`}>
-                  {pos.pips >= 0 ? "+" : ""}{pos.pips.toFixed(1)}
+                <td className={`py-3 px-4 text-right font-mono ${(pos.pips ?? 0) >= 0 ? "text-status-win" : "text-status-loss"}`}>
+                  {(pos.pips ?? 0) >= 0 ? "+" : ""}{(pos.pips ?? 0).toFixed(1)}
                 </td>
-                <td className={`py-3 px-4 text-right font-mono font-semibold ${pos.pnl >= 0 ? "text-status-win" : "text-status-loss"}`}>
-                  {pos.pnl >= 0 ? "+" : ""}${pos.pnl.toFixed(2)}
+                <td className={`py-3 px-4 text-right font-mono font-semibold ${(pos.pnl ?? 0) >= 0 ? "text-status-win" : "text-status-loss"}`}>
+                  {(pos.pnl ?? 0) >= 0 ? "+" : ""}${(pos.pnl ?? 0).toFixed(2)}
                 </td>
                 <td className="py-3 px-4 text-right font-mono text-text-primary">{pos.tp.toFixed(2)}</td>
                 <td className="py-3 px-4 text-right font-mono text-text-primary">{pos.sl.toFixed(2)}</td>
                 <td className="py-3 px-6 last:pr-6 text-right">
                   <div className="flex items-center justify-end gap-1.5">
-                    <button className="text-xs px-2.5 py-1 rounded-md bg-status-loss/10 text-loss hover:bg-status-loss/20 transition-all">
+                    <button className="text-xs px-2.5 py-1 rounded-md bg-status-loss/10 text-status-loss hover:bg-status-loss/20 transition-all">
                       Close
                     </button>
                     <button className="text-xs px-2.5 py-1 rounded-md bg-surface-overlay text-text-muted hover:text-text-primary transition-all">

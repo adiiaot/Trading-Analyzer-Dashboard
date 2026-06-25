@@ -1,15 +1,32 @@
 export interface Trade {
   id: string;
   timestamp: string;
-  entry_price: number;
-  exit_price: number;
-  quantity: number;
-  pnl: number;
-  pnl_percent: number;
-  result: 'win' | 'loss';
-  signal_id?: string;
-  notes?: string;
-  hold_time_seconds?: number;
+  entryPrice: number;
+  exitPrice: number;
+  entrySize: number;
+  entryTime: string;
+  exitTime?: string;
+  pnl?: number;
+  pnlPercent?: number;
+  result?: 'win' | 'loss' | 'break_even';
+  status: 'open' | 'closed' | 'cancelled';
+  trend: 'UP' | 'DOWN';
+  supportLevel: number;
+  resistanceLevel: number;
+  stopLoss: number;
+  takeProfit: number;
+  riskRewardRatio: number;
+  signalId?: string;
+  userId?: string;
+  journalNotes?: string;
+  tradingConditions?: string;
+  holdTimeSeconds?: number;
+  analysis?: {
+    performanceReason?: string;
+    howSignalBenefited?: string;
+    improvements?: string[];
+    confidence?: number;
+  };
 }
 
 export interface Signal {
@@ -17,20 +34,36 @@ export interface Signal {
   timestamp: string;
   trend: 'UP' | 'DOWN' | 'NEUTRAL';
   entries: SignalEntry[];
-  support_level: number;
-  resistance_level: number;
-  pullback_detected: boolean;
-  entry_confirmation: boolean;
-  valid_until: string;
+  supportLevel: number;
+  resistanceLevel: number;
+  pullbackDetected: boolean;
+  entryConfirmation: boolean;
+  validUntil: string;
   confidence: number;
-  executed: boolean;
+  status: 'active' | 'expired' | 'pending' | 'closed';
+  userId?: string;
+  signalId?: string;
+  executedEntries?: number[];
+  deliveredVia?: string;
+  deliveredAt?: string;
+  acknowledged?: boolean;
+  analysis?: {
+    reasonGenerated?: string;
+    confidence_breakdown?: {
+      trend_strength: number;
+      level_proximity: number;
+      volatility_score: number;
+      reversal_pattern_quality: number;
+    };
+  };
 }
 
 export interface SignalEntry {
+  entryNumber: number;
   price: number;
   tp: number;
-  tp_pips: number;
-  auto_close: boolean;
+  tpPips: number;
+  autoClose: boolean;
 }
 
 export interface TradingStats {

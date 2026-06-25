@@ -23,7 +23,7 @@ export const MonthlyPerformance = ({ trades }: MonthlyPerformanceProps) => {
         grouped[key] = { trades: 0, pnl: 0 };
       }
       grouped[key].trades += 1;
-      grouped[key].pnl += trade.pnl;
+      grouped[key].pnl += trade.pnl ?? 0;
     });
 
     return Object.entries(grouped)

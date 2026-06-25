@@ -17,6 +17,9 @@
   --status-warn-rgb: 255 179 0;
   --status-info-rgb: 68 138 255;
   --border: rgba(255, 255, 255, 0.06);
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.15);
+  --shadow-card-hover: 0 8px 24px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2), 0 0 0 1px rgba(240,180,41,0.15);
+  --shadow-card-glow: 0 4px 20px rgba(240,180,41,0.2), 0 0 60px rgba(240,180,41,0.06);
   --profit: #00e676;
   --loss: #ff5252;
   --gold: #f0b429;
@@ -38,11 +41,16 @@
   --status-warn-rgb: 245 124 0;
   --status-info-rgb: 41 121 255;
   --border: rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-card-hover: 0 8px 24px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(212,149,42,0.12);
+  --shadow-card-glow: 0 4px 20px rgba(212,149,42,0.15), 0 0 60px rgba(212,149,42,0.04);
   --profit: #00a854;
   --loss: #d32f2f;
   --gold: #d4952a;
   --card: #ffffff;
 }
+
+
 
 html { scroll-behavior: smooth; }
 

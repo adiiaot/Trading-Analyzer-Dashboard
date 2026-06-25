@@ -5,7 +5,7 @@ import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { SignalCard } from "../components/SignalCard";
 import { Table } from "../components/ui/Table";
-import { Button } from "../components/ui/Button";
+import { useDashboardData } from "@/lib/data-context";
 
 const container = {
   hidden: { opacity: 0 },
@@ -17,38 +17,19 @@ const item = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
 };
 
-const signalStats = [
-  { label: "Signals Today", value: "3" },
-  { label: "Filled", value: "2" },
-  { label: "Current P&L", value: "+$67.30" },
-  { label: "Win Rate", value: "66.7%" },
-];
-
-const activeSignals = [
-  {
-    signalId: 47,
-    timestamp: "Today 3:15 PM",
-    status: "pending" as const,
-    confidence: 82,
-    orders: [
-      { level: 2040.5, tp: 2043.2, status: "filled" as const, pips: 27 },
-      { level: 2038.1, tp: 2041.8, status: "pending" as const, pips: 36 },
-      { level: 2035.7, tp: 2039.5, status: "pending" as const, pips: 37 },
-      { level: 2033.3, tp: 2037.1, status: "pending" as const, pips: 37 },
-    ],
-    pnl: 28.8,
-    expiresAt: "5:00 PM",
-  },
-];
-
-const HISTORICAL = [
-  ["#47", "Today 3:15 PM", "ACTIVE", "+$28.80", "1/4", "82%"],
-  ["#46", "Yesterday 3:30 PM", "CLOSED", "+$45.20", "2/4", "100%"],
-  ["#45", "2 days ago", "CLOSED", "-$12.50", "0/4", "0%"],
-  ["#44", "3 days ago", "CLOSED", "+$67.30", "3/4", "75%"],
-];
-
 export default function SignalsPage() {
+  const { signals } = useDashboardData();
+  const active = signals.filter((s) => s.status === "active");
+  const expired = signals.filter((s) => s.status === "expired");
+  const today = signals.filter((s) => new Date(s.timestamp).toDateString() === new Date().toDateString());
+
+  const signalStats = [
+    { label: "Signals Today", value: today.length.toString() },
+    { label: "Active", value: active.length.toString() },
+    { label: "Expired", value: expired.length.toString() },
+    { label: "Total", value: signals.length.toString() },
+  ];
+
   return (
     <motion.div initial="hidden" animate="visible" variants={container} className="space-y-5">
       <motion.div variants={item}>
@@ -71,49 +52,69 @@ export default function SignalsPage() {
         ))}
       </motion.div>
 
-      <motion.div variants={item}>
-        <Card header="Active Signal">
-          {activeSignals.map((signal) => (
-            <SignalCard key={signal.signalId} {...signal} />
-          ))}
-        </Card>
-      </motion.div>
+      {active.length > 0 && (
+        <motion.div variants={item}>
+          <Card header="Active Signals">
+            <div className="space-y-3">
+              {active.slice(0, 1).map((signal) => (
+                <SignalCard
+                  key={signal.id}
+                  signalId={parseInt(signal.id.replace(/\D/g, "")) || 1}
+                  timestamp={new Date(signal.timestamp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}
+                  status="pending"
+                  confidence={Math.round(signal.confidence * 100)}
+                  orders={(signal.entries || []).map((e) => ({
+                    level: e.price,
+                    tp: e.tp,
+                    status: "pending" as const,
+                    pips: e.tpPips,
+                  }))}
+                  expiresAt={signal.validUntil ? new Date(signal.validUntil).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }) : "N/A"}
+                />
+              ))}
+            </div>
+          </Card>
+        </motion.div>
+      )}
 
       <motion.div variants={item}>
-        <Card header="Archive (Last 30 Days)">
+        <Card header="Signal History">
           <div className="flex flex-wrap gap-2 mb-4">
             <select className="input max-w-[160px]">
               <option>All Signals</option>
-              <option>Filled Only</option>
+              <option>Active Only</option>
               <option>Expired</option>
             </select>
             <select className="input max-w-[160px]">
               <option>Last 7 Days</option>
               <option>Last 30 Days</option>
-              <option>Last 90 Days</option>
+              <option>All Time</option>
             </select>
           </div>
 
-          <Table
-            headers={["Signal", "Date/Time", "Status", "P&L", "Orders", "Win %"]}
-            rows={HISTORICAL.map((r) => [
-              <span key="id" className="font-bold text-accent-gold">{r[0]}</span>,
-              <span key="dt" className="text-xs text-text-secondary">{r[1]}</span>,
-              <Badge key="st" variant={r[2] === "ACTIVE" ? "gold" : "win"}>{r[2]}</Badge>,
-              <span key="pnl" className={`font-bold font-mono ${r[3].startsWith("-") ? "text-status-loss" : "text-status-win"}`}>{r[3]}</span>,
-              r[4],
-              <span key="wp" className="font-mono text-text-secondary">{r[5]}</span>,
-            ])}
-          />
+          {signals.length > 0 ? (
+            <Table
+              headers={["Signal", "Date/Time", "Trend", "Confidence", "Status"]}
+              rows={signals.slice(0, 10).map((s) => [
+                <span key="id" className="font-bold text-accent-gold">#{s.id.slice(-4)}</span>,
+                <span key="dt" className="text-xs text-text-secondary">{new Date(s.timestamp).toLocaleString()}</span>,
+                <span key="tr" className={`text-xs font-semibold ${s.trend === "UP" ? "text-status-win" : "text-status-loss"}`}>{s.trend}</span>,
+                <span key="cf" className="font-mono text-text-secondary">{(s.confidence * 100).toFixed(0)}%</span>,
+                <Badge key="st" variant={s.status === "active" ? "gold" : s.status === "expired" ? "loss" : "win"}>{s.status}</Badge>,
+              ])}
+            />
+          ) : (
+            <div className="text-center py-12 text-sm text-text-muted">No signals generated yet. The bot will generate signals when market conditions align.</div>
+          )}
 
           <div className="mt-5 pt-5 border-t border-surface-border grid grid-cols-2 gap-4">
             <div>
-              <p className="text-text-muted text-xs mb-1">Total (30d)</p>
-              <p className="text-xl font-bold text-text-primary">45</p>
+              <p className="text-text-muted text-xs mb-1">Total Signals</p>
+              <p className="text-xl font-bold text-text-primary">{signals.length}</p>
             </div>
             <div>
-              <p className="text-text-muted text-xs mb-1">Total P&L</p>
-              <p className="text-xl font-bold text-status-win">+$456.80</p>
+              <p className="text-text-muted text-xs mb-1">Active Now</p>
+              <p className="text-xl font-bold text-status-win">{active.length}</p>
             </div>
           </div>
         </Card>

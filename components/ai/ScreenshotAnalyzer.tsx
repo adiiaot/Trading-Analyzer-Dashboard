@@ -224,11 +224,11 @@ const AnalysisResult = ({ result, onClear }: AnalysisResultProps) => {
           </div>
           <div className="flex justify-between">
             <span className="text-text-tertiary">Support:</span>
-            <span className="text-text-primary font-medium font-mono-num">${signal?.support_level}</span>
+            <span className="text-text-primary font-medium font-mono-num">${signal?.supportLevel}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-text-tertiary">Resistance:</span>
-            <span className="text-text-primary font-medium font-mono-num">${signal?.resistance_level}</span>
+            <span className="text-text-primary font-medium font-mono-num">${signal?.resistanceLevel}</span>
           </div>
         </div>
       </div>

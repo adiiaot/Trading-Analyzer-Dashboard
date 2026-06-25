@@ -41,9 +41,9 @@ module.exports = {
         pill: '9999px',
       },
       boxShadow: {
-        card: '0 0 0 1px rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.3)',
-        'card-hover': '0 0 0 1px rgba(240,180,41,0.15), 0 8px 32px rgba(0,0,0,0.4)',
-        'card-glow': '0 0 0 1px rgba(240,180,41,0.2), 0 0 24px rgba(240,180,41,0.06)',
+        card: 'var(--shadow-card)',
+        'card-hover': 'var(--shadow-card-hover)',
+        'card-glow': 'var(--shadow-card-glow)',
         panel: '0 0 0 1px rgba(255,255,255,0.04), 0 2px 12px rgba(0,0,0,0.2)',
       },
       animation: {

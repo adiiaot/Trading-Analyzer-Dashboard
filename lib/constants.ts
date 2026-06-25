@@ -76,3 +76,20 @@ export const SESSION = {
   used: 1,
   max: 2,
 };
+
+export const ECON_EVENTS: {
+  date: string; time: string; event: string; forecast: string; prev: string; impact: string; xau: string;
+}[] = [
+  { date: "2026-06-25", time: "8:30 AM", event: "Jobless Claims", forecast: "235K", prev: "242K", impact: "MEDIUM", xau: "Neutral" },
+  { date: "2026-06-25", time: "10:00 AM", event: "Home Sales", forecast: "4.15M", prev: "4.10M", impact: "LOW", xau: "Bearish" },
+  { date: "2026-06-26", time: "8:30 AM", event: "Core PCE", forecast: "2.7%", prev: "2.8%", impact: "HIGH", xau: "Bullish" },
+  { date: "2026-06-26", time: "9:45 AM", event: "Chicago PMI", forecast: "49.5", prev: "48.2", impact: "MEDIUM", xau: "Neutral" },
+];
+
+export const JOURNAL_ENTRIES: {
+  date: string; pair: string; dir: string; entry: number; exit: number; pips: number; pnl: number; setup: string; emoji: string; tag: string;
+}[] = [
+  { date: "2026-06-24", pair: "XAU/USD", dir: "BUY", entry: 2040.5, exit: 2047.8, pips: 7.3, pnl: 36.50, setup: "Rejection at S1 + bullish engulfing", emoji: "Focused", tag: "Trend Following" },
+  { date: "2026-06-23", pair: "XAU/USD", dir: "SELL", entry: 2055.2, exit: 2048.0, pips: 7.2, pnl: 36.00, setup: "Double top at R2, bearish RSI div", emoji: "Calm", tag: "Reversal" },
+  { date: "2026-06-23", pair: "XAU/USD", dir: "BUY", entry: 2038.1, exit: 2035.5, pips: -2.6, pnl: -13.00, setup: "Breakout fakeout, should have waited", emoji: "Impatient", tag: "Fakeout" },
+];

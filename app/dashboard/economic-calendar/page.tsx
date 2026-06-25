@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
+import { useDashboardData } from "@/lib/data-context";
 import { TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 
 const container = {
@@ -15,15 +16,6 @@ const item = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
 };
 
-const EVENTS = [
-  { date: "2026-06-24", time: "2:00 PM", event: "US GDP Final", forecast: "2.8%", prev: "2.4%", impact: "HIGH", xau: "Bullish" },
-  { date: "2026-06-24", time: "4:30 PM", event: "Fed Chair Speech", forecast: "-", prev: "-", impact: "HIGH", xau: "Volatile" },
-  { date: "2026-06-25", time: "8:30 AM", event: "Jobless Claims", forecast: "235K", prev: "242K", impact: "MEDIUM", xau: "Neutral" },
-  { date: "2026-06-25", time: "10:00 AM", event: "Home Sales", forecast: "4.15M", prev: "4.10M", impact: "LOW", xau: "Bearish" },
-  { date: "2026-06-26", time: "8:30 AM", event: "Core PCE", forecast: "2.7%", prev: "2.8%", impact: "HIGH", xau: "Bullish" },
-  { date: "2026-06-26", time: "9:45 AM", event: "Chicago PMI", forecast: "49.5", prev: "48.2", impact: "MEDIUM", xau: "Neutral" },
-];
-
 const impactMap: Record<string, "win" | "loss" | "warn" | "info"> = {
   HIGH: "loss",
   MEDIUM: "warn",
@@ -31,6 +23,12 @@ const impactMap: Record<string, "win" | "loss" | "warn" | "info"> = {
 };
 
 export default function EconomicCalendarPage() {
+  const { econEvents } = useDashboardData();
+  const events = econEvents;
+  const highCount = events.filter((e) => e.impact === "HIGH").length;
+  const mediumCount = events.filter((e) => e.impact === "MEDIUM").length;
+  const lowCount = events.filter((e) => e.impact === "LOW").length;
+
   return (
     <motion.div initial="hidden" animate="visible" variants={container} className="space-y-5">
       <motion.div variants={item}>
@@ -41,7 +39,7 @@ export default function EconomicCalendarPage() {
       <motion.div variants={item}>
         <Card>
           <motion.div variants={container} initial="hidden" animate="visible" className="space-y-2">
-            {EVENTS.map((evt, i) => (
+            {events.length > 0 ? events.map((evt, i) => (
               <motion.div
                 key={i}
                 variants={item}
@@ -54,7 +52,7 @@ export default function EconomicCalendarPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-text-primary">{evt.event}</p>
-                  <p className="text-xs text-text-muted mt-0.5">F: {evt.forecast} · P: {evt.prev}</p>
+                  <p className="text-xs text-text-muted mt-0.5">F: {evt.forecast} &middot; P: {evt.prev}</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <Badge variant={impactMap[evt.impact] || "info"}>{evt.impact}</Badge>
@@ -66,17 +64,19 @@ export default function EconomicCalendarPage() {
                   </div>
                 </div>
               </motion.div>
-            ))}
+            )) : (
+              <div className="text-center py-8 text-sm text-text-muted">No economic events loaded. Data will appear when the bot syncs the calendar.</div>
+            )}
           </motion.div>
         </Card>
       </motion.div>
 
       <motion.div variants={item} className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "High Impact", value: EVENTS.filter(e => e.impact === "HIGH").length.toString(), color: "text-status-loss" },
-          { label: "Medium", value: EVENTS.filter(e => e.impact === "MEDIUM").length.toString(), color: "text-status-warn" },
-          { label: "Low", value: EVENTS.filter(e => e.impact === "LOW").length.toString(), color: "text-status-info" },
-          { label: "This Week", value: EVENTS.length.toString(), color: "text-text-primary" },
+          { label: "High Impact", value: highCount.toString(), color: "text-status-loss" },
+          { label: "Medium", value: mediumCount.toString(), color: "text-status-warn" },
+          { label: "Low", value: lowCount.toString(), color: "text-status-info" },
+          { label: "This Week", value: events.length.toString(), color: "text-text-primary" },
         ].map((s, i) => (
           <motion.div
             key={s.label}

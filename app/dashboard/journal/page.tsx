@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
+import { useDashboardData } from "@/lib/data-context";
 import { PenSquare, TrendingUp, TrendingDown, Filter } from "lucide-react";
 
 const container = {
@@ -15,13 +16,13 @@ const item = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
 };
 
-const ENTRIES = [
-  { date: "2026-06-24", pair: "XAU/USD", dir: "BUY", entry: 2040.5, exit: 2047.8, pips: 7.3, pnl: 36.50, setup: "Rejection at S1 + bullish engulfing", emoji: "Focused", tag: "Trend Following" },
-  { date: "2026-06-23", pair: "XAU/USD", dir: "SELL", entry: 2055.2, exit: 2048.0, pips: 7.2, pnl: 36.00, setup: "Double top at R2, bearish RSI div", emoji: "Calm", tag: "Reversal" },
-  { date: "2026-06-23", pair: "XAU/USD", dir: "BUY", entry: 2038.1, exit: 2035.5, pips: -2.6, pnl: -13.00, setup: "Breakout fakeout, should have waited", emoji: "Impatient", tag: "Fakeout" },
-];
-
 export default function JournalPage() {
+  const { journalEntries, trades } = useDashboardData();
+  const entries = journalEntries;
+  const wins = entries.filter((e) => e.pnl >= 0).length;
+  const losses = entries.filter((e) => e.pnl < 0).length;
+  const total = entries.length;
+
   return (
     <motion.div initial="hidden" animate="visible" variants={container} className="space-y-5">
       <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -36,10 +37,10 @@ export default function JournalPage() {
 
       <motion.div variants={item} className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Entries", value: "47" },
-          { label: "Wins", value: "31" },
-          { label: "Losses", value: "16" },
-          { label: "Win Rate", value: "65.9%" },
+          { label: "Entries", value: total.toString() },
+          { label: "Wins", value: wins.toString() },
+          { label: "Losses", value: losses.toString() },
+          { label: "Win Rate", value: total > 0 ? `${((wins / total) * 100).toFixed(1)}%` : "0%" },
         ].map((s, i) => (
           <motion.div
             key={s.label}
@@ -64,7 +65,7 @@ export default function JournalPage() {
           </div>
 
           <motion.div variants={container} initial="hidden" animate="visible" className="space-y-3">
-            {ENTRIES.map((e, i) => (
+            {entries.length > 0 ? entries.map((e, i) => (
               <motion.div
                 key={i}
                 variants={item}
@@ -85,7 +86,7 @@ export default function JournalPage() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 mb-3 text-sm">
-                  <div><p className="text-xs text-text-muted">Entry / Exit</p><p className="font-mono text-text-primary">{e.entry} → {e.exit}</p></div>
+                  <div><p className="text-xs text-text-muted">Entry / Exit</p><p className="font-mono text-text-primary">{e.entry} &rarr; {e.exit}</p></div>
                   <div><p className="text-xs text-text-muted">Pips</p><p className={`font-mono font-semibold ${e.pips >= 0 ? "text-status-win" : "text-status-loss"}`}>{e.pips >= 0 ? "+" : ""}{e.pips}</p></div>
                   <div><p className="text-xs text-text-muted">Emotion</p><p className="text-text-primary">{e.emoji}</p></div>
                 </div>
@@ -99,7 +100,11 @@ export default function JournalPage() {
                   <Badge variant="gold">{e.tag}</Badge>
                 </div>
               </motion.div>
-            ))}
+            )) : (
+              <div className="text-center py-12 text-sm text-text-muted">
+                No journal entries yet. Click &quot;New Entry&quot; to start logging your trades.
+              </div>
+            )}
           </motion.div>
         </Card>
       </motion.div>

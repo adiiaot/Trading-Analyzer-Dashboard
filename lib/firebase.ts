@@ -76,6 +76,22 @@ export const subscribeSignals = (callback: (signals: Signal[]) => void) => {
   });
 };
 
+export const subscribeEconCalendar = (callback: (events: any[]) => void) => {
+  const q = query(collection(db, 'econCalendar'), orderBy('timestamp', 'asc'));
+  return onSnapshot(q, (snapshot) => {
+    const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(events);
+  }, () => callback([]));
+};
+
+export const subscribeAnalytics = (callback: (analytics: any[]) => void) => {
+  const q = query(collection(db, 'analytics'), orderBy('periodStart', 'desc'), limit(10));
+  return onSnapshot(q, (snapshot) => {
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(data);
+  }, () => callback([]));
+};
+
 export const addTrade = async (trade: Omit<Trade, 'id'>) => {
   const docRef = await addDoc(collection(db, 'trades'), {
     ...trade,
@@ -103,9 +119,9 @@ export const calculateStats = (trades: Trade[]): TradingStats => {
 
   const wins = trades.filter(t => t.result === 'win');
   const losses = trades.filter(t => t.result === 'loss');
-  const total_pnl = trades.reduce((sum, t) => sum + t.pnl, 0);
-  const win_pnl = wins.reduce((sum, t) => sum + t.pnl, 0);
-  const loss_pnl = losses.reduce((sum, t) => sum + Math.abs(t.pnl), 0);
+  const total_pnl = trades.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
+  const win_pnl = wins.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
+  const loss_pnl = losses.reduce((sum, t) => sum + Math.abs(t.pnl ?? 0), 0);
 
   return {
     total_trades: trades.length,

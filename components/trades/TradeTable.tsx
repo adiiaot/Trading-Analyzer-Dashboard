@@ -16,12 +16,12 @@ export const TradeTable = ({ trades, onAnalyze }: TradeTableProps) => {
       ['Date', 'Entry', 'Exit', 'PnL', 'PnL%', 'Result', 'Hold Time (s)'],
       ...trades.map(t => [
         new Date(t.timestamp).toLocaleString(),
-        t.entry_price.toString(),
-        t.exit_price.toString(),
-        t.pnl.toFixed(2),
-        t.pnl_percent.toFixed(2),
-        t.result.toUpperCase(),
-        t.hold_time_seconds?.toString() || 'N/A',
+        t.entryPrice?.toString() ?? '',
+        t.exitPrice?.toString() ?? '',
+        (t.pnl ?? 0).toFixed(2),
+        (t.pnlPercent ?? 0).toFixed(2),
+        (t.result ?? '').toUpperCase(),
+        t.holdTimeSeconds?.toString() || 'N/A',
       ]),
     ]
       .map(row => row.join(','))
@@ -70,14 +70,14 @@ export const TradeTable = ({ trades, onAnalyze }: TradeTableProps) => {
                 <td className="py-3 px-4 text-text-secondary">
                   {formatTimeAgo(trade.timestamp)}
                 </td>
-                <td className="py-3 px-4 text-text-secondary font-mono-num">${trade.entry_price.toFixed(2)}</td>
-                <td className="py-3 px-4 text-text-secondary font-mono-num">${trade.exit_price.toFixed(2)}</td>
+                <td className="py-3 px-4 text-text-secondary font-mono-num">${trade.entryPrice?.toFixed(2) ?? '0.00'}</td>
+                <td className="py-3 px-4 text-text-secondary font-mono-num">${trade.exitPrice?.toFixed(2) ?? '0.00'}</td>
                 <td className={`py-3 px-4 text-right font-semibold font-mono-num ${
-                  trade.pnl >= 0 ? 'text-neon-green' : 'text-alert-loss'
+                  (trade.pnl ?? 0) >= 0 ? 'text-neon-green' : 'text-alert-loss'
                 }`}>
                   <span className="flex items-center justify-end gap-1">
-                    ${trade.pnl.toFixed(2)}
-                    {trade.pnl >= 0 ? (
+                    ${(trade.pnl ?? 0).toFixed(2)}
+                    {(trade.pnl ?? 0) >= 0 ? (
                       <TrendingUp className="w-4 h-4" />
                     ) : (
                       <TrendingDown className="w-4 h-4" />
@@ -86,11 +86,11 @@ export const TradeTable = ({ trades, onAnalyze }: TradeTableProps) => {
                 </td>
                 <td className="py-3 px-4">
                   <span className={trade.result === 'win' ? 'badge-win' : 'badge-loss'}>
-                    {trade.result.toUpperCase()}
+                    {(trade.result ?? 'N/A').toUpperCase()}
                   </span>
                 </td>
                 <td className="py-3 px-4 text-text-secondary text-small">
-                  {trade.hold_time_seconds ? `${trade.hold_time_seconds}s` : 'N/A'}
+                  {trade.holdTimeSeconds ? `${trade.holdTimeSeconds}s` : 'N/A'}
                 </td>
                 <td className="py-3 px-4">
                   <button

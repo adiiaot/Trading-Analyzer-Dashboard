@@ -7,10 +7,9 @@ import { useDashboardData } from "@/lib/data-context";
 import { formatCurrency } from "@/lib/utils";
 
 export function TradingAccountCard() {
-  const { account } = useDashboardData();
+  const { account, balance, setBalance } = useDashboardData();
   const [visible, setVisible] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [balance, setBalance] = useState(account.balance);
   const [newBalance, setNewBalance] = useState(balance.toString());
 
   const handleSave = () => {

@@ -8,9 +8,9 @@ import {
 
 const TIMEFRAMES = ["5m", "15m", "1H", "4H", "D"];
 
-function generateChartData(count = 24, basePrice = 2335) {
+function generateChartData(count = 24, basePrice = 4073) {
   return Array.from({ length: count }, (_, i) => {
-    const price = basePrice + Math.sin(i * 0.3) * 15 + (Math.random() - 0.5) * 5;
+    const price = basePrice + Math.sin(i * 0.3) * 18 + (Math.random() - 0.5) * 6;
     return {
       time: `${i}h`,
       price: parseFloat(price.toFixed(2)),
@@ -67,15 +67,16 @@ export function TradingChart() {
           <AreaChart data={chartData}>
             <defs>
               <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--gold)" stopOpacity={0.15} />
+                <stop offset="5%" stopColor="var(--gold)" stopOpacity={0.2} />
                 <stop offset="95%" stopColor="var(--gold)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" strokeOpacity={0.3} />
-            <XAxis dataKey="time" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
+            <CartesianGrid stroke="var(--text-muted)" strokeOpacity={0.12} strokeDasharray="4 4" />
+            <XAxis dataKey="time" stroke="var(--text-muted)" strokeOpacity={0.5} fontSize={11} tickLine={false} axisLine={false} />
             <YAxis
               domain={["dataMin - 2", "dataMax + 2"]}
               stroke="var(--text-muted)"
+              strokeOpacity={0.5}
               fontSize={11}
               tickLine={false}
               axisLine={false}
@@ -90,6 +91,7 @@ export function TradingChart() {
                 color: "var(--text-primary)",
                 fontSize: "12px",
               }}
+              labelStyle={{ color: "var(--text-muted)" }}
             />
             <Area type="monotone" dataKey="price" stroke="var(--gold)" strokeWidth={2} fill="url(#chartGrad)" />
           </AreaChart>
@@ -99,8 +101,8 @@ export function TradingChart() {
       <div className="mt-2 h-[60px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData}>
-            <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" strokeOpacity={0.3} />
-            <Bar dataKey="volume" fill="var(--border)" radius={[2, 2, 0, 0]} />
+            <CartesianGrid stroke="var(--text-muted)" strokeOpacity={0.08} strokeDasharray="4 4" />
+            <Bar dataKey="volume" fill="var(--text-muted)" fillOpacity={0.15} radius={[2, 2, 0, 0]} />
             <Tooltip
               contentStyle={{
                 background: "var(--glass-bg)",
@@ -115,15 +117,15 @@ export function TradingChart() {
         </ResponsiveContainer>
       </div>
 
-      <div className="flex items-center gap-4 mt-3 pt-3 text-xs text-text-muted" style={{ borderTop: "1px solid var(--glass-border)" }}>
-        <span className="flex items-center gap-1.5">
-          <span className="w-5 h-0.5 rounded" style={{ background: "rgba(240, 180, 41, 0.6)" }} /> MA20: $2,038
+      <div className="flex items-center gap-4 mt-3 pt-3 text-xs" style={{ borderTop: "1px solid var(--glass-border)" }}>
+        <span className="flex items-center gap-1.5 text-text-muted">
+          <span className="w-5 h-0.5 rounded" style={{ background: "rgba(240, 180, 41, 0.6)" }} /> MA20: $4,068
         </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-5 h-0.5 rounded" style={{ background: "rgba(0, 230, 118, 0.6)" }} /> MA50: $2,025
+        <span className="flex items-center gap-1.5 text-text-muted">
+          <span className="w-5 h-0.5 rounded" style={{ background: "rgba(0, 230, 118, 0.6)" }} /> MA50: $4,055
         </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-5 h-0.5 rounded" style={{ background: "rgba(68, 138, 255, 0.6)" }} /> MA200: $1,998
+        <span className="flex items-center gap-1.5 text-text-muted">
+          <span className="w-5 h-0.5 rounded" style={{ background: "rgba(68, 138, 255, 0.6)" }} /> MA200: $4,010
         </span>
       </div>
     </motion.div>

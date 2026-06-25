@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import {
   subscribeTrades, subscribeSignals, subscribeEconCalendar,
   subscribeJournalEntries, calculateStats,
@@ -24,6 +24,8 @@ interface DashboardData {
   }[];
   sentiment: typeof SENTIMENT;
   account: typeof ACCOUNT;
+  balance: number;
+  setBalance: (val: number) => void;
   signalsFeed: {
     id: number;
     time: string;
@@ -43,11 +45,13 @@ const defaultData: DashboardData = {
   signals: [],
   stats: null,
   price: PRICE,
-  positions: POSITIONS,
+  positions: [],
   sentiment: SENTIMENT,
   account: ACCOUNT,
-  signalsFeed: SIGNALS,
-  quickStats: QUICK_STATS,
+  balance: 5245.50,
+  setBalance: () => {},
+  signalsFeed: [],
+  quickStats: { todayPnl: 0, winRate: 0, totalTrades: 0, openPositions: 0 },
   econEvents: [],
   journalEntries: [],
   loading: true,
@@ -59,22 +63,13 @@ export function useDashboardData() {
   return useContext(DataContext);
 }
 
-async function fetchFallbackTrades(): Promise<Trade[]> {
+async function fetchFromApi(url: string) {
   try {
-    const res = await fetch("/api/trades?limit=100");
+    const res = await fetch(url);
     const data = await res.json();
-    if (data.success) return data.trades;
+    if (data.success) return data;
   } catch {}
-  return [];
-}
-
-async function fetchFallbackSignals(): Promise<Signal[]> {
-  try {
-    const res = await fetch("/api/signals?limit=50");
-    const data = await res.json();
-    if (data.success) return data.signals;
-  } catch {}
-  return [];
+  return null;
 }
 
 export function DataProvider({ children }: { children: ReactNode }) {
@@ -84,10 +79,26 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [journalEntries, setJournalEntries] = useState<any[]>([]);
   const [tradesLoading, setTradesLoading] = useState(true);
   const [signalsLoading, setSignalsLoading] = useState(true);
+  const [usingFallback, setUsingFallback] = useState(false);
+  const [balance, setBalanceState] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("account_balance");
+      return saved ? parseFloat(saved) : 5245.50;
+    }
+    return 5245.50;
+  });
+
+  const setBalance = useCallback((val: number) => {
+    setBalanceState(val);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("account_balance", val.toString());
+    }
+  }, []);
 
   useEffect(() => {
     let unsubTrades: (() => void) | undefined;
     let unsubSignals: (() => void) | undefined;
+    let pollInterval: ReturnType<typeof setInterval> | undefined;
 
     const init = async () => {
       let tradesSubscribed = false;
@@ -99,8 +110,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         tradesSubscribed = true;
       }, () => {
         if (!tradesSubscribed) {
-          fetchFallbackTrades().then((fetched) => {
-            if (fetched.length > 0) setTrades(fetched);
+          setUsingFallback(true);
+          fetchFromApi("/api/trades?limit=100").then((data) => {
+            if (data?.trades?.length > 0) setTrades(data.trades);
             setTradesLoading(false);
           });
         }
@@ -112,8 +124,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         signalsSubscribed = true;
       }, () => {
         if (!signalsSubscribed) {
-          fetchFallbackSignals().then((fetched) => {
-            if (fetched.length > 0) setSignals(fetched);
+          setUsingFallback(true);
+          fetchFromApi("/api/signals?limit=50").then((data) => {
+            if (data?.signals?.length > 0) setSignals(data.signals);
             setSignalsLoading(false);
           });
         }
@@ -134,8 +147,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
       unsubSignals?.();
       unsubEcon();
       unsubJournal();
+      if (pollInterval) clearInterval(pollInterval);
     };
   }, []);
+
+  useEffect(() => {
+    if (!usingFallback) return;
+    const interval = setInterval(async () => {
+      const [tradesData, signalsData] = await Promise.all([
+        fetchFromApi("/api/trades?limit=100"),
+        fetchFromApi("/api/signals?limit=50"),
+      ]);
+      if (tradesData?.trades) setTrades(tradesData.trades);
+      if (signalsData?.signals) setSignals(signalsData.signals);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [usingFallback]);
 
   const stats = trades.length > 0 ? calculateStats(trades) : null;
 
@@ -144,10 +171,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     signals,
     stats,
     price: PRICE,
-    positions: trades.length > 0 ? mapTradesToPositions(trades) : POSITIONS,
+    positions: trades.length > 0 ? mapTradesToPositions(trades) : [],
     sentiment: SENTIMENT,
-    account: ACCOUNT,
-    signalsFeed: (signals.length > 0 ? mapSignalsToFeed(signals) : SIGNALS) as typeof SIGNALS,
+    account: { ...ACCOUNT, balance },
+    balance,
+    setBalance,
+    signalsFeed: signals.length > 0 ? mapSignalsToFeed(signals) : [],
     quickStats: stats
       ? {
           todayPnl: stats.total_pnl,
@@ -155,7 +184,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           totalTrades: stats.total_trades,
           openPositions: trades.filter((t) => t.status === "open").length,
         }
-      : QUICK_STATS,
+      : { todayPnl: 0, winRate: 0, totalTrades: 0, openPositions: 0 },
     econEvents,
     journalEntries,
     loading: tradesLoading || signalsLoading,

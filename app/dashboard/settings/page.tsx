@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
+import { useDashboardData } from "@/lib/data-context";
 import { Save, Check, DollarSign, RefreshCw } from "lucide-react";
 
 const container = {
@@ -17,7 +18,7 @@ const item = {
 };
 
 export default function SettingsPage() {
-  const [balance, setBalance] = useState(5245.50);
+  const { balance, setBalance } = useDashboardData();
   const [newBalance, setNewBalance] = useState(balance.toString());
   const [riskPct, setRiskPct] = useState(1.5);
   const [stopLoss, setStopLoss] = useState(20);

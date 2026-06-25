@@ -32,7 +32,8 @@ export function SignalFeed() {
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.06 }}
-              className="bg-surface-overlay rounded-xl p-3.5 border border-surface-border"
+              className="rounded-xl p-3.5"
+              style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2.5">
@@ -50,7 +51,7 @@ export function SignalFeed() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-text-muted">Confidence:</span>
-                  <div className="w-16 h-1.5 bg-surface-overlay rounded-full overflow-hidden">
+                  <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ background: "var(--glass-bg)" }}>
                     <div
                       className="h-full rounded-full transition-all"
                       style={{
@@ -76,7 +77,8 @@ export function SignalFeed() {
               <div className="flex items-center gap-1.5 mt-2">
                 <span className="text-xs text-text-muted">Levels:</span>
                 {signal.entries.map((entry, j) => (
-                  <span key={j} className="text-xs font-mono text-text-primary bg-surface-overlay px-1.5 py-0.5 rounded-md">
+                  <span key={j} className="text-xs font-mono text-text-primary px-1.5 py-0.5 rounded-md"
+                    style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
                     {entry}
                   </span>
                 ))}

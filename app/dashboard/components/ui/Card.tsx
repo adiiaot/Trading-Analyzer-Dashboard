@@ -9,17 +9,21 @@ interface CardProps {
   header?: string;
   glow?: boolean;
   delay?: number;
+  glass?: boolean;
   [key: string]: any;
 }
 
-export function Card({ children, className, header, glow, delay = 0, ...props }: CardProps) {
+export function Card({ children, className, header, glow, delay = 0, glass, ...props }: CardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay, ease: "easeOut" }}
       whileHover={{ y: -2, transition: { duration: 0.2 } }}
-      className={clsx(glow ? "card-glow" : "card", className)}
+      className={clsx(
+        glow ? "card-glow" : glass ? "glass-card" : "card",
+        className
+      )}
       {...props}
     >
       {header && (

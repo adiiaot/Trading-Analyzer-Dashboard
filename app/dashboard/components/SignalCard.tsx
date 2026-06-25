@@ -58,7 +58,7 @@ export function SignalCard({
         </div>
       </div>
 
-      <div className="bg-surface-overlay p-3 rounded-lg mb-3">
+      <div className="glass-card p-3 rounded-lg mb-3">
         <p className="text-xs text-text-secondary mb-2">Buy Limit Orders:</p>
         <div className="space-y-2">
           {orders.map((order, idx) => (

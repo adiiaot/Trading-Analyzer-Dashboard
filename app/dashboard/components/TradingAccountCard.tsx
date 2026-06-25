@@ -34,16 +34,10 @@ export function TradingAccountCard() {
             <span className="text-xs font-medium text-status-win">{account.demoLive}</span>
           </div>
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => setVisible(!visible)}
-              className="btn-ghost p-1.5"
-            >
+            <button onClick={() => setVisible(!visible)} className="btn-ghost p-1.5">
               {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
-            <button
-              onClick={() => setEditing(true)}
-              className="btn-ghost p-1.5"
-            >
+            <button onClick={() => setEditing(true)} className="btn-ghost p-1.5">
               <Pencil className="w-4 h-4" />
             </button>
           </div>
@@ -59,19 +53,19 @@ export function TradingAccountCard() {
           >
             {visible ? formatCurrency(balance) : "****"}
           </motion.p>
-          <span className="text-xs font-medium text-status-win bg-status-win/10 px-2 py-0.5 rounded-full">
+          <span className="text-xs font-medium text-status-win px-2 py-0.5 rounded-full" style={{ background: "rgba(0, 230, 118, 0.1)", border: "1px solid rgba(0, 230, 118, 0.15)" }}>
             +2.3%
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-5">
-          <div className="bg-surface-overlay rounded-lg p-3">
+          <div className="rounded-lg p-3" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
             <p className="text-xs text-text-muted mb-0.5">Available</p>
             <p className="text-sm font-mono font-medium text-text-primary">
               {visible ? formatCurrency(account.available) : "****"}
             </p>
           </div>
-          <div className="bg-surface-overlay rounded-lg p-3">
+          <div className="rounded-lg p-3" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
             <p className="text-xs text-text-muted mb-0.5">Margin</p>
             <p className="text-sm font-mono font-medium text-text-primary">
               {visible ? formatCurrency(account.usedMargin) : "****"}
@@ -79,7 +73,7 @@ export function TradingAccountCard() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between py-3 border-t border-surface-border">
+        <div className="flex items-center justify-between py-3" style={{ borderTop: "1px solid var(--glass-border)" }}>
           <span className="text-xs text-text-muted">Status</span>
           <span className="badge-win">{account.status}</span>
         </div>
@@ -108,7 +102,7 @@ export function TradingAccountCard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -148,7 +142,7 @@ export function TradingAccountCard() {
                 </div>
               </div>
 
-              <div className="flex gap-3 mt-5 pt-4 border-t border-surface-border">
+              <div className="flex gap-3 mt-5 pt-4" style={{ borderTop: "1px solid var(--glass-border)" }}>
                 <button onClick={handleSave} className="btn-primary flex-1 flex items-center justify-center gap-2">
                   <Save className="w-4 h-4" /> Save
                 </button>

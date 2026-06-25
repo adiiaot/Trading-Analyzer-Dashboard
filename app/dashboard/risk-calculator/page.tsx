@@ -145,7 +145,7 @@ export default function RiskCalculatorPage() {
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: pct * 0.08, duration: 0.3 }}
-                  className="flex items-center justify-between bg-surface-overlay rounded-card px-4 py-2"
+                  className="flex items-center justify-between glass-card rounded-card px-4 py-2"
                 >
                   <span className="text-sm text-text-primary">{pct}% Risk</span>
                   <span className="text-sm font-mono text-text-secondary">${(balance * (pct / 100)).toFixed(2)} | {(balance * (pct / 100) / (stopLoss * pipVal)).toFixed(3)} lots</span>

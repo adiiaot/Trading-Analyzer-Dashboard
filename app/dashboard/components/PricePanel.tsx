@@ -2,28 +2,61 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown } from "lucide-react";
-import { useDashboardData } from "@/lib/data-context";
+import { TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
+
+interface PriceData {
+  symbol: string;
+  price: number;
+  change24h: number;
+  changePercent24h: number;
+  high24h: number;
+  low24h: number;
+  volume: number;
+  bid: number;
+  ask: number;
+  spread: number;
+}
 
 export function PricePanel() {
-  const { price: initialPrice } = useDashboardData();
-  const [price, setPrice] = useState(initialPrice.price);
-  const [change, setChange] = useState(initialPrice.change24h);
-  const [pct, setPct] = useState(initialPrice.changePercent24h);
+  const [priceData, setPriceData] = useState<PriceData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const fetchPrice = async () => {
+    try {
+      const res = await fetch("/api/price");
+      const data = await res.json();
+      if (data.success) {
+        setPriceData(data);
+        setError(false);
+      }
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const delta = (Math.random() - 0.5) * 0.3;
-      setPrice((p) => {
-        const next = p + delta;
-        setChange((c) => c + delta);
-        setPct((c) => c + (delta / p) * 100);
-        return next;
-      });
-    }, 3000);
+    fetchPrice();
+    const interval = setInterval(fetchPrice, 30000);
     return () => clearInterval(interval);
   }, []);
 
+  if (loading) {
+    return (
+      <div className="card">
+        <div className="flex items-center gap-3 text-text-muted">
+          <RefreshCw className="w-4 h-4 animate-spin" />
+          <span className="text-sm">Loading price...</span>
+        </div>
+      </div>
+    );
+  }
+
+  const price = priceData?.price ?? 2335;
+  const change = priceData?.change24h ?? 0;
+  const pct = priceData?.changePercent24h ?? 0;
   const up = change >= 0;
 
   return (
@@ -61,19 +94,19 @@ export function PricePanel() {
         <div className="flex gap-5 text-sm">
           <div>
             <p className="text-xs text-text-muted">24H High</p>
-            <p className="font-mono text-text-primary font-medium">${initialPrice.high24h.toFixed(2)}</p>
+            <p className="font-mono text-text-primary font-medium">${(priceData?.high24h ?? 0).toFixed(2)}</p>
           </div>
           <div>
             <p className="text-xs text-text-muted">24H Low</p>
-            <p className="font-mono text-text-primary font-medium">${initialPrice.low24h.toFixed(2)}</p>
+            <p className="font-mono text-text-primary font-medium">${(priceData?.low24h ?? 0).toFixed(2)}</p>
           </div>
           <div>
             <p className="text-xs text-text-muted">Volume</p>
-            <p className="font-mono text-text-primary font-medium">{(initialPrice.volume / 1000).toFixed(0)}K</p>
+            <p className="font-mono text-text-primary font-medium">{((priceData?.volume ?? 0) / 1000).toFixed(0)}K</p>
           </div>
           <div>
             <p className="text-xs text-text-muted">Spread</p>
-            <p className="font-mono text-text-primary font-medium">${initialPrice.spread.toFixed(1)}</p>
+            <p className="font-mono text-text-primary font-medium">${(priceData?.spread ?? 0).toFixed(1)}</p>
           </div>
         </div>
       </div>

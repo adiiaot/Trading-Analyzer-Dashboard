@@ -25,13 +25,13 @@ export function MarketSentiment() {
 
       <div className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-surface-overlay rounded-xl p-3 border border-surface-border">
+          <div className="rounded-xl p-3" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
             <div className="flex items-center gap-2 mb-2">
               <Gauge className="w-3.5 h-3.5 text-status-info" />
               <span className="text-xs text-text-muted">USD Strength</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex-1 h-2 bg-surface-overlay rounded-full overflow-hidden">
+              <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "var(--glass-bg)" }}>
                 <div
                   className="h-full rounded-full bg-status-info transition-all"
                   style={{ width: `${sentiment.usdStrength}%` }}
@@ -41,13 +41,13 @@ export function MarketSentiment() {
             </div>
           </div>
 
-          <div className="bg-surface-overlay rounded-xl p-3 border border-surface-border">
+          <div className="rounded-xl p-3" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-3.5 h-3.5 text-accent-gold" />
               <span className="text-xs text-text-muted">Volatility</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex-1 h-2 bg-surface-overlay rounded-full overflow-hidden">
+              <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "var(--glass-bg)" }}>
                 <div
                   className="h-full rounded-full bg-accent-gold transition-all"
                   style={{ width: `${sentiment.volatility}%` }}
@@ -58,7 +58,7 @@ export function MarketSentiment() {
           </div>
         </div>
 
-        <div className="bg-surface-overlay rounded-xl p-3 border border-surface-border flex items-center justify-between">
+        <div className="rounded-xl p-3 flex items-center justify-between" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
           <span className="text-xs text-text-muted">Risk Sentiment</span>
           <span className="text-xs font-mono text-accent-gold">{sentiment.riskSentiment}</span>
         </div>
@@ -71,14 +71,15 @@ export function MarketSentiment() {
           {sentiment.events.map((evt, i) => (
             <div
               key={i}
-              className="flex items-center justify-between bg-surface-overlay rounded-xl p-3 border border-surface-border mb-2 last:mb-0"
+              className="flex items-center justify-between rounded-xl p-3 mb-2 last:mb-0"
+              style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}
             >
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono text-text-muted">{evt.time}</span>
                 <span className="text-sm text-text-primary">{evt.event}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`text-xs px-2 py-0.5 rounded-md ${IMPACT[evt.impact]}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-md ${IMPACT[evt.impact]}`} style={evt.impact === "HIGH" ? { border: "1px solid rgba(255,82,82,0.15)" } : evt.impact === "MEDIUM" ? { border: "1px solid rgba(240,180,41,0.15)" } : { border: "1px solid rgba(68,138,255,0.15)" }}>
                   {evt.impact}
                 </span>
                 <span className={`text-xs font-mono ${evt.xau === "Bullish" ? "text-status-win" : "text-text-muted"}`}>

@@ -54,7 +54,7 @@ export default function SettingsPage() {
         <motion.div variants={item}>
           <Card header="Account Balance">
             <div className="space-y-4">
-              <div className="bg-surface-overlay rounded-card p-4 text-center">
+              <div className="glass-card rounded-card p-4 text-center">
                 <p className="stat-label text-xs text-text-muted mb-1">Current Balance</p>
                 <p className="text-3xl font-bold font-mono text-text-primary">
                   ${balance.toFixed(2)}
@@ -120,19 +120,19 @@ export default function SettingsPage() {
       <motion.div variants={item}>
         <Card header="Auto-Calculated Position Size">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-surface-overlay rounded-card p-4 text-center">
+            <div className="glass-card rounded-card p-4 text-center">
               <p className="text-xs text-text-muted mb-1">Risk Amount</p>
               <p className="text-xl font-bold font-mono text-status-loss">${riskAmt.toFixed(2)}</p>
             </div>
-            <div className="bg-surface-overlay rounded-card p-4 text-center">
+            <div className="glass-card rounded-card p-4 text-center">
               <p className="text-xs text-text-muted mb-1">Position Size</p>
               <p className="text-xl font-bold font-mono text-accent-gold">{posSize.toFixed(3)} lots</p>
             </div>
-            <div className="bg-surface-overlay rounded-card p-4 text-center">
+            <div className="glass-card rounded-card p-4 text-center">
               <p className="text-xs text-text-muted mb-1">Max Daily Risk</p>
               <p className="text-xl font-bold font-mono text-status-warn">${maxDailyLoss.toFixed(0)}</p>
             </div>
-            <div className="bg-surface-overlay rounded-card p-4 text-center">
+            <div className="glass-card rounded-card p-4 text-center">
               <p className="text-xs text-text-muted mb-1">Daily Target</p>
               <p className="text-xl font-bold font-mono text-status-win">${dailyTarget.toFixed(0)}</p>
             </div>

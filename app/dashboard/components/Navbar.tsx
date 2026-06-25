@@ -13,12 +13,18 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
   useEffect(() => setMounted(true), []);
 
   return (
-    <header className="glass h-14 flex items-center justify-between px-4 md:px-6 shrink-0">
+    <header className="glass h-14 flex items-center justify-between px-4 md:px-6 shrink-0 z-30">
       <div className="flex items-center gap-3">
         <button onClick={onMenuClick} className="md:hidden text-text-secondary hover:text-text-primary p-1.5 -ml-1.5">
           <Menu className="w-5 h-5" />
         </button>
-        <div className="hidden sm:flex items-center gap-2 bg-surface-overlay border border-surface-border rounded-lg px-3 py-1.5 w-56">
+        <div className="hidden sm:flex items-center gap-2 rounded-lg px-3 py-1.5 w-56 transition-all duration-200"
+          style={{
+            background: "var(--glass-bg)",
+            border: "1px solid var(--glass-border)",
+            backdropFilter: "blur(8px)",
+          }}
+        >
           <Search className="w-4 h-4 text-text-muted shrink-0" />
           <input
             type="text"
@@ -33,7 +39,14 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
           href={TELEGRAM_LINK}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent-gold/10 text-accent-gold hover:bg-accent-gold/20 transition-all text-xs font-semibold"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+          style={{
+            background: "rgba(240, 180, 41, 0.1)",
+            color: "rgb(var(--accent-gold-rgb))",
+            border: "1px solid rgba(240, 180, 41, 0.15)",
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(240, 180, 41, 0.2)"}
+          onMouseLeave={(e) => e.currentTarget.style.background = "rgba(240, 180, 41, 0.1)"}
         >
           <Send className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Telegram Bot</span>
@@ -41,7 +54,11 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
 
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-overlay transition-all"
+          className="p-2 rounded-lg text-text-secondary hover:text-text-primary transition-all"
+          style={{
+            background: "var(--glass-bg)",
+            border: "1px solid var(--glass-border)",
+          }}
         >
           {mounted && theme === "dark" ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
         </button>

@@ -60,7 +60,7 @@ export default function DashboardPage() {
       </motion.div>
 
       <motion.div variants={section}>
-        <div className="card p-4">
+        <div className="glass-card rounded-card p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Send className="w-4 h-4 text-accent-gold" />
@@ -87,7 +87,7 @@ export default function DashboardPage() {
                 href={`https://t.me/aot_analyzer_bot?start=${c.cmd.replace("/", "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-overlay hover:bg-accent-gold/10 transition-all text-xs"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg glass-card hover:bg-accent-gold/10 transition-all text-xs"
               >
                 <c.icon className="w-3.5 h-3.5 text-accent-gold shrink-0" />
                 <div>

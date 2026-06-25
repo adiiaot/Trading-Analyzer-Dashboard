@@ -122,10 +122,10 @@ export default function LearningPage() {
       <motion.div variants={item}>
         <Card>
           <div className="flex items-center gap-2 mb-4">
-            <button onClick={() => setMode("chat")} className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${mode === "chat" ? "bg-accent-gold text-surface" : "bg-surface-overlay text-text-secondary hover:text-text-primary"}`}>
+            <button onClick={() => setMode("chat")} className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${mode === "chat" ? "bg-accent-gold text-surface" : "glass-card text-text-secondary hover:text-text-primary"}`}>
               <BookOpen className="w-3.5 h-3.5" /> Learn
             </button>
-            <button onClick={() => setMode("analyze")} className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${mode === "analyze" ? "bg-accent-gold text-surface" : "bg-surface-overlay text-text-secondary hover:text-text-primary"}`}>
+            <button onClick={() => setMode("analyze")} className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${mode === "analyze" ? "bg-accent-gold text-surface" : "glass-card text-text-secondary hover:text-text-primary"}`}>
               <BarChart3 className="w-3.5 h-3.5" /> Analyze Chart
             </button>
           </div>
@@ -134,7 +134,7 @@ export default function LearningPage() {
             {messages.map((msg, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : ""}`}>
                 {msg.role === "assistant" && <div className="w-8 h-8 rounded-lg bg-accent-gold/10 flex items-center justify-center shrink-0"><Bot className="w-4 h-4 text-accent-gold" /></div>}
-                <div className={`max-w-[80%] ${msg.role === "user" ? "bg-accent-gold text-surface rounded-2xl rounded-tr-md px-4 py-2.5" : "bg-surface-overlay rounded-2xl rounded-tl-md px-4 py-2.5"}`}>
+                <div className={`max-w-[80%] ${msg.role === "user" ? "bg-accent-gold text-surface rounded-2xl rounded-tr-md px-4 py-2.5" : "glass-card rounded-2xl rounded-tl-md px-4 py-2.5"}`}>
                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                   <p className={`text-[10px] mt-1 ${msg.role === "user" ? "text-surface/60" : "text-text-muted"}`}>{new Date(msg.timestamp).toLocaleTimeString()}</p>
                 </div>
@@ -144,7 +144,7 @@ export default function LearningPage() {
             {loading && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
                 <div className="w-8 h-8 rounded-lg bg-accent-gold/10 flex items-center justify-center"><Loader2 className="w-4 h-4 text-accent-gold animate-spin" /></div>
-                <div className="bg-surface-overlay rounded-2xl rounded-tl-md px-4 py-2.5"><p className="text-sm text-text-muted">Thinking...</p></div>
+                <div className="glass-card rounded-2xl rounded-tl-md px-4 py-2.5"><p className="text-sm text-text-muted">Thinking...</p></div>
               </motion.div>
             )}
             <div ref={chatEndRef} />
@@ -155,14 +155,14 @@ export default function LearningPage() {
               <p className="text-xs text-text-muted mb-2">{mode === "analyze" ? "Try asking about your chart:" : "Try asking:"}</p>
               <div className="flex flex-wrap gap-2">
                 {promptList.slice(0, 4).map((p) => (
-                  <button key={p} onClick={() => { setInput(p); }} className="text-xs px-3 py-1.5 rounded-lg bg-surface-overlay text-text-secondary hover:text-text-primary hover:bg-accent-gold/10 transition-all">{p}</button>
+                  <button key={p} onClick={() => { setInput(p); }} className="text-xs px-3 py-1.5 rounded-lg glass-card text-text-secondary hover:text-text-primary hover:bg-accent-gold/10 transition-all">{p}</button>
                 ))}
               </div>
             </div>
           )}
 
           {mode === "analyze" && selectedImage && (
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-3 p-3 bg-surface-overlay rounded-xl flex items-center gap-3">
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-3 p-3 rounded-xl flex items-center gap-3" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
               <img src={selectedImage} alt="Chart" className="w-16 h-12 object-cover rounded-lg" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-text-primary truncate">{imageName}</p>
@@ -202,7 +202,7 @@ export default function LearningPage() {
           { icon: TrendingUp, title: "Strategy Guides", desc: "Mr PFX, scalping, swing trading", color: "text-status-win" },
           { icon: Sparkles, title: "AI-Powered", desc: "NVIDIA models analyze charts in real-time", color: "text-accent-gold" },
         ].map((s, i) => (
-          <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.06 }} className="bg-surface-overlay rounded-card p-4 flex items-center gap-3">
+          <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.06 }} className="glass-card rounded-card p-4 flex items-center gap-3">
             <div className={`w-10 h-10 rounded-xl ${s.color.replace("text", "bg")}/10 flex items-center justify-center`}>
               <s.icon className={`w-5 h-5 ${s.color}`} />
             </div>

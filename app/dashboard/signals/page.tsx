@@ -128,7 +128,7 @@ export default function SignalsPage() {
               { label: "Desktop Notifications", status: "Enabled" },
               { label: "Email Digest", status: "Daily" },
             ].map((a) => (
-              <div key={a.label} className="flex items-center justify-between p-3 bg-surface-overlay rounded-card">
+              <div key={a.label} className="flex items-center justify-between p-3 glass-card rounded-card">
                 <span className="text-sm text-text-primary">{a.label}</span>
                 <Badge variant="win">{a.status}</Badge>
               </div>

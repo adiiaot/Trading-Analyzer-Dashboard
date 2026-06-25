@@ -60,7 +60,7 @@ export default function JournalPage() {
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <Filter className="w-4 h-4 text-text-muted" />
             {["All", "Trend Following", "Reversal", "Fakeout", "Breakout"].map((tag) => (
-              <button key={tag} className="px-3 py-1 rounded-pill text-xs font-medium bg-surface-overlay text-text-secondary hover:text-text-primary transition-all">{tag}</button>
+              <button key={tag} className="px-3 py-1 rounded-pill text-xs font-medium glass-card text-text-secondary hover:text-text-primary transition-all">{tag}</button>
             ))}
           </div>
 
@@ -70,7 +70,7 @@ export default function JournalPage() {
                 key={i}
                 variants={item}
                 whileHover={{ y: -2, transition: { duration: 0.2 } }}
-                className="card p-4"
+                className="glass-card rounded-card p-4"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -91,7 +91,7 @@ export default function JournalPage() {
                   <div><p className="text-xs text-text-muted">Emotion</p><p className="text-text-primary">{e.emoji}</p></div>
                 </div>
 
-                <div className="bg-surface-overlay rounded-card p-3">
+                <div className="glass-card rounded-card p-3">
                   <p className="text-xs text-text-muted mb-0.5">Setup</p>
                   <p className="text-sm text-text-primary">{e.setup}</p>
                 </div>

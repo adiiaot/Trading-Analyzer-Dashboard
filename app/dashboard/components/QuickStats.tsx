@@ -52,7 +52,7 @@ export function QuickStats() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 }}
             whileHover={{ y: -2 }}
-            className="card p-4"
+            className="glass-card rounded-card p-4"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs text-text-muted">{stat.label}</span>

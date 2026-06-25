@@ -66,25 +66,25 @@ export default function AnalyticsPage() {
             <div className="space-y-3">
               {totalTrades > 0 ? (
                 <>
-                  <div className="flex justify-between items-center bg-surface-overlay rounded-card px-4 py-2.5">
+                  <div className="flex justify-between items-center glass-card rounded-card px-4 py-2.5">
                     <span className="text-sm text-text-primary">Total Trades</span>
                     <span className="text-sm font-bold text-text-primary">{totalTrades}</span>
                   </div>
-                  <div className="flex justify-between items-center bg-surface-overlay rounded-card px-4 py-2.5">
+                  <div className="flex justify-between items-center glass-card rounded-card px-4 py-2.5">
                     <span className="text-sm text-text-primary">Wins</span>
                     <span className="text-sm font-bold text-status-win">{wins.length}</span>
                   </div>
-                  <div className="flex justify-between items-center bg-surface-overlay rounded-card px-4 py-2.5">
+                  <div className="flex justify-between items-center glass-card rounded-card px-4 py-2.5">
                     <span className="text-sm text-text-primary">Losses</span>
                     <span className="text-sm font-bold text-status-loss">{losses.length}</span>
                   </div>
-                  <div className="flex justify-between items-center bg-surface-overlay rounded-card px-4 py-2.5">
+                  <div className="flex justify-between items-center glass-card rounded-card px-4 py-2.5">
                     <span className="text-sm text-text-primary">Open Positions</span>
                     <span className="text-sm font-bold text-status-info">{trades.filter(t => t.status === "open").length}</span>
                   </div>
                 </>
               ) : (
-                <div className="h-[120px] flex items-center justify-center bg-surface-overlay rounded-card">
+                <div className="h-[120px] flex items-center justify-center glass-card rounded-card">
                   <span className="text-sm text-text-muted">No trade data yet</span>
                 </div>
               )}
@@ -100,7 +100,7 @@ export default function AnalyticsPage() {
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 + i * 0.06, duration: 0.3 }}
-                  className="flex items-center justify-between bg-surface-overlay rounded-card px-4 py-2.5"
+                  className="flex items-center justify-between glass-card rounded-card px-4 py-2.5"
                 >
                   <span className="text-sm text-text-primary">{s}</span>
                   <span className="text-xs font-medium text-status-win">Active</span>
@@ -129,7 +129,7 @@ export default function AnalyticsPage() {
                     initial={{ opacity: 0, x: -4 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.04, duration: 0.2 }}
-                    className="border-b border-surface-border/50 hover:bg-surface-overlay/30"
+                    className="border-b border-surface-border/50 hover:glass-card/30"
                   >
                     <td className="py-3 px-5 first:pl-5 font-mono text-text-primary text-xs">#{t.id.slice(-4)}</td>
                     <td className="py-3 px-5"><span className={`text-xs font-semibold px-2 py-0.5 rounded-pill ${t.trend === "UP" ? "bg-status-win/10 text-status-win" : "bg-status-loss/10 text-status-loss"}`}>{t.trend}</span></td>

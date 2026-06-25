@@ -1,9 +1,12 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { subscribeTrades, subscribeSignals, subscribeEconCalendar, calculateStats } from "@/lib/firebase";
+import {
+  subscribeTrades, subscribeSignals, subscribeEconCalendar,
+  subscribeJournalEntries, calculateStats,
+} from "@/lib/firebase";
 import type { Trade, Signal, TradingStats } from "@/types";
-import { QUICK_STATS, PRICE, POSITIONS, SIGNALS, SENTIMENT, ACCOUNT, ECON_EVENTS, JOURNAL_ENTRIES } from "@/lib/constants";
+import { QUICK_STATS, PRICE, POSITIONS, SIGNALS, SENTIMENT, ACCOUNT } from "@/lib/constants";
 
 interface DashboardData {
   trades: Trade[];
@@ -30,8 +33,8 @@ interface DashboardData {
     pnl: number | null;
   }[];
   quickStats: { todayPnl: number; winRate: number; totalTrades: number; openPositions: number };
-  econEvents: typeof ECON_EVENTS;
-  journalEntries: typeof JOURNAL_ENTRIES;
+  econEvents: any[];
+  journalEntries: any[];
   loading: boolean;
 }
 
@@ -45,8 +48,8 @@ const defaultData: DashboardData = {
   account: ACCOUNT,
   signalsFeed: SIGNALS,
   quickStats: QUICK_STATS,
-  econEvents: ECON_EVENTS,
-  journalEntries: JOURNAL_ENTRIES,
+  econEvents: [],
+  journalEntries: [],
   loading: true,
 };
 
@@ -59,8 +62,8 @@ export function useDashboardData() {
 export function DataProvider({ children }: { children: ReactNode }) {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [signals, setSignals] = useState<Signal[]>([]);
-  const [econEvents, setEconEvents] = useState<typeof ECON_EVENTS>([]);
-  const [journalEntries, setJournalEntries] = useState<typeof JOURNAL_ENTRIES>([]);
+  const [econEvents, setEconEvents] = useState<any[]>([]);
+  const [journalEntries, setJournalEntries] = useState<any[]>([]);
   const [tradesLoading, setTradesLoading] = useState(true);
   const [signalsLoading, setSignalsLoading] = useState(true);
 
@@ -74,12 +77,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setSignalsLoading(false);
     });
     const unsubEcon = subscribeEconCalendar((data) => {
-      if (data.length > 0) setEconEvents(data as any);
+      if (data.length > 0) setEconEvents(data);
+    });
+    const unsubJournal = subscribeJournalEntries((data) => {
+      if (data.length > 0) setJournalEntries(data);
     });
     return () => {
       unsubTrades();
       unsubSignals();
       unsubEcon();
+      unsubJournal();
     };
   }, []);
 
@@ -103,7 +110,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
       : QUICK_STATS,
     econEvents,
-    journalEntries: JOURNAL_ENTRIES,
+    journalEntries,
     loading: tradesLoading || signalsLoading,
   };
 
@@ -125,8 +132,12 @@ function mapTradesToPositions(trades: Trade[]) {
 function mapSignalsToFeed(signals: Signal[]) {
   return signals.slice(0, 4).map((s, i) => ({
     id: i + 1,
-    time: new Date(s.timestamp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }),
-    status: (s.status === "active" ? "PENDING" : s.status === "expired" ? "EXPIRED" : s.status === "closed" ? "CLOSED" : "FILLING") as "PENDING" | "FILLING" | "CLOSED" | "EXPIRED",
+    time: new Date(s.timestamp).toLocaleTimeString("en-US", {
+      hour: "numeric", minute: "2-digit", hour12: true,
+    }),
+    status: (s.status === "active" ? "PENDING"
+      : s.status === "expired" ? "EXPIRED"
+      : s.status === "closed" ? "CLOSED" : "FILLING") as "PENDING" | "FILLING" | "CLOSED" | "EXPIRED",
     confidence: Math.round(s.confidence * 100),
     entries: (s.entries || []).map((e) => e.price.toFixed(2)),
     pnl: null as number | null,

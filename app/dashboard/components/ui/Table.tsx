@@ -19,7 +19,11 @@ export function Table({ headers, rows, className }: TableProps) {
         </thead>
         <tbody>
           {rows.map((row, ridx) => (
-            <tr key={ridx} className="border-b border-surface-border/50 hover:bg-surface-overlay/30 transition-colors">
+            <tr key={ridx} className="border-b border-surface-border/50 transition-colors"
+              style={{ borderColor: "var(--glass-border)" }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "var(--glass-bg)"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+            >
               {row.map((cell, cidx) => (
                 <td key={cidx} className="py-3 px-4 md:px-5 first:pl-5 last:pr-5 text-text-primary">
                   {cell}

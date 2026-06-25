@@ -41,20 +41,28 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
           />
         )}
       </AnimatePresence>
 
       <aside
-        className={`fixed md:sticky top-0 left-0 z-50 h-screen bg-surface-raised border-r border-surface-border flex flex-col transition-all duration-300 ${
+        className={`fixed md:sticky top-0 left-0 z-50 h-screen flex flex-col transition-all duration-300 border-r ${
           collapsed ? "w-[68px]" : "w-56"
         } ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+        style={{
+          background: "var(--glass-bg)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderColor: "var(--glass-border)",
+        }}
       >
-        <div className={`flex items-center border-b border-surface-border h-14 shrink-0 ${collapsed ? "justify-center px-0" : "px-5 gap-3"}`}>
+        <div className={`flex items-center border-b h-14 shrink-0 ${collapsed ? "justify-center px-0" : "px-5 gap-3"}`}
+          style={{ borderColor: "var(--glass-border)" }}>
           <motion.div
             whileHover={{ scale: 1.1, rotate: -5 }}
-            className="w-8 h-8 rounded-lg bg-accent-gold/15 flex items-center justify-center shrink-0"
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{ background: "rgba(240, 180, 41, 0.15)" }}
           >
             <span className="text-accent-gold font-bold text-sm">A</span>
           </motion.div>
@@ -85,9 +93,13 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
                     collapsed ? "justify-center" : ""
                   } ${
                     active
-                      ? "bg-accent-gold/8 text-accent-gold shadow-sm"
-                      : "text-text-secondary hover:text-text-primary hover:bg-surface-overlay"
+                      ? "text-accent-gold shadow-sm"
+                      : "text-text-secondary hover:text-text-primary"
                   }`}
+                  style={active ? {
+                    background: "rgba(240, 180, 41, 0.08)",
+                    border: "1px solid rgba(240, 180, 41, 0.12)",
+                  } : {}}
                 >
                   <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
                     <Icon className="w-[18px] h-[18px] shrink-0" />
@@ -103,7 +115,16 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
           href="https://t.me/aot_analyzer_bot"
           target="_blank"
           rel="noopener noreferrer"
-          className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-1 rounded-lg text-sm font-medium transition-all bg-accent-gold/10 text-accent-gold hover:bg-accent-gold/20 ${collapsed ? "justify-center" : ""}`}
+          className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-1 rounded-lg text-sm font-medium transition-all ${
+            collapsed ? "justify-center" : ""
+          }`}
+          style={{
+            background: "rgba(240, 180, 41, 0.08)",
+            color: "rgb(var(--accent-gold-rgb))",
+            border: "1px solid rgba(240, 180, 41, 0.12)",
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(240, 180, 41, 0.15)"}
+          onMouseLeave={(e) => e.currentTarget.style.background = "rgba(240, 180, 41, 0.08)"}
         >
           <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
             <svg className="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -116,7 +137,8 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
 
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="hidden md:flex items-center justify-center h-10 border-t border-surface-border text-text-muted hover:text-text-primary transition-colors"
+          className="hidden md:flex items-center justify-center h-10 text-text-muted hover:text-text-primary transition-colors"
+          style={{ borderTop: "1px solid var(--glass-border)" }}
         >
           <motion.div animate={{ rotate: collapsed ? 180 : 0 }} transition={{ duration: 0.2 }}>
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -125,7 +147,8 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
 
         <button
           onClick={onClose}
-          className="md:hidden flex items-center justify-center h-10 border-t border-surface-border text-text-muted hover:text-text-primary"
+          className="md:hidden flex items-center justify-center h-10 text-text-muted hover:text-text-primary"
+          style={{ borderTop: "1px solid var(--glass-border)" }}
         >
           <X className="w-4 h-4" />
         </button>

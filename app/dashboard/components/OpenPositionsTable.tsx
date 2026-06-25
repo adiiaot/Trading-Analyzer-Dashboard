@@ -19,7 +19,7 @@ export function OpenPositionsTable() {
       <div className="overflow-x-auto -mx-6">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-surface-border">
+            <tr className="border-b" style={{ borderColor: "var(--glass-border)" }}>
               <th className="text-left text-xs text-text-muted font-medium pb-3 px-6 first:pl-6">Symbol</th>
               <th className="text-left text-xs text-text-muted font-medium pb-3 px-4">Dir</th>
               <th className="text-right text-xs text-text-muted font-medium pb-3 px-4">Entry</th>
@@ -38,7 +38,10 @@ export function OpenPositionsTable() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.06 }}
-                className="border-b border-surface-border/50 hover:bg-surface-overlay/50 transition-colors"
+                className="border-b transition-colors"
+                style={{ borderColor: "var(--glass-border)" }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
               >
                 <td className="py-3 px-6 first:pl-6">
                   <span className="font-mono text-sm text-text-primary">XAU/USD</span>
@@ -64,13 +67,16 @@ export function OpenPositionsTable() {
                 <td className="py-3 px-4 text-right font-mono text-text-primary">{pos.sl.toFixed(2)}</td>
                 <td className="py-3 px-6 last:pr-6 text-right">
                   <div className="flex items-center justify-end gap-1.5">
-                    <button className="text-xs px-2.5 py-1 rounded-md bg-status-loss/10 text-status-loss hover:bg-status-loss/20 transition-all">
+                    <button className="text-xs px-2.5 py-1 rounded-md transition-all" style={{ background: "rgba(255,82,82,0.1)", color: "rgb(var(--status-loss-rgb))", border: "1px solid rgba(255,82,82,0.15)" }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,82,82,0.2)"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,82,82,0.1)"}
+                    >
                       Close
                     </button>
-                    <button className="text-xs px-2.5 py-1 rounded-md bg-surface-overlay text-text-muted hover:text-text-primary transition-all">
+                    <button className="text-xs px-2.5 py-1 rounded-md transition-all" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)", color: "rgb(var(--text-muted-rgb))" }}>
                       SL
                     </button>
-                    <button className="text-xs px-2.5 py-1 rounded-md bg-surface-overlay text-text-muted hover:text-text-primary transition-all">
+                    <button className="text-xs px-2.5 py-1 rounded-md transition-all" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)", color: "rgb(var(--text-muted-rgb))" }}>
                       TP
                     </button>
                   </div>

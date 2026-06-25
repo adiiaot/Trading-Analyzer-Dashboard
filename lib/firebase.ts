@@ -92,6 +92,14 @@ export const subscribeAnalytics = (callback: (analytics: any[]) => void) => {
   }, () => callback([]));
 };
 
+export const subscribeJournalEntries = (callback: (entries: any[]) => void) => {
+  const q = query(collection(db, 'journal'), orderBy('date', 'desc'), limit(50));
+  return onSnapshot(q, (snapshot) => {
+    const entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(entries);
+  }, () => callback([]));
+};
+
 export const addTrade = async (trade: Omit<Trade, 'id'>) => {
   const docRef = await addDoc(collection(db, 'trades'), {
     ...trade,

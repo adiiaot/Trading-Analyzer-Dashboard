@@ -59,6 +59,24 @@ export function useDashboardData() {
   return useContext(DataContext);
 }
 
+async function fetchFallbackTrades(): Promise<Trade[]> {
+  try {
+    const res = await fetch("/api/trades?limit=100");
+    const data = await res.json();
+    if (data.success) return data.trades;
+  } catch {}
+  return [];
+}
+
+async function fetchFallbackSignals(): Promise<Signal[]> {
+  try {
+    const res = await fetch("/api/signals?limit=50");
+    const data = await res.json();
+    if (data.success) return data.signals;
+  } catch {}
+  return [];
+}
+
 export function DataProvider({ children }: { children: ReactNode }) {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [signals, setSignals] = useState<Signal[]>([]);
@@ -68,23 +86,52 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [signalsLoading, setSignalsLoading] = useState(true);
 
   useEffect(() => {
-    const unsubTrades = subscribeTrades((data) => {
-      setTrades(data);
-      setTradesLoading(false);
-    });
-    const unsubSignals = subscribeSignals((data) => {
-      setSignals(data);
-      setSignalsLoading(false);
-    });
+    let unsubTrades: (() => void) | undefined;
+    let unsubSignals: (() => void) | undefined;
+
+    const init = async () => {
+      let tradesSubscribed = false;
+      let signalsSubscribed = false;
+
+      unsubTrades = subscribeTrades((data) => {
+        setTrades(data);
+        setTradesLoading(false);
+        tradesSubscribed = true;
+      }, () => {
+        if (!tradesSubscribed) {
+          fetchFallbackTrades().then((fetched) => {
+            if (fetched.length > 0) setTrades(fetched);
+            setTradesLoading(false);
+          });
+        }
+      });
+
+      unsubSignals = subscribeSignals((data) => {
+        setSignals(data);
+        setSignalsLoading(false);
+        signalsSubscribed = true;
+      }, () => {
+        if (!signalsSubscribed) {
+          fetchFallbackSignals().then((fetched) => {
+            if (fetched.length > 0) setSignals(fetched);
+            setSignalsLoading(false);
+          });
+        }
+      });
+    };
+
+    init();
+
     const unsubEcon = subscribeEconCalendar((data) => {
       if (data.length > 0) setEconEvents(data);
     });
     const unsubJournal = subscribeJournalEntries((data) => {
       if (data.length > 0) setJournalEntries(data);
     });
+
     return () => {
-      unsubTrades();
-      unsubSignals();
+      unsubTrades?.();
+      unsubSignals?.();
       unsubEcon();
       unsubJournal();
     };

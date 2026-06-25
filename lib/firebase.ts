@@ -60,20 +60,20 @@ export const getSignals = async (limitCount: number = 50): Promise<Signal[]> => 
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Signal));
 };
 
-export const subscribeTrades = (callback: (trades: Trade[]) => void) => {
+export const subscribeTrades = (callback: (trades: Trade[]) => void, onError?: () => void) => {
   const q = query(collection(db, 'trades'), orderBy('timestamp', 'desc'), limit(100));
   return onSnapshot(q, (snapshot) => {
     const trades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Trade));
     callback(trades);
-  });
+  }, () => onError?.());
 };
 
-export const subscribeSignals = (callback: (signals: Signal[]) => void) => {
+export const subscribeSignals = (callback: (signals: Signal[]) => void, onError?: () => void) => {
   const q = query(collection(db, 'signals'), orderBy('timestamp', 'desc'), limit(50));
   return onSnapshot(q, (snapshot) => {
     const signals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Signal));
     callback(signals);
-  });
+  }, () => onError?.());
 };
 
 export const subscribeEconCalendar = (callback: (events: any[]) => void) => {

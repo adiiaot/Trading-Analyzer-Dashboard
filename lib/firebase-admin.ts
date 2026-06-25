@@ -14,8 +14,8 @@ function getServiceAccount(): ServiceAccount {
     const fs = require('fs');
     const path = require('path');
     const searchPaths = [
-      path.join(process.cwd(), '..', 'aot-analyzer-bot-firebase-adminsdk-fbsvc-96f7cb0ea5.json'),
-      path.join(process.cwd(), 'aot-analyzer-bot-firebase-adminsdk-fbsvc-96f7cb0ea5.json'),
+      path.join(process.cwd(), '..', 'aot-analyzer-bot-firebase-adminsdk-fbsvc-6ddb184d0e.json'),
+      path.join(process.cwd(), 'aot-analyzer-bot-firebase-adminsdk-fbsvc-6ddb184d0e.json'),
     ];
     for (const p of searchPaths) {
       if (fs.existsSync(p)) {

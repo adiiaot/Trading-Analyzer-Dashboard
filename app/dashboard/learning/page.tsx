@@ -1,10 +1,11 @@
 "use client";
 
+import { Suspense } from "react";
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card } from "../components/ui/Card";
-import { Send, Image, Bot, User, Sparkles, Upload, BarChart3, BookOpen, TrendingUp, Loader2 } from "lucide-react";
+import { Send, Bot, User, Sparkles, Upload, BarChart3, BookOpen, TrendingUp, Loader2 } from "lucide-react";
 
 const container = {
   hidden: { opacity: 0 },
@@ -38,7 +39,7 @@ const CHART_PROMPTS = [
   "Explain the market structure shown here",
 ];
 
-export default function LearningPage() {
+function LearningContent() {
   const searchParams = useSearchParams();
   const [messages, setMessages] = useState<Message[]>([{
     role: "assistant",
@@ -242,7 +243,7 @@ export default function LearningPage() {
           { icon: Sparkles, title: "AI-Powered", desc: "NVIDIA models analyze charts in real-time", color: "text-accent-gold" },
         ].map((s, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.06 }} className="glass-card rounded-card p-4 flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl ${s.color.replace("text", "bg")}/10 flex items-center justify-center`}>
+            <div className={`w-10 h-10 rounded-xl ${(s.color).replace("text", "bg")}/10 flex items-center justify-center`}>
               <s.icon className={`w-5 h-5 ${s.color}`} />
             </div>
             <div>
@@ -253,5 +254,17 @@ export default function LearningPage() {
         ))}
       </motion.div>
     </motion.div>
+  );
+}
+
+export default function LearningPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-6 h-6 text-accent-gold animate-spin" />
+      </div>
+    }>
+      <LearningContent />
+    </Suspense>
   );
 }

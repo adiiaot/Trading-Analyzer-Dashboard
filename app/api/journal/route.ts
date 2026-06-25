@@ -6,8 +6,8 @@ export async function POST(req: NextRequest) {
   try {
     const entry = await req.json();
 
-    const { admin } = await import("@/lib/firebase-admin");
-    const db = admin.firestore();
+    const { getAdminDb } = await import("@/lib/firebase-admin");
+    const db = getAdminDb();
 
     const ref = await db.collection("journal").add({
       ...entry,

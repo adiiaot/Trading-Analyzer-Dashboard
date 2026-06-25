@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card } from "../components/ui/Card";
 import { Send, Image, Bot, User, Sparkles, Upload, BarChart3, BookOpen, TrendingUp, Loader2 } from "lucide-react";
 
@@ -38,6 +39,7 @@ const CHART_PROMPTS = [
 ];
 
 export default function LearningPage() {
+  const searchParams = useSearchParams();
   const [messages, setMessages] = useState<Message[]>([{
     role: "assistant",
     content: "Hi! I'm your AI trading mentor. I can help you learn forex and gold trading, explain strategies, and analyze charts. What would you like to learn today?",
@@ -50,10 +52,47 @@ export default function LearningPage() {
   const [imageName, setImageName] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chartAnalysed = useRef(false);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    const chartParam = searchParams.get("chart");
+    if (chartParam && !chartAnalysed.current) {
+      chartAnalysed.current = true;
+      try {
+        const chartData = JSON.parse(decodeURIComponent(chartParam));
+        setMode("analyze");
+        const summary = `Analyze this XAU/USD ${chartData.timeframe} chart data:\n- Current price: ~$${chartData.currentPrice}\n- 24h high: $${chartData.high24h}\n- 24h low: $${chartData.low24h}\n- Volume: ${chartData.volume24h}\n- Last 12 candles included for analysis.\n\nProvide key support/resistance levels, trend analysis, and potential trade setups.`;
+        setInput(summary);
+        setTimeout(() => handleChartSend(summary), 300);
+      } catch {}
+    }
+  }, [searchParams]);
+
+  const handleChartSend = async (msg: string) => {
+    const userMessage: Message = { role: "user", content: msg, timestamp: new Date().toISOString() };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setLoading(true);
+
+    try {
+      const history = messages.slice(-8).map((m) => ({ role: m.role, content: m.content }));
+      const res = await fetch("/api/learn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: msg, conversationHistory: history }),
+      });
+      const data = await res.json();
+      setMessages((prev) => [...prev, { role: "assistant", content: data.answer || "Analysis complete.", timestamp: new Date().toISOString() }]);
+    } catch {
+      setMessages((prev) => [...prev, { role: "assistant", content: "Error analyzing chart. Please try again.", timestamp: new Date().toISOString() }]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() && !selectedImage) return;
@@ -73,7 +112,7 @@ export default function LearningPage() {
           }),
         });
         const data = await res.json();
-        const answer = data.analysis || data.message || data.answer || "Analysis complete. Check the details above.";
+        const answer = data.analysis || data.message || data.answer || "Analysis complete.";
         setMessages((prev) => [...prev, { role: "assistant", content: answer, timestamp: new Date().toISOString() }]);
         setSelectedImage(null);
         setImageName("");

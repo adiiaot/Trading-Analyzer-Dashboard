@@ -37,6 +37,9 @@ interface DashboardData {
   quickStats: { todayPnl: number; winRate: number; totalTrades: number; openPositions: number };
   econEvents: any[];
   journalEntries: any[];
+  addJournalEntry: (entry: any) => Promise<void>;
+  chartContext: any;
+  setChartContext: (data: any) => void;
   loading: boolean;
 }
 
@@ -54,6 +57,9 @@ const defaultData: DashboardData = {
   quickStats: { todayPnl: 0, winRate: 0, totalTrades: 0, openPositions: 0 },
   econEvents: [],
   journalEntries: [],
+  addJournalEntry: async () => {},
+  chartContext: null,
+  setChartContext: () => {},
   loading: true,
 };
 
@@ -80,6 +86,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [tradesLoading, setTradesLoading] = useState(true);
   const [signalsLoading, setSignalsLoading] = useState(true);
   const [usingFallback, setUsingFallback] = useState(false);
+  const [chartContext, setChartContext] = useState<any>(null);
   const [balance, setBalanceState] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("account_balance");
@@ -92,6 +99,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setBalanceState(val);
     if (typeof window !== "undefined") {
       localStorage.setItem("account_balance", val.toString());
+    }
+  }, []);
+
+  const addJournalEntry = useCallback(async (entry: any) => {
+    try {
+      const res = await fetch("/api/journal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(entry),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setJournalEntries((prev) => [{ ...entry, id: data.id }, ...prev]);
+      }
+    } catch {
+      setJournalEntries((prev) => [{ ...entry, id: Date.now().toString() }, ...prev]);
     }
   }, []);
 
@@ -187,6 +210,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       : { todayPnl: 0, winRate: 0, totalTrades: 0, openPositions: 0 },
     econEvents,
     journalEntries,
+    addJournalEntry,
+    chartContext,
+    setChartContext,
     loading: tradesLoading || signalsLoading,
   };
 

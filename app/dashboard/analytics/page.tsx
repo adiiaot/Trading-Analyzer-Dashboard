@@ -15,7 +15,7 @@ const item = {
 };
 
 export default function AnalyticsPage() {
-  const { stats, trades } = useDashboardData();
+  const { stats, trades, balance } = useDashboardData();
 
   const winRate = stats ? parseFloat((stats.win_rate * 100).toFixed(1)) : 0;
   const profitFactor = stats?.profit_factor ?? 0;
@@ -30,6 +30,8 @@ export default function AnalyticsPage() {
   const avgWin = wins.length > 0 ? wins.reduce((s, t) => s + (t.pnl ?? 0), 0) / wins.length : 0;
   const avgLoss = losses.length > 0 ? losses.reduce((s, t) => s + (t.pnl ?? 0), 0) / losses.length : 0;
 
+  const drawdownPct = balance > 0 ? ((Math.abs(maxDrawdown) / balance) * 100).toFixed(1) : "0.0";
+
   return (
     <motion.div initial="hidden" animate="visible" variants={container} className="space-y-5">
       <motion.div variants={item}>
@@ -39,11 +41,11 @@ export default function AnalyticsPage() {
 
       <motion.div variants={item} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          ["Balance", `$${5245.50.toFixed(2)}`, "text-status-win"],
+          ["Balance", `$${balance.toFixed(2)}`, "text-status-win"],
           ["Total P&L", `${totalPnl >= 0 ? "+" : ""}$${totalPnl.toFixed(2)}`, totalPnl >= 0 ? "text-status-win" : "text-status-loss"],
           ["Win Rate", `${winRate}%`, "text-accent-gold"],
           ["Profit Factor", `${profitFactor.toFixed(2)}x`, profitFactor >= 1 ? "text-status-win" : "text-status-loss"],
-          ["Max DD", `-$${Math.abs(maxDrawdown).toFixed(2)}`, "text-status-loss"],
+          ["Max DD", `-$${Math.abs(maxDrawdown).toFixed(2)} (${drawdownPct}%)`, "text-status-loss"],
           ["Avg Win/Loss", `${avgWin.toFixed(0)}/${Math.abs(avgLoss).toFixed(0)}`, "text-status-info"],
         ].map(([l, v, c], i) => (
           <motion.div
@@ -131,7 +133,7 @@ export default function AnalyticsPage() {
                     transition={{ delay: i * 0.04, duration: 0.2 }}
                     className="border-b border-surface-border/50 hover:glass-card/30"
                   >
-                    <td className="py-3 px-5 first:pl-5 font-mono text-text-primary text-xs">#{t.id.slice(-4)}</td>
+                    <td className="py-3 px-5 first:pl-5 font-mono text-text-primary text-xs">#{t.id?.slice(-4)}</td>
                     <td className="py-3 px-5"><span className={`text-xs font-semibold px-2 py-0.5 rounded-pill ${t.trend === "UP" ? "bg-status-win/10 text-status-win" : "bg-status-loss/10 text-status-loss"}`}>{t.trend}</span></td>
                     <td className="py-3 px-5 font-mono text-xs text-text-primary">{t.entryPrice?.toFixed(2)}</td>
                     <td className="py-3 px-5 font-mono text-xs text-text-primary">{t.exitPrice?.toFixed(2) ?? "-"}</td>

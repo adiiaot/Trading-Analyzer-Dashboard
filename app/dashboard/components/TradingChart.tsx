@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  Cell, ComposedChart,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
+import { useDashboardData } from "@/lib/data-context";
 
 const TIMEFRAMES = ["5m", "15m", "1H", "4H", "D"];
+const MAX_CANDLES = 30;
 
-function generateOHLC(count = 30, basePrice = 4073) {
+function seedCandles(basePrice: number) {
   let prevClose = basePrice;
-  return Array.from({ length: count }, (_, i) => {
+  return Array.from({ length: MAX_CANDLES }, (_, i) => {
     const open = prevClose + (Math.random() - 0.5) * 4;
     const close = open + (Math.random() - 0.5) * 6;
     const high = Math.max(open, close) + Math.random() * 3;
     const low = Math.min(open, close) - Math.random() * 3;
-    const isUp = close >= open;
     prevClose = close;
     return {
       time: `${i}h`,
@@ -26,7 +26,7 @@ function generateOHLC(count = 30, basePrice = 4073) {
       low: parseFloat(low.toFixed(2)),
       close: parseFloat(close.toFixed(2)),
       volume: Math.floor(Math.random() * 4000 + 500),
-      isUp,
+      isUp: close >= open,
     };
   });
 }
@@ -70,35 +70,65 @@ function Candlestick({ x, y, width, height, payload }: any) {
 
 export function TradingChart() {
   const router = useRouter();
+  const { price } = useDashboardData();
   const [tf, setTf] = useState("1H");
-  const [chartData, setChartData] = useState(() => generateOHLC());
+  const [candles, setCandles] = useState(() => seedCandles(price?.price ?? 4073));
+  const tickRef = useRef(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setChartData(generateOHLC());
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
+    if (!price?.price) return;
+    const tick = tickRef.current;
 
-  const chartMin = useMemo(() => Math.min(...chartData.map(d => d.low)) - 2, [chartData]);
-  const chartMax = useMemo(() => Math.max(...chartData.map(d => d.high)) + 2, [chartData]);
+    setCandles((prev) => {
+      const next = [...prev];
+      const last = { ...next[next.length - 1] };
 
-  const dataWithBounds = chartData.map(d => ({
-    ...d,
-    _chartMin: chartMin,
-    _chartMax: chartMax,
-  }));
+      if (tick > 0 && tick % 60 === 0) {
+        // Close current candle, start new one
+        const newOpen = last.close;
+        const newClose = price.price;
+        const newHigh = Math.max(newOpen, newClose) + Math.random() * 0.5;
+        const newLow = Math.min(newOpen, newClose) - Math.random() * 0.5;
+        next.push({
+          time: `${tick}`,
+          open: parseFloat(newOpen.toFixed(2)),
+          high: parseFloat(newHigh.toFixed(2)),
+          low: parseFloat(newLow.toFixed(2)),
+          close: parseFloat(newClose.toFixed(2)),
+          volume: Math.floor(Math.random() * 4000 + 500),
+          isUp: newClose >= newOpen,
+        });
+        if (next.length > MAX_CANDLES) next.shift();
+      } else {
+        // Update last candle close/high/low
+        const currentPrice = price.price;
+        if (currentPrice > last.high) last.high = currentPrice;
+        if (currentPrice < last.low) last.low = currentPrice;
+        last.close = currentPrice;
+        last.isUp = last.close >= last.open;
+        last.time = `${tick}`;
+        next[next.length - 1] = last;
+      }
 
-  const lastCandle = chartData[chartData.length - 1];
+      return next;
+    });
+
+    tickRef.current += 1;
+  }, [price?.price]);
+
+  const chartMin = useMemo(() => Math.min(...candles.map(d => d.low)) - 1, [candles]);
+  const chartMax = useMemo(() => Math.max(...candles.map(d => d.high)) + 1, [candles]);
+
+  const dataWithBounds = candles.map(d => ({ ...d, _chartMin: chartMin, _chartMax: chartMax }));
 
   const handleAnalyze = () => {
     const summary = {
       timeframe: tf,
-      candles: chartData.slice(-12),
-      currentPrice: lastCandle?.close,
-      high24h: Math.max(...chartData.map(d => d.high)),
-      low24h: Math.min(...chartData.map(d => d.low)),
-      volume24h: chartData.reduce((s, d) => s + d.volume, 0),
+      candles: candles.slice(-12),
+      currentPrice: candles[candles.length - 1]?.close,
+      high24h: Math.max(...candles.map(d => d.high)),
+      low24h: Math.min(...candles.map(d => d.low)),
+      volume24h: candles.reduce((s, d) => s + d.volume, 0),
     };
     const encoded = encodeURIComponent(JSON.stringify(summary));
     router.push(`/dashboard/learning?chart=${encoded}`);
@@ -200,10 +230,10 @@ export function TradingChart() {
 
       <div className="mt-2 h-[60px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData}>
+          <BarChart data={candles}>
             <CartesianGrid stroke="var(--text-muted)" strokeOpacity={0.08} strokeDasharray="4 4" />
             <Bar dataKey="volume" stroke="none" radius={[2, 2, 0, 0]}>
-              {chartData.map((entry, idx) => (
+              {candles.map((entry, idx) => (
                 <Cell key={idx} fill={entry.isUp ? "rgba(0, 230, 118, 0.25)" : "rgba(255, 82, 82, 0.25)"} />
               ))}
             </Bar>

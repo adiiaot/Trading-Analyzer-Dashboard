@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from "react";
 import {
   subscribeTrades, subscribeSignals, subscribeEconCalendar,
   subscribeJournalEntries, calculateStats,
@@ -12,7 +12,7 @@ interface DashboardData {
   trades: Trade[];
   signals: Signal[];
   stats: TradingStats | null;
-  price: typeof PRICE;
+  price: typeof PRICE & { high24h: number; low24h: number; volume: number; bid: number; ask: number; spread: number };
   positions: {
     direction: "BUY" | "SELL";
     entry: number;
@@ -43,11 +43,13 @@ interface DashboardData {
   loading: boolean;
 }
 
+const defaultPrice = { ...PRICE, high24h: PRICE.price + 5, low24h: PRICE.price - 5, volume: 100000, bid: PRICE.price - 0.05, ask: PRICE.price + 0.05, spread: 0.5 };
+
 const defaultData: DashboardData = {
   trades: [],
   signals: [],
   stats: null,
-  price: PRICE,
+  price: defaultPrice,
   positions: [],
   sentiment: SENTIMENT,
   account: ACCOUNT,
@@ -87,6 +89,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [signalsLoading, setSignalsLoading] = useState(true);
   const [usingFallback, setUsingFallback] = useState(false);
   const [chartContext, setChartContext] = useState<any>(null);
+  const [livePrice, setLivePrice] = useState(defaultPrice);
+  const prevPriceRef = useRef(defaultPrice.price);
   const [balance, setBalanceState] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("account_balance");
@@ -116,6 +120,31 @@ export function DataProvider({ children }: { children: ReactNode }) {
     } catch {
       setJournalEntries((prev) => [{ ...entry, id: Date.now().toString() }, ...prev]);
     }
+  }, []);
+
+  // Live price streaming — polls every 3 seconds
+  useEffect(() => {
+    const fetchPrice = async () => {
+      const data = await fetchFromApi("/api/price");
+      if (data && data.price) {
+        prevPriceRef.current = livePrice.price;
+        setLivePrice({
+          symbol: "XAU/USD",
+          price: data.price,
+          change24h: data.change24h ?? data.price - prevPriceRef.current,
+          changePercent24h: data.changePercent24h ?? 0,
+          high24h: data.high24h ?? data.price + 3,
+          low24h: data.low24h ?? data.price - 3,
+          volume: data.volume ?? 100000,
+          bid: data.bid ?? data.price - 0.05,
+          ask: data.ask ?? data.price + 0.05,
+          spread: data.spread ?? 0.5,
+        });
+      }
+    };
+    fetchPrice();
+    const interval = setInterval(fetchPrice, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -193,7 +222,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     trades,
     signals,
     stats,
-    price: PRICE,
+    price: livePrice,
     positions: trades.length > 0 ? mapTradesToPositions(trades) : [],
     sentiment: SENTIMENT,
     account: { ...ACCOUNT, balance },

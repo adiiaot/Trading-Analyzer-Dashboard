@@ -1,15 +1,76 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { useDashboardData } from "@/lib/data-context";
+
+interface PriceData {
+  symbol: string;
+  price: number;
+  change24h: number;
+  changePercent24h: number;
+  high24h: number;
+  low24h: number;
+  volume: number;
+  bid: number;
+  ask: number;
+  spread: number;
+}
+
+async function fetchPrice(): Promise<PriceData | null> {
+  try {
+    const res = await fetch("/api/price");
+    const data = await res.json();
+    if (data?.success && data.price) {
+      return {
+        symbol: data.symbol ?? "XAU/USD",
+        price: data.price,
+        change24h: data.change24h ?? 0,
+        changePercent24h: data.changePercent24h ?? 0,
+        high24h: data.high24h ?? data.price + 3,
+        low24h: data.low24h ?? data.price - 3,
+        volume: data.volume ?? 100000,
+        bid: data.bid ?? data.price - 0.05,
+        ask: data.ask ?? data.price + 0.05,
+        spread: data.spread ?? 0.5,
+      };
+    }
+  } catch {}
+  return null;
+}
 
 export function PricePanel() {
-  const { price } = useDashboardData();
-  const currentPrice = price?.price ?? 4073;
-  const change = price?.change24h ?? 0;
-  const changePct = price?.changePercent24h ?? 0;
-  const up = change >= 0;
+  const [priceData, setPriceData] = useState<PriceData>({
+    symbol: "XAU/USD",
+    price: 4073.42,
+    change24h: 18.65,
+    changePercent24h: 0.46,
+    high24h: 4085.10,
+    low24h: 4061.80,
+    volume: 189200,
+    bid: 4073.37,
+    ask: 4073.47,
+    spread: 0.5,
+  });
+  const prevPriceRef = useRef(priceData.price);
+  const [pulse, setPulse] = useState(false);
+
+  useEffect(() => {
+    const tick = async () => {
+      const data = await fetchPrice();
+      if (data) {
+        prevPriceRef.current = priceData.price;
+        setPriceData(data);
+        setPulse(true);
+        setTimeout(() => setPulse(false), 200);
+      }
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const up = priceData.change24h >= 0;
 
   return (
     <motion.div
@@ -24,22 +85,30 @@ export function PricePanel() {
               <h2 className="text-lg font-bold text-text-primary">XAU/USD</h2>
               <span className="badge-gold text-[10px]">Gold</span>
               <span className="text-[10px] text-text-muted font-mono">
-                B: ${price?.bid?.toFixed(2) ?? "—"} A: ${price?.ask?.toFixed(2) ?? "—"}
+                B: ${priceData.bid.toFixed(2)} A: ${priceData.ask.toFixed(2)}
               </span>
             </div>
             <div className="flex items-baseline gap-3">
-              <motion.p
-                key={currentPrice.toFixed(2)}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`text-4xl font-bold font-mono ${up ? "text-status-win" : "text-status-loss"}`}
-              >
-                ${currentPrice.toFixed(2)}
-              </motion.p>
+              <div className="relative">
+                <motion.p
+                  key={priceData.price.toFixed(2)}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`text-4xl font-bold font-mono ${up ? "text-status-win" : "text-status-loss"}`}
+                >
+                  ${priceData.price.toFixed(2)}
+                </motion.p>
+                {pulse && (
+                  <span
+                    className="absolute -right-3 top-0 w-2 h-2 rounded-full animate-ping"
+                    style={{ background: "var(--accent-gold)" }}
+                  />
+                )}
+              </div>
               <div className={`flex items-center gap-1.5 ${up ? "text-status-win" : "text-status-loss"}`}>
                 {up ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                 <span className="text-sm font-mono font-semibold">
-                  {up ? "+" : ""}{change.toFixed(2)} ({up ? "+" : ""}{changePct.toFixed(2)}%)
+                  {up ? "+" : ""}{priceData.change24h.toFixed(2)} ({up ? "+" : ""}{priceData.changePercent24h.toFixed(2)}%)
                 </span>
               </div>
             </div>
@@ -49,19 +118,19 @@ export function PricePanel() {
         <div className="flex gap-5 text-sm">
           <div>
             <p className="text-xs text-text-muted">24H High</p>
-            <p className="font-mono text-text-primary font-medium">${(price?.high24h ?? currentPrice + 5).toFixed(2)}</p>
+            <p className="font-mono text-text-primary font-medium">${priceData.high24h.toFixed(2)}</p>
           </div>
           <div>
             <p className="text-xs text-text-muted">24H Low</p>
-            <p className="font-mono text-text-primary font-medium">${(price?.low24h ?? currentPrice - 5).toFixed(2)}</p>
+            <p className="font-mono text-text-primary font-medium">${priceData.low24h.toFixed(2)}</p>
           </div>
           <div>
             <p className="text-xs text-text-muted">Volume</p>
-            <p className="font-mono text-text-primary font-medium">{((price?.volume ?? 0) / 1000).toFixed(0)}K</p>
+            <p className="font-mono text-text-primary font-medium">{(priceData.volume / 1000).toFixed(0)}K</p>
           </div>
           <div>
             <p className="text-xs text-text-muted">Spread</p>
-            <p className="font-mono text-text-primary font-medium">${(price?.spread ?? 0.5).toFixed(1)}</p>
+            <p className="font-mono text-text-primary font-medium">${priceData.spread.toFixed(1)}</p>
           </div>
         </div>
       </div>
@@ -81,6 +150,17 @@ export function PricePanel() {
             fill="url(#sparkGrad)"
           />
         </svg>
+      </div>
+
+      <div className="mt-2 flex items-center gap-2 text-[10px] text-text-muted">
+        <span
+          className="inline-block w-1.5 h-1.5 rounded-full"
+          style={{
+            background: pulse ? "var(--status-win)" : "var(--text-muted)",
+            transition: "background 0.15s",
+          }}
+        />
+        {pulse ? "Updating..." : "Live"}
       </div>
     </motion.div>
   );

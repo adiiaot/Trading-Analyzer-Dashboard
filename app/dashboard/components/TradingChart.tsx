@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
-import { useDashboardData } from "@/lib/data-context";
 
 const TIMEFRAMES = ["5m", "15m", "1H", "4H", "D"];
 const MAX_CANDLES = 30;
@@ -70,21 +69,19 @@ function Candlestick({ x, y, width, height, payload }: any) {
 
 export function TradingChart() {
   const router = useRouter();
-  const { price } = useDashboardData();
   const [tf, setTf] = useState("1H");
-  const [candles, setCandles] = useState(() => seedCandles(4073));
+  const [candles, setCandles] = useState(() => seedCandles(4073.42));
   const tickRef = useRef(0);
-  const priceRef = useRef(4073);
 
-  // Sync ref with latest price from context
   useEffect(() => {
-    if (price?.price) priceRef.current = price.price;
-  }, [price?.price]);
+    const interval = setInterval(async () => {
+      let currentPrice = 4073.42;
+      try {
+        const res = await fetch("/api/price");
+        const data = await res.json();
+        if (data?.success && data.price) currentPrice = data.price;
+      } catch {}
 
-  // 1s interval drives candle updates unconditionally
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentPrice = priceRef.current;
       const tick = tickRef.current;
 
       setCandles((prev) => {

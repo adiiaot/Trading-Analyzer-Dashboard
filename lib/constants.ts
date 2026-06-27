@@ -12,14 +12,14 @@ export const ACCOUNT = {
 
 export const PRICE = {
   symbol: "XAU/USD",
-  price: 2041.35,
-  change24h: 12.45,
-  changePercent24h: 0.61,
-  high24h: 2052.80,
-  low24h: 2031.20,
-  volume: 124500,
-  bid: 2041.30,
-  ask: 2041.40,
+  price: 4073.42,
+  change24h: 18.65,
+  changePercent24h: 0.46,
+  high24h: 4085.10,
+  low24h: 4061.80,
+  volume: 189200,
+  bid: 4073.37,
+  ask: 4073.47,
   spread: 0.5,
 };
 

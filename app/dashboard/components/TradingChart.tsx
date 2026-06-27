@@ -72,49 +72,57 @@ export function TradingChart() {
   const router = useRouter();
   const { price } = useDashboardData();
   const [tf, setTf] = useState("1H");
-  const [candles, setCandles] = useState(() => seedCandles(price?.price ?? 4073));
+  const [candles, setCandles] = useState(() => seedCandles(4073));
   const tickRef = useRef(0);
+  const priceRef = useRef(4073);
 
+  // Sync ref with latest price from context
   useEffect(() => {
-    if (!price?.price) return;
-    const tick = tickRef.current;
-
-    setCandles((prev) => {
-      const next = [...prev];
-      const last = { ...next[next.length - 1] };
-
-      if (tick > 0 && tick % 60 === 0) {
-        // Close current candle, start new one
-        const newOpen = last.close;
-        const newClose = price.price;
-        const newHigh = Math.max(newOpen, newClose) + Math.random() * 0.5;
-        const newLow = Math.min(newOpen, newClose) - Math.random() * 0.5;
-        next.push({
-          time: `${tick}`,
-          open: parseFloat(newOpen.toFixed(2)),
-          high: parseFloat(newHigh.toFixed(2)),
-          low: parseFloat(newLow.toFixed(2)),
-          close: parseFloat(newClose.toFixed(2)),
-          volume: Math.floor(Math.random() * 4000 + 500),
-          isUp: newClose >= newOpen,
-        });
-        if (next.length > MAX_CANDLES) next.shift();
-      } else {
-        // Update last candle close/high/low
-        const currentPrice = price.price;
-        if (currentPrice > last.high) last.high = currentPrice;
-        if (currentPrice < last.low) last.low = currentPrice;
-        last.close = currentPrice;
-        last.isUp = last.close >= last.open;
-        last.time = `${tick}`;
-        next[next.length - 1] = last;
-      }
-
-      return next;
-    });
-
-    tickRef.current += 1;
+    if (price?.price) priceRef.current = price.price;
   }, [price?.price]);
+
+  // 1s interval drives candle updates unconditionally
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentPrice = priceRef.current;
+      const tick = tickRef.current;
+
+      setCandles((prev) => {
+        const next = [...prev];
+        const last = { ...next[next.length - 1] };
+
+        if (tick > 0 && tick % 60 === 0) {
+          const newOpen = last.close;
+          const newClose = currentPrice;
+          const newHigh = Math.max(newOpen, newClose) + Math.random() * 0.5;
+          const newLow = Math.min(newOpen, newClose) - Math.random() * 0.5;
+          next.push({
+            time: `${tick}`,
+            open: parseFloat(newOpen.toFixed(2)),
+            high: parseFloat(newHigh.toFixed(2)),
+            low: parseFloat(newLow.toFixed(2)),
+            close: parseFloat(newClose.toFixed(2)),
+            volume: Math.floor(Math.random() * 4000 + 500),
+            isUp: newClose >= newOpen,
+          });
+          if (next.length > MAX_CANDLES) next.shift();
+        } else {
+          if (currentPrice > last.high) last.high = currentPrice;
+          if (currentPrice < last.low) last.low = currentPrice;
+          last.close = currentPrice;
+          last.isUp = last.close >= last.open;
+          last.time = `${tick}`;
+          next[next.length - 1] = last;
+        }
+
+        return next;
+      });
+
+      tickRef.current += 1;
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const chartMin = useMemo(() => Math.min(...candles.map(d => d.low)) - 1, [candles]);
   const chartMax = useMemo(() => Math.max(...candles.map(d => d.high)) + 1, [candles]);

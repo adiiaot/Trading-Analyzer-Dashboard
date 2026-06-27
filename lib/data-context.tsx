@@ -43,7 +43,7 @@ interface DashboardData {
   loading: boolean;
 }
 
-const defaultPrice = { ...PRICE, high24h: PRICE.price + 5, low24h: PRICE.price - 5, volume: 100000, bid: PRICE.price - 0.05, ask: PRICE.price + 0.05, spread: 0.5 };
+const defaultPrice = { ...PRICE, high24h: PRICE.price + 12, low24h: PRICE.price - 12, volume: 189200, bid: PRICE.price - 0.05, ask: PRICE.price + 0.05, spread: 0.5 };
 
 const defaultData: DashboardData = {
   trades: [],

@@ -26,7 +26,7 @@ export default function DashboardPage() {
       <motion.div variants={section} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h1 className="text-lg md:text-xl font-bold text-text-primary">Command Center</h1>
-          <p className="text-sm text-text-muted">XAU/USD — Mr PFX Scalping Strategy</p>
+          <p className="text-sm text-text-muted">XAU/USD — 4-Timeframe Scalping Strategy</p>
         </div>
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}

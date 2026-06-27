@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, BarChart3, BookOpen, Radio, GraduationCap,
   Shield, Calendar, Settings, ChevronLeft, ChevronRight, X,
+  FileText, Lock,
 } from "lucide-react";
 
 const NAV = [
@@ -18,6 +19,8 @@ const NAV = [
   { label: "Risk Calculator", href: "/dashboard/risk-calculator", icon: Shield },
   { label: "Calendar", href: "/dashboard/economic-calendar", icon: Calendar },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
+  { label: "Privacy", href: "/dashboard/privacy", icon: Lock },
+  { label: "Terms", href: "/dashboard/terms", icon: FileText },
 ];
 
 const sidebarVariants = {

@@ -27,7 +27,7 @@ const SUGGESTED_PROMPTS = [
   "Explain how XAU/USD correlates with the US Dollar Index",
   "What are the best indicators for scalping gold?",
   "How do I calculate proper position size?",
-  "Explain the Mr PFX 4-timeframe strategy",
+  "Explain the 4-timeframe scalping strategy",
   "What's the best time of day to trade gold?",
   "How do I read candlestick patterns?",
 ];
@@ -239,7 +239,7 @@ function LearningContent() {
       <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
           { icon: BookOpen, title: "Forex Education", desc: "Learn from beginner to advanced concepts", color: "text-status-info" },
-          { icon: TrendingUp, title: "Strategy Guides", desc: "Mr PFX, scalping, swing trading", color: "text-status-win" },
+          { icon: TrendingUp, title: "Strategy Guides", desc: "Scalping, swing trading, momentum", color: "text-status-win" },
           { icon: Sparkles, title: "AI-Powered", desc: "NVIDIA models analyze charts in real-time", color: "text-accent-gold" },
         ].map((s, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.06 }} className="glass-card rounded-card p-4 flex items-center gap-3">

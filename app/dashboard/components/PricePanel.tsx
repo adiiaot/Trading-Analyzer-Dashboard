@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
@@ -42,24 +42,22 @@ async function fetchPrice(): Promise<PriceData | null> {
 export function PricePanel() {
   const [priceData, setPriceData] = useState<PriceData>({
     symbol: "XAU/USD",
-    price: 4073.42,
-    change24h: 18.65,
-    changePercent24h: 0.46,
-    high24h: 4085.10,
-    low24h: 4061.80,
-    volume: 189200,
-    bid: 4073.37,
-    ask: 4073.47,
+    price: 4088.385,
+    change24h: 22.10,
+    changePercent24h: 0.54,
+    high24h: 4092.40,
+    low24h: 4075.80,
+    volume: 195400,
+    bid: 4088.335,
+    ask: 4088.435,
     spread: 0.5,
   });
-  const prevPriceRef = useRef(priceData.price);
   const [pulse, setPulse] = useState(false);
 
   useEffect(() => {
     const tick = async () => {
       const data = await fetchPrice();
       if (data) {
-        prevPriceRef.current = priceData.price;
         setPriceData(data);
         setPulse(true);
         setTimeout(() => setPulse(false), 200);

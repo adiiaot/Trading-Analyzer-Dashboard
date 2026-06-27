@@ -70,12 +70,12 @@ function Candlestick({ x, y, width, height, payload }: any) {
 export function TradingChart() {
   const router = useRouter();
   const [tf, setTf] = useState("1H");
-  const [candles, setCandles] = useState(() => seedCandles(4073.42));
+  const [candles, setCandles] = useState(() => seedCandles(4088.385));
   const tickRef = useRef(0);
 
   useEffect(() => {
     const interval = setInterval(async () => {
-      let currentPrice = 4073.42;
+      let currentPrice = 4088.385;
       try {
         const res = await fetch("/api/price");
         const data = await res.json();

@@ -361,9 +361,15 @@ export default function BacktestPage() {
       )}
 
       {!report && !loading && !error && (
-        <motion.div variants={item} className="card p-8 text-center">
-          <Activity className="w-10 h-10 text-text-muted mx-auto mb-3 opacity-40" />
-          <p className="text-sm text-text-muted">Configure parameters above and click <span className="text-accent-gold font-semibold">Run Backtest</span> to simulate the swing strategy against historical XAU/USD data.</p>
+        <motion.div variants={item} className="card p-6 text-center space-y-3">
+          <Activity className="w-8 h-8 text-text-muted mx-auto opacity-40" />
+          <p className="text-sm text-text-muted max-w-lg mx-auto">
+            This runs the <span className="text-accent-gold font-semibold">same signal engine</span> against historical XAU/USD data to estimate how it would have performed.
+          </p>
+          <p className="text-xs text-text-muted max-w-md mx-auto leading-relaxed">
+            No setup needed — it fetches live Hyperliquid candle data and replays the ADX + pullback logic
+            bar by bar. Click <span className="text-accent-gold font-medium">Run</span> to simulate <span className="text-accent-gold font-medium">6 months</span> of data (adjustable).
+          </p>
         </motion.div>
       )}
     </motion.div>

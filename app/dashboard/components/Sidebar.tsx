@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, BarChart3, Radio, GraduationCap,
@@ -42,7 +41,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
           />
         )}
       </AnimatePresence>
@@ -60,14 +59,9 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
       >
         <div className={`flex items-center border-b h-14 shrink-0 ${collapsed ? "justify-center px-0" : "px-5 gap-3"}`}
           style={{ borderColor: "var(--glass-border)" }}>
-          <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
-            <Image
-              src="/images/tcc-logo.jpg"
-              alt="TCC Logo"
-              width={32}
-              height={32}
-              className="w-full h-full object-cover"
-            />
+          <div className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center"
+            style={{ background: "rgba(240, 180, 41, 0.12)" }}>
+            <span className="text-accent-gold font-bold text-sm">TCC</span>
           </div>
           {!collapsed && (
             <div className="overflow-hidden">

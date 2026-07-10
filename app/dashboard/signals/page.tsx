@@ -80,12 +80,12 @@ export default function SignalsPage() {
       <motion.div variants={item}>
         <Card header="Signal History">
           <div className="flex flex-wrap gap-2 mb-4">
-            <select className="input max-w-[160px]">
+            <select className="input w-full sm:w-auto sm:max-w-[160px]">
               <option>All Signals</option>
               <option>Active Only</option>
               <option>Expired</option>
             </select>
-            <select className="input max-w-[160px]">
+            <select className="input w-full sm:w-auto sm:max-w-[160px]">
               <option>Last 7 Days</option>
               <option>Last 30 Days</option>
               <option>All Time</option>
@@ -93,16 +93,37 @@ export default function SignalsPage() {
           </div>
 
           {signals.length > 0 ? (
-            <Table
-              headers={["Signal", "Date/Time", "Trend", "Confidence", "Status"]}
-              rows={signals.slice(0, 10).map((s) => [
-                <span key="id" className="font-bold text-accent-gold">#{s.id.slice(-4)}</span>,
-                <span key="dt" className="text-xs text-text-secondary">{new Date(s.timestamp).toLocaleString()}</span>,
-                <span key="tr" className={`text-xs font-semibold ${s.trend === "UP" ? "text-status-win" : "text-status-loss"}`}>{s.trend}</span>,
-                <span key="cf" className="font-mono text-text-secondary">{(s.confidence * 100).toFixed(0)}%</span>,
-                <Badge key="st" variant={s.status === "active" ? "gold" : s.status === "expired" ? "loss" : "win"}>{s.status}</Badge>,
-              ])}
-            />
+            <div className="overflow-x-auto -mx-5 sm:-mx-0">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-surface-border">
+                    {["Signal", "Date/Time", "Trend", "Confidence", "Status"].map((h) => (
+                      <th key={h} className="text-left text-[10px] sm:text-xs text-text-muted font-medium pb-3 px-3 sm:px-5 first:pl-3 sm:first:pl-5 last:pr-3 sm:last:pr-5">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {signals.slice(0, 10).map((s, i) => (
+                    <motion.tr
+                      key={s.id}
+                      initial={{ opacity: 0, x: -4 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.04, duration: 0.2 }}
+                      className="border-b border-surface-border/50 hover:glass-card/30"
+                      style={{ borderColor: "var(--glass-border)" }}
+                    >
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-5 first:pl-3 sm:first:pl-5 font-bold text-[11px] sm:text-xs text-accent-gold">#{s.id.slice(-4)}</td>
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-5 text-[10px] sm:text-xs text-text-secondary">{new Date(s.timestamp).toLocaleString()}</td>
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-5"><span className={`text-[10px] sm:text-xs font-semibold ${s.trend === "UP" ? "text-status-win" : "text-status-loss"}`}>{s.trend}</span></td>
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-5 font-mono text-[11px] sm:text-xs text-text-secondary">{(s.confidence * 100).toFixed(0)}%</td>
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-5 last:pr-3 sm:last:pr-5">
+                        <Badge variant={s.status === "active" ? "gold" : s.status === "expired" ? "loss" : "win"}>{s.status}</Badge>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <div className="text-center py-12 text-sm text-text-muted">No signals generated yet. The bot will generate signals when market conditions align.</div>
           )}
@@ -110,11 +131,11 @@ export default function SignalsPage() {
           <div className="mt-5 pt-5 border-t border-surface-border grid grid-cols-2 gap-4">
             <div>
               <p className="text-text-muted text-xs mb-1">Total Signals</p>
-              <p className="text-xl font-bold text-text-primary">{signals.length}</p>
+              <p className="text-lg sm:text-xl font-bold text-text-primary">{signals.length}</p>
             </div>
             <div>
               <p className="text-text-muted text-xs mb-1">Active Now</p>
-              <p className="text-xl font-bold text-status-win">{active.length}</p>
+              <p className="text-lg sm:text-xl font-bold text-status-win">{active.length}</p>
             </div>
           </div>
         </Card>

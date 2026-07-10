@@ -141,82 +141,75 @@ export function TradingChart() {
       className="card overflow-hidden"
     >
       {/* Header: Price + controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 px-5 pt-4 pb-3">
-        {/* Left: Symbol + Price */}
-        <div className="flex items-center gap-4">
-          <div>
-            <div className="flex items-center gap-2.5 mb-0.5">
-              <h3 className="text-base font-bold text-text-primary">XAU/USD</h3>
-              <span className="badge-gold text-[10px]">Gold</span>
-              {showPrice && (
-                <span className={`flex items-center gap-1 text-[10px] font-mono ${up ? "text-status-win" : "text-status-loss"}`}>
-                  {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                  {up ? "+" : ""}{price.change24h.toFixed(2)} ({up ? "+" : ""}{price.changePercent24h.toFixed(2)}%)
-                </span>
-              )}
-            </div>
-            <div className="flex items-baseline gap-3">
-              {showPrice ? (
-                <>
-                  <motion.span
-                    key={price.price.toFixed(2)}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`text-3xl font-bold font-mono ${up ? "text-status-win" : "text-status-loss"}`}
-                  >
-                    ${price.price.toFixed(2)}
-                  </motion.span>
-                  {pulse && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent-gold animate-ping" />
-                  )}
-                  <span className="text-[11px] text-text-muted font-mono">
-                    B: ${price.bid.toFixed(2)} A: ${price.ask.toFixed(2)}
-                  </span>
-                </>
-              ) : (
-                <div className="h-8 w-36 rounded bg-glass animate-pulse" />
-              )}
-            </div>
+      <div className="flex flex-col gap-2 px-4 sm:px-5 pt-4 pb-3">
+        {/* Top row: Symbol + price + high/low */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <div className="flex items-center gap-2.5">
+            <h3 className="text-sm sm:text-base font-bold text-text-primary">XAU/USD</h3>
+            <span className="badge-gold text-[10px]">Gold</span>
           </div>
-        </div>
-
-        {/* Right: Market stats + controls */}
-        <div className="flex items-center gap-4">
           {showPrice && (
-            <div className="hidden lg:flex items-center gap-4 text-xs">
-              <div className="text-center">
-                <p className="text-text-muted">High</p>
-                <p className="font-mono text-text-primary font-medium">${price.high24h.toFixed(2)}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-text-muted">Low</p>
-                <p className="font-mono text-text-primary font-medium">${price.low24h.toFixed(2)}</p>
-              </div>
-              <div className="w-px h-8" style={{ background: "var(--glass-border)" }} />
+            <span className={`flex items-center gap-1 text-[10px] font-mono ${up ? "text-status-win" : "text-status-loss"}`}>
+              {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+              {up ? "+" : ""}{price.change24h.toFixed(2)} ({up ? "+" : ""}{price.changePercent24h.toFixed(2)}%)
+            </span>
+          )}
+          {showPrice && (
+            <div className="flex items-center gap-2 text-[10px] font-mono text-text-muted ml-auto sm:ml-0">
+              <span>H: ${price.high24h.toFixed(2)}</span>
+              <span>L: ${price.low24h.toFixed(2)}</span>
             </div>
           )}
-          <button
-            onClick={handleAnalyze}
-            className="px-3 py-1.5 rounded-md text-xs font-medium text-accent-gold transition-all whitespace-nowrap"
-            style={{ background: "var(--glass-bg)", border: "1px solid rgba(240, 180, 41, 0.3)" }}
-          >
-            Analyze with AI
-          </button>
-          <div className="flex gap-1 rounded-lg p-0.5" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
-            {TIMEFRAMES.map((t) => (
-              <button
-                key={t}
-                onClick={() => changeTimeframe(t)}
-                className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  tf === t
-                    ? "text-accent-gold shadow-sm"
-                    : "text-text-muted hover:text-text-primary"
-                }`}
-                style={tf === t ? { background: "var(--glass-bg)", border: "1px solid var(--glass-border)" } : {}}
+        </div>
+
+        {/* Price row */}
+        <div className="flex flex-wrap items-center gap-3">
+          {showPrice ? (
+            <>
+              <motion.span
+                key={price.price.toFixed(2)}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`text-2xl sm:text-3xl font-bold font-mono ${up ? "text-status-win" : "text-status-loss"}`}
               >
-                {t}
-              </button>
-            ))}
+                ${price.price.toFixed(2)}
+              </motion.span>
+              {pulse && (
+                <span className="w-1.5 h-1.5 rounded-full bg-accent-gold animate-ping" />
+              )}
+              <span className="text-[10px] sm:text-[11px] text-text-muted font-mono">
+                B: ${price.bid.toFixed(2)} A: ${price.ask.toFixed(2)}
+              </span>
+            </>
+          ) : (
+            <div className="h-7 sm:h-8 w-32 sm:w-36 rounded bg-glass animate-pulse" />
+          )}
+
+          {/* Actions: pull right on desktop */}
+          <div className="flex items-center gap-2 ml-auto shrink-0">
+            <button
+              onClick={handleAnalyze}
+              className="px-2.5 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-medium text-accent-gold transition-all whitespace-nowrap"
+              style={{ background: "var(--glass-bg)", border: "1px solid rgba(240, 180, 41, 0.3)" }}
+            >
+              Analyze
+            </button>
+            <div className="flex gap-1 rounded-lg p-0.5" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
+              {TIMEFRAMES.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => changeTimeframe(t)}
+                  className={`px-1.5 sm:px-2.5 py-1 rounded-md text-[10px] sm:text-xs font-medium transition-all ${
+                    tf === t
+                      ? "text-accent-gold shadow-sm"
+                      : "text-text-muted hover:text-text-primary"
+                  }`}
+                  style={tf === t ? { background: "var(--glass-bg)", border: "1px solid var(--glass-border)" } : {}}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -226,19 +219,19 @@ export function TradingChart() {
         <div
           ref={containerRef}
           id="tv-chart-container"
-          className="h-[480px] md:h-[520px] w-full"
+          className="h-[320px] sm:h-[420px] md:h-[480px] lg:h-[520px] w-full"
           style={{ background: "#080c24" }}
         />
       </div>
 
       {/* Bottom bar */}
-      <div className="flex items-center justify-between px-5 py-2.5 text-[11px]" style={{ borderTop: "1px solid var(--glass-border)" }}>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 justify-between px-4 sm:px-5 py-2.5 text-[10px] sm:text-[11px]" style={{ borderTop: "1px solid var(--glass-border)" }}>
         <div className="flex items-center gap-3">
           <span className={`flex items-center gap-1.5 ${ready ? "text-status-win" : "text-status-warn"}`}>
             <span className={`inline-block w-1.5 h-1.5 rounded-full ${ready ? "bg-status-win" : "bg-status-warn"}`} />
             {ready ? "Live" : "Connecting..."}
           </span>
-          <span className="text-text-muted">OANDA:XAUUSD</span>
+          <span className="text-text-muted hidden sm:inline">OANDA:XAUUSD</span>
         </div>
         <div className="flex items-center gap-3 text-text-muted">
           <span>RSI</span>

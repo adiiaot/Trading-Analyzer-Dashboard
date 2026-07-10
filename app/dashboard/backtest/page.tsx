@@ -106,16 +106,16 @@ export default function BacktestPage() {
         <p className="text-sm text-text-muted">Walk-forward swing strategy simulation</p>
       </motion.div>
 
-      <motion.div variants={item} className="card p-5">
-        <div className="flex flex-wrap items-end gap-4">
-          <div>
-            <label className="block text-xs text-text-muted mb-1.5 font-medium">Lookback (months)</label>
-            <div className="flex gap-1 rounded-lg p-0.5" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
+      <motion.div variants={item} className="card p-4 sm:p-5">
+        <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+          <div className="w-full sm:w-auto">
+            <label className="block text-[10px] sm:text-xs text-text-muted mb-1.5 font-medium">Lookback</label>
+            <div className="flex gap-1 rounded-lg p-0.5 w-fit" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
               {[3, 6, 12, 18, 24].map((m) => (
                 <button
                   key={m}
                   onClick={() => setMonths(m)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all ${
                     months === m
                       ? "text-accent-gold shadow-sm"
                       : "text-text-muted hover:text-text-primary"
@@ -128,56 +128,58 @@ export default function BacktestPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pb-0.5">
+          <div className="flex flex-wrap items-center gap-2 pb-0.5">
             <button
               onClick={() => setSessionFilter(!sessionFilter)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all border ${
+              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all border ${
                 sessionFilter
                   ? "bg-accent-gold/10 text-accent-gold border-accent-gold/30"
                   : "text-text-muted border-transparent"
               }`}
               style={!sessionFilter ? { background: "var(--glass-bg)", border: "1px solid var(--glass-border)" } : {}}
             >
-              3-5pm WAT Only
+              WAT Only
             </button>
             <button
               onClick={() => setEnableMc(!enableMc)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all border ${
+              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all border ${
                 enableMc
                   ? "bg-status-info/10 text-status-info border-status-info/30"
                   : "text-text-muted border-transparent"
               }`}
               style={!enableMc ? { background: "var(--glass-bg)", border: "1px solid var(--glass-border)" } : {}}
             >
-              <Sigma className="w-3 h-3 inline mr-1" />
-              Monte Carlo
+              <Sigma className="w-2.5 sm:w-3 h-2.5 sm:h-3 inline mr-0.5 sm:mr-1" />
+              MC
             </button>
           </div>
 
-          <button
-            onClick={runBacktest}
-            disabled={loading}
-            className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-50"
-            style={{
-              background: "linear-gradient(135deg, rgba(240,180,41,0.2), rgba(240,180,41,0.05))",
-              border: "1px solid rgba(240,180,41,0.3)",
-              color: "rgb(var(--accent-gold-rgb))",
-            }}
-          >
-            {loading ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <Play className="w-4 h-4" />
-            )}
-            {loading ? "Running..." : "Run Backtest"}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={runBacktest}
+              disabled={loading}
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all disabled:opacity-50 whitespace-nowrap"
+              style={{
+                background: "linear-gradient(135deg, rgba(240,180,41,0.2), rgba(240,180,41,0.05))",
+                border: "1px solid rgba(240,180,41,0.3)",
+                color: "rgb(var(--accent-gold-rgb))",
+              }}
+            >
+              {loading ? (
+                <RefreshCw className="w-3 sm:w-4 h-3 sm:h-4 animate-spin" />
+              ) : (
+                <Play className="w-3 sm:w-4 h-3 sm:h-4" />
+              )}
+              {loading ? "Running..." : "Run"}
+            </button>
 
-          {elapsed !== null && (
-            <span className="flex items-center gap-1.5 text-xs text-text-muted pb-0.5">
-              <Clock className="w-3.5 h-3.5" />
-              {(elapsed / 1000).toFixed(1)}s
-            </span>
-          )}
+            {elapsed !== null && (
+              <span className="flex items-center gap-1 text-[10px] sm:text-xs text-text-muted">
+                <Clock className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                {(elapsed / 1000).toFixed(1)}s
+              </span>
+            )}
+          </div>
         </div>
       </motion.div>
 
@@ -265,7 +267,7 @@ export default function BacktestPage() {
                     <thead>
                       <tr className="border-b border-surface-border">
                         {["Trend", "Signals", "Won", "Lost", "Expired", "Win Rate"].map((h) => (
-                          <th key={h} className="text-left text-xs text-text-muted font-medium pb-3 px-5 first:pl-5 last:pr-5">{h}</th>
+                          <th key={h} className="text-left text-[10px] sm:text-xs text-text-muted font-medium pb-3 px-3 sm:px-5 first:pl-3 sm:first:pl-5 last:pr-3 sm:last:pr-5">{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -278,18 +280,18 @@ export default function BacktestPage() {
                           transition={{ delay: i * 0.04, duration: 0.2 }}
                           className="border-b border-surface-border/50 hover:glass-card/30"
                         >
-                          <td className="py-3 px-5 first:pl-5">
-                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-pill ${
+                          <td className="py-2.5 sm:py-3 px-3 sm:px-5 first:pl-3 sm:first:pl-5">
+                            <span className={`text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 rounded-pill ${
                               trend === "UP" ? "bg-status-win/10 text-status-win" :
                               trend === "DOWN" ? "bg-status-loss/10 text-status-loss" :
                               "bg-status-warn/10 text-status-warn"
                             }`}>{trend}</span>
                           </td>
-                          <td className="py-3 px-5 font-mono text-xs text-text-primary">{data.signals}</td>
-                          <td className="py-3 px-5 font-mono text-xs text-status-win">{data.won}</td>
-                          <td className="py-3 px-5 font-mono text-xs text-status-loss">{data.lost}</td>
-                          <td className="py-3 px-5 font-mono text-xs text-text-muted">{data.expired}</td>
-                          <td className={`py-3 px-5 last:pr-5 font-mono text-xs font-semibold ${data.win_rate >= 0.6 ? "text-status-win" : "text-status-loss"}`}>{(data.win_rate * 100).toFixed(1)}%</td>
+                          <td className="py-2.5 sm:py-3 px-3 sm:px-5 font-mono text-[11px] sm:text-xs text-text-primary">{data.signals}</td>
+                          <td className="py-2.5 sm:py-3 px-3 sm:px-5 font-mono text-[11px] sm:text-xs text-status-win">{data.won}</td>
+                          <td className="py-2.5 sm:py-3 px-3 sm:px-5 font-mono text-[11px] sm:text-xs text-status-loss">{data.lost}</td>
+                          <td className="py-2.5 sm:py-3 px-3 sm:px-5 font-mono text-[11px] sm:text-xs text-text-muted">{data.expired}</td>
+                          <td className={`py-2.5 sm:py-3 px-3 sm:px-5 last:pr-3 sm:last:pr-5 font-mono text-[11px] sm:text-xs font-semibold ${data.win_rate >= 0.6 ? "text-status-win" : "text-status-loss"}`}>{(data.win_rate * 100).toFixed(1)}%</td>
                         </motion.tr>
                       ))}
                     </tbody>

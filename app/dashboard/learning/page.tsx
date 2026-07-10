@@ -170,7 +170,7 @@ function LearningContent() {
             </button>
           </div>
 
-          <div className="h-[400px] overflow-y-auto space-y-3 mb-4 pr-2 scroll-smooth">
+          <div className="h-[300px] sm:h-[400px] overflow-y-auto space-y-3 mb-4 pr-2 scroll-smooth">
             {messages.map((msg, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : ""}`}>
                 {msg.role === "assistant" && <div className="w-8 h-8 rounded-lg bg-accent-gold/10 flex items-center justify-center shrink-0"><Bot className="w-4 h-4 text-accent-gold" /></div>}

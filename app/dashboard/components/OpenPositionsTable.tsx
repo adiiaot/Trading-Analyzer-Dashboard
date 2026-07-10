@@ -75,7 +75,7 @@ export function OpenPositionsTable() {
                     <td className="py-3 px-4 text-right font-mono text-text-primary tabular-nums">{pos.tp.toFixed(2)}</td>
                     <td className="py-3 px-4 text-right font-mono text-text-primary tabular-nums">{pos.sl.toFixed(2)}</td>
                     <td className="py-3 px-4 last:pr-5 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                         <button className="p-1.5 rounded-md transition-all text-xs"
                           style={{ background: "rgba(255,82,82,0.1)", color: "rgb(var(--status-loss-rgb))" }}
                           title="Close position">

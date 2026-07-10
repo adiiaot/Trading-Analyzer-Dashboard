@@ -135,7 +135,7 @@ export function TradingAccountCard() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="card w-[380px] p-6"
+              className="card w-[90vw] sm:w-[380px] p-6"
             >
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-lg font-bold text-text-primary">Edit Balance</h3>

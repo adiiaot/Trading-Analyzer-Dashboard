@@ -120,7 +120,7 @@ export default function AnalyticsPage() {
               <thead>
                 <tr className="border-b border-surface-border">
                   {["ID", "Trend", "Entry", "Exit", "P&L", "Result"].map((h) => (
-                    <th key={h} className="text-left text-xs text-text-muted font-medium pb-3 px-5 first:pl-5 last:pr-5">{h}</th>
+                    <th key={h} className="text-left text-[10px] sm:text-xs text-text-muted font-medium pb-3 px-3 sm:px-5 first:pl-3 sm:first:pl-5 last:pr-3 sm:last:pr-5">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -133,12 +133,12 @@ export default function AnalyticsPage() {
                     transition={{ delay: i * 0.04, duration: 0.2 }}
                     className="border-b border-surface-border/50 hover:glass-card/30"
                   >
-                    <td className="py-3 px-5 first:pl-5 font-mono text-text-primary text-xs">#{t.id?.slice(-4)}</td>
-                    <td className="py-3 px-5"><span className={`text-xs font-semibold px-2 py-0.5 rounded-pill ${t.trend === "UP" ? "bg-status-win/10 text-status-win" : "bg-status-loss/10 text-status-loss"}`}>{t.trend}</span></td>
-                    <td className="py-3 px-5 font-mono text-xs text-text-primary">{t.entryPrice?.toFixed(2)}</td>
-                    <td className="py-3 px-5 font-mono text-xs text-text-primary">{t.exitPrice?.toFixed(2) ?? "-"}</td>
-                    <td className={`py-3 px-5 font-mono text-xs font-semibold ${(t.pnl ?? 0) >= 0 ? "text-status-win" : "text-status-loss"}`}>{(t.pnl ?? 0) >= 0 ? "+" : ""}${(t.pnl ?? 0).toFixed(2)}</td>
-                    <td className="py-3 px-5 last:pr-5"><span className={`text-xs font-semibold px-2 py-0.5 rounded-pill ${t.result === "win" ? "bg-status-win/10 text-status-win" : t.result === "loss" ? "bg-status-loss/10 text-status-loss" : "bg-status-warn/10 text-status-warn"}`}>{t.result ?? "-"}</span></td>
+                    <td className="py-2.5 sm:py-3 px-3 sm:px-5 first:pl-3 sm:first:pl-5 font-mono text-[11px] sm:text-xs text-text-primary">#{t.id?.slice(-4)}</td>
+                    <td className="py-2.5 sm:py-3 px-3 sm:px-5"><span className={`text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 rounded-pill ${t.trend === "UP" ? "bg-status-win/10 text-status-win" : "bg-status-loss/10 text-status-loss"}`}>{t.trend}</span></td>
+                    <td className="py-2.5 sm:py-3 px-3 sm:px-5 font-mono text-[11px] sm:text-xs text-text-primary">{t.entryPrice?.toFixed(2)}</td>
+                    <td className="py-2.5 sm:py-3 px-3 sm:px-5 font-mono text-[11px] sm:text-xs text-text-primary">{t.exitPrice?.toFixed(2) ?? "-"}</td>
+                    <td className={`py-2.5 sm:py-3 px-3 sm:px-5 font-mono text-[11px] sm:text-xs font-semibold ${(t.pnl ?? 0) >= 0 ? "text-status-win" : "text-status-loss"}`}>{(t.pnl ?? 0) >= 0 ? "+" : ""}${(t.pnl ?? 0).toFixed(2)}</td>
+                    <td className="py-2.5 sm:py-3 px-3 sm:px-5 last:pr-3 sm:last:pr-5"><span className={`text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 rounded-pill ${t.result === "win" ? "bg-status-win/10 text-status-win" : t.result === "loss" ? "bg-status-loss/10 text-status-loss" : "bg-status-warn/10 text-status-warn"}`}>{t.result ?? "-"}</span></td>
                   </motion.tr>
                 )) : (
                   <tr><td colSpan={6} className="py-8 text-center text-sm text-text-muted">No trades yet. Start trading to see your history.</td></tr>

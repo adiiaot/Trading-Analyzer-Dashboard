@@ -2,55 +2,72 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const BOT_API = process.env.NEXT_PUBLIC_BOT_API_URL || 'http://localhost:8000';
-const CACHE_TTL = 30_000; // 30s cache
+const CACHE_TTL = 30_000;
+const HYPERLIQUID_INFO = 'https://api.hyperliquid.xyz/info';
 
 let cache: { data: any; ts: number } | null = null;
 
 export async function GET() {
-  // Serve from cache if fresh
   if (cache && Date.now() - cache.ts < CACHE_TTL) {
     return NextResponse.json(cache.data);
   }
 
   try {
-    const res = await fetch(`${BOT_API}/api/price`, {
+    const res = await fetch(HYPERLIQUID_INFO, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'candleSnapshot',
+        req: {
+          coin: 'xyz:GOLD',
+          interval: '1m',
+          startTime: Date.now() - 120_000,
+          endTime: Date.now(),
+        },
+      }),
       signal: AbortSignal.timeout(6_000),
     });
 
     if (!res.ok) {
-      // Fallback to cached if stale but available
       if (cache) return NextResponse.json(cache.data);
-      throw new Error(`Bot returned ${res.status}`);
+      return NextResponse.json(
+        { success: false, error: 'Price source unavailable' },
+        { status: 503 }
+      );
     }
 
-    const data = await res.json();
+    const bars = await res.json();
+    const latest = bars?.[bars.length - 1];
+    if (!latest) {
+      if (cache) return NextResponse.json(cache.data);
+      return NextResponse.json(
+        { success: false, error: 'No price data' },
+        { status: 503 }
+      );
+    }
 
-    // Normalize to the PricePanel schema
+    const price = parseFloat(latest.c);
     const result = {
       success: true,
       symbol: 'XAU/USD',
-      price: data.price ?? data.close ?? 0,
-      change24h: data.change24h ?? 0,
-      changePercent24h: data.changePercent24h ?? 0,
-      high24h: data.high ?? (data.close ?? 0) + 3,
-      low24h: data.low ?? (data.close ?? 0) - 3,
-      volume: data.volume ?? 0,
-      bid: (data.price ?? data.close ?? 0) - 0.05,
-      ask: (data.price ?? data.close ?? 0) + 0.05,
-      spread: data.spread ?? 0.5,
+      price,
+      change24h: 0,
+      changePercent24h: 0,
+      high24h: parseFloat(latest.h),
+      low24h: parseFloat(latest.l),
+      volume: parseFloat(latest.v || 0),
+      bid: price - 0.05,
+      ask: price + 0.05,
+      spread: 0.5,
     };
 
     cache = { data: result, ts: Date.now() };
     return NextResponse.json(result);
-  } catch (err) {
-    // Return stale cache if available
-    if (cache) {
-      return NextResponse.json({ ...cache.data, _cached: true });
-    }
+  } catch {
+    if (cache) return NextResponse.json({ ...cache.data, _cached: true });
     return NextResponse.json(
-      { success: false, error: 'Price unavailable' },
-      { status: 503 },
+      { success: false, error: 'Price source unreachable' },
+      { status: 503 }
     );
   }
 }

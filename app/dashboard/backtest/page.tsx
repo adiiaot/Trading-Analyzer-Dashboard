@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
-import { Play, RefreshCw, Clock, TrendingUp, TrendingDown, Activity, Target } from "lucide-react";
+import { Play, RefreshCw, Clock, TrendingUp, TrendingDown, Activity, Target, BarChart4, Sigma } from "lucide-react";
 
 const container = {
   hidden: { opacity: 0 },
@@ -23,6 +23,26 @@ interface TrendBreakdown {
   win_rate: number;
 }
 
+interface MonteCarloStats {
+  mean: number;
+  median: number;
+  std: number;
+  min: number;
+  max: number;
+  p2_5: number;
+  p97_5: number;
+}
+
+interface MonteCarloResult {
+  num_simulations: number;
+  confidence_level: number;
+  sample_size: number;
+  win_rate: MonteCarloStats;
+  profit_factor: MonteCarloStats;
+  avg_realized_r: MonteCarloStats;
+  max_drawdown_pct: MonteCarloStats;
+}
+
 interface BacktestReport {
   backtest_date: string;
   session_filter_applied: boolean;
@@ -33,18 +53,23 @@ interface BacktestReport {
   win_rate: number;
   loss_rate: number;
   expire_rate: number;
-  avg_rr_win: number;
-  avg_rr_all: number;
+  avg_rr_planned: number;
+  avg_realized_r: number;
   profit_factor: number;
+  gross_win_r: number;
+  gross_loss_r: number;
   trend_breakdown: Record<string, TrendBreakdown>;
+  confidence_calibration: Record<string, any>;
   meets_target: boolean;
 }
 
 export default function BacktestPage() {
   const [months, setMonths] = useState(12);
   const [sessionFilter, setSessionFilter] = useState(false);
+  const [enableMc, setEnableMc] = useState(false);
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<BacktestReport | null>(null);
+  const [mcResult, setMcResult] = useState<MonteCarloResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState<number | null>(null);
 
@@ -52,10 +77,11 @@ export default function BacktestPage() {
     setLoading(true);
     setError(null);
     setReport(null);
+    setMcResult(null);
     const start = Date.now();
 
     try {
-      const res = await fetch(`/api/backtest?months=${months}&sessionFilter=${sessionFilter}`);
+      const res = await fetch(`/api/backtest?months=${months}&sessionFilter=${sessionFilter}&mc=${enableMc}`);
       const data = await res.json();
 
       if (!data.success) {
@@ -64,6 +90,7 @@ export default function BacktestPage() {
       }
 
       setReport(data.report);
+      if (data.monte_carlo) setMcResult(data.monte_carlo);
       setElapsed(Date.now() - start);
     } catch (err: any) {
       setError(err?.message || "Backend unreachable");
@@ -113,6 +140,18 @@ export default function BacktestPage() {
             >
               3-5pm WAT Only
             </button>
+            <button
+              onClick={() => setEnableMc(!enableMc)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all border ${
+                enableMc
+                  ? "bg-status-info/10 text-status-info border-status-info/30"
+                  : "text-text-muted border-transparent"
+              }`}
+              style={!enableMc ? { background: "var(--glass-bg)", border: "1px solid var(--glass-border)" } : {}}
+            >
+              <Sigma className="w-3 h-3 inline mr-1" />
+              Monte Carlo
+            </button>
           </div>
 
           <button
@@ -155,7 +194,7 @@ export default function BacktestPage() {
               ["Total Signals", report.total_signals.toString(), "text-text-primary", Activity],
               ["Win Rate", `${(report.win_rate * 100).toFixed(1)}%`, report.win_rate >= 0.6 ? "text-status-win" : "text-status-loss", TrendingUp],
               ["Profit Factor", `${report.profit_factor.toFixed(2)}x`, report.profit_factor >= 1.3 ? "text-status-win" : "text-status-loss", TrendingDown],
-              ["Avg R:R", report.avg_rr_all.toFixed(2), "text-accent-gold", Target],
+              ["Avg Realized R", report.avg_realized_r ? report.avg_realized_r.toFixed(3) : "0.0", "text-accent-gold", Target],
             ].map(([l, v, c, Icon], i) => (
               <motion.div
                 key={l as string}
@@ -205,8 +244,8 @@ export default function BacktestPage() {
                     ["Win Rate", `${(report.win_rate * 100).toFixed(1)}%`, report.win_rate >= 0.6],
                     ["Loss Rate", `${(report.loss_rate * 100).toFixed(1)}%`, report.loss_rate < 0.4],
                     ["Expire Rate", `${(report.expire_rate * 100).toFixed(1)}%`, null],
-                    ["Avg R:R (Wins)", report.avg_rr_win.toFixed(2), report.avg_rr_win >= 1.5],
-                    ["Avg R:R (All)", report.avg_rr_all.toFixed(2), report.avg_rr_all >= 1.0],
+                    ["Avg R:R (Planned)", report.avg_rr_planned?.toFixed(2) ?? "0.0", (report.avg_rr_planned ?? 0) >= 1.5],
+                    ["Avg Realized R", report.avg_realized_r?.toFixed(4) ?? "0.0", (report.avg_realized_r ?? 0) >= 0.5],
                   ].map(([l, v, good]) => (
                     <div key={l as string} className="flex justify-between items-center glass-card rounded-card px-4 py-2.5">
                       <span className="text-sm text-text-primary">{l as string}</span>
@@ -285,6 +324,37 @@ export default function BacktestPage() {
               </div>
             </Card>
           </motion.div>
+
+          {mcResult && (
+            <motion.div variants={item}>
+              <Card header={`Monte Carlo (${mcResult.num_simulations} simulations, ${(mcResult.confidence_level * 100).toFixed(0)}% CI)`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(["win_rate", "profit_factor", "avg_realized_r", "max_drawdown_pct"] as const).map((metric) => {
+                    const s = mcResult[metric];
+                    if (!s || !s.mean) return null;
+                    const labels: Record<string, string> = {
+                      win_rate: "Win Rate",
+                      profit_factor: "Profit Factor",
+                      avg_realized_r: "Avg Realized R",
+                      max_drawdown_pct: "Max Drawdown %",
+                    };
+                    return (
+                      <div key={metric} className="glass-card rounded-card p-3">
+                        <p className="text-xs text-text-muted mb-2 font-medium">{labels[metric]}</p>
+                        <div className="space-y-1 text-xs">
+                          <div className="flex justify-between"><span className="text-text-muted">Mean</span><span className="font-mono text-text-primary">{metric === "win_rate" ? `${(s.mean * 100).toFixed(1)}%` : s.mean.toFixed(metric === "max_drawdown_pct" ? 2 : 4)}</span></div>
+                          <div className="flex justify-between"><span className="text-text-muted">Median</span><span className="font-mono text-text-primary">{metric === "win_rate" ? `${(s.median * 100).toFixed(1)}%` : s.median.toFixed(metric === "max_drawdown_pct" ? 2 : 4)}</span></div>
+                          <div className="flex justify-between"><span className="text-text-muted">Std Dev</span><span className="font-mono text-text-primary">{s.std.toFixed(4)}</span></div>
+                          <div className="flex justify-between"><span className="text-text-muted">97.5%ile</span><span className="font-mono text-status-win">{metric === "win_rate" ? `${(s.p97_5 * 100).toFixed(1)}%` : s.p97_5.toFixed(metric === "max_drawdown_pct" ? 2 : 4)}</span></div>
+                          <div className="flex justify-between"><span className="text-text-muted">2.5%ile</span><span className="font-mono text-status-loss">{metric === "win_rate" ? `${(s.p2_5 * 100).toFixed(1)}%` : s.p2_5.toFixed(metric === "max_drawdown_pct" ? 2 : 4)}</span></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            </motion.div>
+          )}
         </>
       )}
 

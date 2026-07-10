@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Pencil, X, Save } from "lucide-react";
+import { Eye, EyeOff, Pencil, X, Save, Wallet2, TrendingUp as TrendingUpIcon } from "lucide-react";
 import { useDashboardData } from "@/lib/data-context";
 import { formatCurrency } from "@/lib/utils";
 
@@ -23,78 +23,100 @@ export function TradingAccountCard() {
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        className="card"
+        className="card overflow-hidden"
       >
-        <div className="flex items-center justify-between mb-5">
+        {/* Decorative top accent */}
+        <div className="h-[2px] rounded-full mx-4" style={{ background: "linear-gradient(90deg, transparent, rgba(0,230,118,0.3), transparent)" }} />
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 pt-4 pb-1">
           <div className="flex items-center gap-2.5">
-            <span className="w-2 h-2 rounded-full bg-status-win animate-pulse-soft" />
-            <span className="text-xs font-medium text-status-win">{account.demoLive}</span>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(0,230,118,0.1)" }}>
+              <Wallet2 className="w-4 h-4 text-status-win" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-text-primary">{account.demoLive}</p>
+              <p className="text-[10px] text-text-muted">Account</p>
+            </div>
           </div>
           <div className="flex items-center gap-1">
-            <button onClick={() => setVisible(!visible)} className="btn-ghost p-1.5">
-              {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            <button onClick={() => setVisible(!visible)} className="p-1.5 rounded-lg transition-colors hover:bg-glass" style={{ color: "var(--text-muted)" }}>
+              {visible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
             </button>
-            <button onClick={() => setEditing(true)} className="btn-ghost p-1.5">
-              <Pencil className="w-4 h-4" />
+            <button onClick={() => setEditing(true)} className="p-1.5 rounded-lg transition-colors hover:bg-glass" style={{ color: "var(--text-muted)" }}>
+              <Pencil className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        <p className="text-xs text-text-muted mb-1.5">Account Balance</p>
-        <div className="flex items-baseline gap-3 mb-5">
-          <motion.p
-            key={visible ? balance : 0}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-bold font-mono text-text-primary"
-          >
-            {visible ? formatCurrency(balance) : "****"}
-          </motion.p>
-          <span className="text-xs font-medium text-status-win px-2 py-0.5 rounded-full" style={{ background: "rgba(0, 230, 118, 0.1)", border: "1px solid rgba(0, 230, 118, 0.15)" }}>
-            +2.3%
-          </span>
+        {/* Balance */}
+        <div className="px-4 py-3">
+          <p className="text-[11px] text-text-muted mb-1">Balance</p>
+          <div className="flex items-baseline gap-3">
+            <motion.p
+              key={visible ? balance : 0}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-2xl font-bold font-mono text-text-primary"
+            >
+              {visible ? formatCurrency(balance) : "****"}
+            </motion.p>
+            <span className="flex items-center gap-1 text-[11px] font-medium text-status-win px-2 py-0.5 rounded-full"
+              style={{ background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.12)" }}>
+              <TrendingUpIcon className="w-2.5 h-2.5" />
+              +2.3%
+            </span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-5">
-          <div className="rounded-lg p-3" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
-            <p className="text-xs text-text-muted mb-0.5">Available</p>
-            <p className="text-sm font-mono font-medium text-text-primary">
+        {/* Grid: Available + Margin */}
+        <div className="grid grid-cols-2 gap-2 px-4 pb-3">
+          <div className="rounded-xl p-3" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
+            <p className="text-[10px] text-text-muted mb-1">Available</p>
+            <p className="text-sm font-mono font-semibold text-text-primary tabular-nums">
               {visible ? formatCurrency(account.available) : "****"}
             </p>
           </div>
-          <div className="rounded-lg p-3" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
-            <p className="text-xs text-text-muted mb-0.5">Margin</p>
-            <p className="text-sm font-mono font-medium text-text-primary">
+          <div className="rounded-xl p-3" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
+            <p className="text-[10px] text-text-muted mb-1">Margin</p>
+            <p className="text-sm font-mono font-semibold text-text-primary tabular-nums">
               {visible ? formatCurrency(account.usedMargin) : "****"}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center justify-between py-3" style={{ borderTop: "1px solid var(--glass-border)" }}>
-          <span className="text-xs text-text-muted">Status</span>
-          <span className="badge-win">{account.status}</span>
+        {/* Status */}
+        <div className="flex items-center justify-between px-4 py-2.5" style={{ borderTop: "1px solid var(--glass-border)" }}>
+          <span className="text-[11px] text-text-muted">Status</span>
+          <span className="flex items-center gap-1.5 text-[11px] font-medium text-status-win px-2.5 py-0.5 rounded-full"
+            style={{ background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.12)" }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-status-win animate-pulse-soft" />
+            {account.status}
+          </span>
         </div>
 
-        <div className="mt-3 opacity-40">
-          <svg width="100%" height="32" viewBox="0 0 200 32">
+        {/* Mini equity curve */}
+        <div className="px-4 pb-3 pt-1 opacity-40">
+          <svg width="100%" height="24" viewBox="0 0 200 24">
             <defs>
               <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--gold)" stopOpacity={0.25} />
+                <stop offset="0%" stopColor="var(--gold)" stopOpacity={0.2} />
                 <stop offset="100%" stopColor="var(--gold)" stopOpacity={0} />
               </linearGradient>
             </defs>
             <path
-              d="M0,26 Q15,24 30,27 T60,22 T90,18 T120,19 T150,14 T180,11 T200,9"
+              d="M0,20 Q15,18 30,21 T60,16 T90,13 T120,14 T150,10 T180,7 T200,5"
               stroke="var(--gold)"
-              strokeWidth={1.5}
+              strokeWidth={1.2}
               fill="url(#eqGrad)"
             />
           </svg>
         </div>
       </motion.div>
 
+      {/* Edit Balance Modal */}
       <AnimatePresence>
         {editing && (
           <motion.div
@@ -111,8 +133,8 @@ export function TradingAccountCard() {
             >
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-lg font-bold text-text-primary">Edit Balance</h3>
-                <button onClick={() => setEditing(false)} className="btn-ghost p-1">
-                  <X className="w-5 h-5" />
+                <button onClick={() => setEditing(false)} className="p-1 rounded-lg hover:bg-glass">
+                  <X className="w-5 h-5" style={{ color: "var(--text-muted)" }} />
                 </button>
               </div>
 

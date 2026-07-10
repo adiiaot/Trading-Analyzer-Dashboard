@@ -1,67 +1,68 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Send, MessageCircle, BarChart3, HelpCircle } from "lucide-react";
+import { Send, BarChart3, MessageCircle, HelpCircle } from "lucide-react";
 import { TradingAccountCard } from "./components/TradingAccountCard";
-import { PricePanel } from "./components/PricePanel";
 import { QuickStats } from "./components/QuickStats";
 import { TradingChart } from "./components/TradingChart";
 import { OpenPositionsTable } from "./components/OpenPositionsTable";
 import { SignalFeed } from "./components/SignalFeed";
 import { MarketSentiment } from "./components/MarketSentiment";
 
-const stagger = {
+const container = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
 };
 
 const section = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: 0, y: 14 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
 export default function DashboardPage() {
   return (
-    <motion.div initial="hidden" animate="visible" variants={stagger} className="space-y-5">
-      <motion.div variants={section} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div>
+    <motion.div initial="hidden" animate="visible" variants={container} className="space-y-4">
+      {/* Header */}
+      <motion.div variants={section} className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
           <h1 className="text-lg md:text-xl font-bold text-text-primary">Command Center</h1>
-          <p className="text-sm text-text-muted">XAU/USD — 4-Timeframe Scalping Strategy</p>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium text-status-win"
+            style={{ background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.15)" }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-status-win animate-pulse-soft" />
+            Live
+          </div>
         </div>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3, duration: 0.3 }}
-          className="flex items-center gap-2 text-sm"
-        >
-          <motion.span
-            animate={{ opacity: [1, 0.3, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="w-2 h-2 rounded-full bg-status-win"
-          />
-          <span className="text-text-muted">Live</span>
-        </motion.div>
-      </motion.div>
-
-      <motion.div variants={section}><PricePanel /></motion.div>
-      <motion.div variants={section}><QuickStats /></motion.div>
-
-      <motion.div variants={section} className="grid grid-cols-1 lg:grid-cols-4 gap-5">
-        <div className="lg:col-span-1"><TradingAccountCard /></div>
-        <div className="lg:col-span-3"><TradingChart /></div>
-      </motion.div>
-
-      <motion.div variants={section} className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 space-y-5"><OpenPositionsTable /></div>
-        <div className="lg:col-span-1 space-y-5">
-          <SignalFeed />
-          <MarketSentiment />
+        <div className="flex items-center gap-2 text-xs text-text-muted">
+          <span>Gold Spot / XAU/USD</span>
         </div>
       </motion.div>
 
+      {/* Quick Stats */}
       <motion.div variants={section}>
-        <div className="glass-card rounded-card p-4">
-          <div className="flex items-center justify-between mb-3">
+        <QuickStats />
+      </motion.div>
+
+      {/* Hero: Full-width chart */}
+      <motion.div variants={section}>
+        <TradingChart />
+      </motion.div>
+
+      {/* Account + Positions side by side */}
+      <motion.div variants={section} className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div className="lg:col-span-1">
+          <TradingAccountCard />
+        </div>
+        <div className="lg:col-span-3">
+          <OpenPositionsTable />
+        </div>
+      </motion.div>
+
+      {/* Bottom: Signal Feed, Sentiment, Telegram */}
+      <motion.div variants={section} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <SignalFeed />
+        <MarketSentiment />
+        <div className="card">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Send className="w-4 h-4 text-accent-gold" />
               <h3 className="text-sm font-bold text-text-primary">Telegram Bot</h3>
@@ -75,7 +76,7 @@ export default function DashboardPage() {
               Open Bot
             </a>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="space-y-2">
             {[
               { cmd: "/signal", desc: "Generate signal", icon: BarChart3 },
               { cmd: "/stats", desc: "Trading stats", icon: BarChart3 },
@@ -87,9 +88,12 @@ export default function DashboardPage() {
                 href={`https://t.me/aot_analyzer_bot?start=${c.cmd.replace("/", "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 py-2 rounded-lg glass-card hover:bg-accent-gold/10 transition-all text-xs"
+                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-xs"
+                style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}
               >
-                <c.icon className="w-3.5 h-3.5 text-accent-gold shrink-0" />
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(240,180,41,0.1)" }}>
+                  <c.icon className="w-3.5 h-3.5 text-accent-gold" />
+                </div>
                 <div>
                   <p className="font-mono text-text-primary font-semibold">{c.cmd}</p>
                   <p className="text-text-muted">{c.desc}</p>
@@ -102,5 +106,3 @@ export default function DashboardPage() {
     </motion.div>
   );
 }
-
-

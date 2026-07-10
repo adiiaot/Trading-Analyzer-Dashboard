@@ -3,8 +3,53 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 const TIMEFRAMES = ["5m", "15m", "1H", "4H", "1D", "1W"];
+const intervalMap: Record<string, string> = {
+  "5m": "5", "15m": "15", "1H": "60", "4H": "240", "1D": "D", "1W": "W",
+};
+
+interface PriceSnapshot {
+  price: number;
+  change24h: number;
+  changePercent24h: number;
+  high24h: number;
+  low24h: number;
+  bid: number;
+  ask: number;
+}
+
+function buildWidget(containerId: string, interval: string) {
+  return new window.TradingView.widget({
+    container_id: containerId,
+    symbol: "OANDA:XAUUSD",
+    interval,
+    timezone: "Africa/Lagos",
+    theme: "dark",
+    style: "1",
+    locale: "en",
+    toolbar_bg: "#080c24",
+    enable_publishing: false,
+    hide_side_toolbar: true,
+    allow_symbol_change: false,
+    hideideas: true,
+    show_popup_button: false,
+    studies: ["RSI@tv-basicstudies", "MASimple@tv-basicstudies"],
+    studies_overrides: { "MASimple.length": 20 },
+    overrides: {
+      "paneProperties.background": "#080c24",
+      "paneProperties.backgroundType": "solid",
+      "paneProperties.vertGridProperties.color": "rgba(255,255,255,0.04)",
+      "paneProperties.horzGridProperties.color": "rgba(255,255,255,0.04)",
+      "paneProperties.crossHairProperties.color": "rgba(240,180,41,0.5)",
+      "scalesProperties.textColor": "rgba(255,255,255,0.6)",
+      "scalesProperties.lineColor": "rgba(255,255,255,0.08)",
+    },
+    autosize: true,
+    loading_screen: { backgroundColor: "#080c24" },
+  });
+}
 
 export function TradingChart() {
   const router = useRouter();
@@ -12,17 +57,44 @@ export function TradingChart() {
   const widgetRef = useRef<any>(null);
   const [tf, setTf] = useState("1H");
   const [ready, setReady] = useState(false);
+  const [price, setPrice] = useState<PriceSnapshot>({
+    price: 4088.39,
+    change24h: 22.10,
+    changePercent24h: 0.54,
+    high24h: 4092.40,
+    low24h: 4075.80,
+    bid: 4088.34,
+    ask: 4088.44,
+  });
+  const [pulse, setPulse] = useState(false);
 
-  // Map our timeframe labels to TradingView intervals
-  const intervalMap: Record<string, string> = {
-    "5m": "5",
-    "15m": "15",
-    "1H": "60",
-    "4H": "240",
-    "1D": "D",
-    "1W": "W",
-  };
+  // Fetch live price
+  useEffect(() => {
+    const tick = async () => {
+      try {
+        const res = await fetch("/api/price");
+        const data = await res.json();
+        if (data?.success && data.price) {
+          setPrice({
+            price: data.price,
+            change24h: data.change24h ?? 0,
+            changePercent24h: data.changePercent24h ?? 0,
+            high24h: data.high24h ?? data.price + 3,
+            low24h: data.low24h ?? data.price - 3,
+            bid: data.bid ?? data.price - 0.05,
+            ask: data.ask ?? data.price + 0.05,
+          });
+          setPulse(true);
+          setTimeout(() => setPulse(false), 200);
+        }
+      } catch {}
+    };
+    tick();
+    const interval = setInterval(tick, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
+  // Init TradingView widget
   useEffect(() => {
     if (!containerRef.current || widgetRef.current) return;
 
@@ -31,38 +103,7 @@ export function TradingChart() {
     script.async = true;
     script.onload = () => {
       if (!containerRef.current || !window.TradingView) return;
-
-      widgetRef.current = new window.TradingView.widget({
-        container_id: containerRef.current.id,
-        symbol: "OANDA:XAUUSD",
-        interval: intervalMap[tf] || "60",
-        timezone: "Africa/Lagos",
-        theme: "dark",
-        style: "1", // Candles
-        locale: "en",
-        toolbar_bg: "#080c24",
-        enable_publishing: false,
-        hide_side_toolbar: false,
-        allow_symbol_change: false,
-        hideideas: true,
-        show_popup_button: false,
-        studies: ["RSI@tv-basicstudies", "MASimple@tv-basicstudies"],
-        studies_overrides: {
-          "MASimple.length": 20,
-        },
-        overrides: {
-          "paneProperties.background": "#080c24",
-          "paneProperties.backgroundType": "solid",
-          "paneProperties.vertGridProperties.color": "rgba(255,255,255,0.04)",
-          "paneProperties.horzGridProperties.color": "rgba(255,255,255,0.04)",
-          "paneProperties.crossHairProperties.color": "rgba(240,180,41,0.5)",
-          "scalesProperties.textColor": "rgba(255,255,255,0.6)",
-          "scalesProperties.lineColor": "rgba(255,255,255,0.08)",
-        },
-        autosize: true,
-        loading_screen: { backgroundColor: "#080c24" },
-      });
-
+      widgetRef.current = buildWidget(containerRef.current.id, intervalMap[tf]);
       widgetRef.current.onChartReady(() => setReady(true));
     };
     document.body.appendChild(script);
@@ -75,89 +116,85 @@ export function TradingChart() {
     };
   }, []);
 
-  // Change timeframe on the widget without reloading
   const changeTimeframe = (newTf: string) => {
     setTf(newTf);
-    if (widgetRef.current?.chart) {
-      widgetRef.current.chart.setChartType(1); // candles
-    }
-    // Reload widget with new timeframe (TV SDK limitation)
+    setReady(false);
     if (widgetRef.current) {
       try { widgetRef.current.remove(); } catch {}
       widgetRef.current = null;
     }
-    setReady(false);
-    // Small delay to let DOM settle before re-init
     setTimeout(() => {
       if (!containerRef.current || !window.TradingView) return;
-      widgetRef.current = new window.TradingView.widget({
-        container_id: containerRef.current.id,
-        symbol: "OANDA:XAUUSD",
-        interval: intervalMap[newTf] || "60",
-        timezone: "Africa/Lagos",
-        theme: "dark",
-        style: "1",
-        locale: "en",
-        toolbar_bg: "#080c24",
-        enable_publishing: false,
-        hide_side_toolbar: false,
-        allow_symbol_change: false,
-        hideideas: true,
-        show_popup_button: false,
-        studies: ["RSI@tv-basicstudies", "MASimple@tv-basicstudies"],
-        studies_overrides: { "MASimple.length": 20 },
-        overrides: {
-          "paneProperties.background": "#080c24",
-          "paneProperties.backgroundType": "solid",
-          "paneProperties.vertGridProperties.color": "rgba(255,255,255,0.04)",
-          "paneProperties.horzGridProperties.color": "rgba(255,255,255,0.04)",
-          "paneProperties.crossHairProperties.color": "rgba(240,180,41,0.5)",
-          "scalesProperties.textColor": "rgba(255,255,255,0.6)",
-          "scalesProperties.lineColor": "rgba(255,255,255,0.08)",
-        },
-        autosize: true,
-        loading_screen: { backgroundColor: "#080c24" },
-      });
+      widgetRef.current = buildWidget(containerRef.current.id, intervalMap[newTf]);
       widgetRef.current.onChartReady(() => setReady(true));
     }, 100);
   };
 
-  const handleAnalyze = async () => {
-    // Fetch recent price data for the AI analysis payload
-    let price = 4088;
-    try {
-      const res = await fetch("/api/price");
-      const data = await res.json();
-      if (data?.price) price = data.price;
-    } catch {}
+  const handleAnalyze = () => {
     const summary = {
       timeframe: tf,
-      currentPrice: price,
+      currentPrice: price.price,
       source: "TradingView OANDA:XAUUSD",
     };
-    const encoded = encodeURIComponent(JSON.stringify(summary));
-    router.push(`/dashboard/learning?chart=${encoded}`);
+    router.push(`/dashboard/learning?chart=${encodeURIComponent(JSON.stringify(summary))}`);
   };
+
+  const up = price.change24h >= 0;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card"
+      className="card overflow-hidden"
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <h3 className="text-sm font-bold text-text-primary">XAU/USD</h3>
-          <span className="text-[10px] badge-gold">TradingView</span>
-          <span className="flex items-center gap-1.5 text-[10px] text-text-muted">
-            <span className={`inline-block w-1.5 h-1.5 rounded-full ${ready ? "bg-status-win" : "bg-status-warn"}`} />
-            {ready ? "Live" : "Loading..."}
-          </span>
+      {/* Header: Price + controls */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 px-5 pt-4 pb-3">
+        {/* Left: Symbol + Price */}
+        <div className="flex items-center gap-4">
+          <div>
+            <div className="flex items-center gap-2.5 mb-0.5">
+              <h3 className="text-base font-bold text-text-primary">XAU/USD</h3>
+              <span className="badge-gold text-[10px]">Gold</span>
+              <span className={`flex items-center gap-1 text-[10px] font-mono ${up ? "text-status-win" : "text-status-loss"}`}>
+                {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                {up ? "+" : ""}{price.change24h.toFixed(2)} ({up ? "+" : ""}{price.changePercent24h.toFixed(2)}%)
+              </span>
+            </div>
+            <div className="flex items-baseline gap-3">
+              <motion.span
+                key={price.price.toFixed(2)}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`text-3xl font-bold font-mono ${up ? "text-status-win" : "text-status-loss"}`}
+              >
+                ${price.price.toFixed(2)}
+              </motion.span>
+              {pulse && (
+                <span className="w-1.5 h-1.5 rounded-full bg-accent-gold animate-ping" />
+              )}
+              <span className="text-[11px] text-text-muted font-mono">
+                B: ${price.bid.toFixed(2)} A: ${price.ask.toFixed(2)}
+              </span>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Right: Market stats + controls */}
+        <div className="flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-4 text-xs">
+            <div className="text-center">
+              <p className="text-text-muted">High</p>
+              <p className="font-mono text-text-primary font-medium">${price.high24h.toFixed(2)}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-text-muted">Low</p>
+              <p className="font-mono text-text-primary font-medium">${price.low24h.toFixed(2)}</p>
+            </div>
+            <div className="w-px h-8" style={{ background: "var(--glass-border)" }} />
+          </div>
           <button
             onClick={handleAnalyze}
-            className="px-3 py-1.5 rounded-md text-xs font-medium text-accent-gold transition-all"
+            className="px-3 py-1.5 rounded-md text-xs font-medium text-accent-gold transition-all whitespace-nowrap"
             style={{ background: "var(--glass-bg)", border: "1px solid rgba(240, 180, 41, 0.3)" }}
           >
             Analyze with AI
@@ -167,7 +204,7 @@ export function TradingChart() {
               <button
                 key={t}
                 onClick={() => changeTimeframe(t)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                   tf === t
                     ? "text-accent-gold shadow-sm"
                     : "text-text-muted hover:text-text-primary"
@@ -181,17 +218,35 @@ export function TradingChart() {
         </div>
       </div>
 
-      <div
-        ref={containerRef}
-        id="tv-chart-container"
-        className="h-[400px] rounded-lg overflow-hidden"
-        style={{ background: "#080c24" }}
-      />
+      {/* Chart */}
+      <div className="px-0">
+        <div
+          ref={containerRef}
+          id="tv-chart-container"
+          className="h-[480px] md:h-[520px] w-full"
+          style={{ background: "#080c24" }}
+        />
+      </div>
+
+      {/* Bottom bar */}
+      <div className="flex items-center justify-between px-5 py-2.5 text-[11px]" style={{ borderTop: "1px solid var(--glass-border)" }}>
+        <div className="flex items-center gap-3">
+          <span className={`flex items-center gap-1.5 ${ready ? "text-status-win" : "text-status-warn"}`}>
+            <span className={`inline-block w-1.5 h-1.5 rounded-full ${ready ? "bg-status-win" : "bg-status-warn"}`} />
+            {ready ? "Live" : "Connecting..."}
+          </span>
+          <span className="text-text-muted">OANDA:XAUUSD</span>
+        </div>
+        <div className="flex items-center gap-3 text-text-muted">
+          <span>RSI</span>
+          <span className="w-px h-3" style={{ background: "var(--glass-border)" }} />
+          <span>SMA(20)</span>
+        </div>
+      </div>
     </motion.div>
   );
 }
 
-// Type declaration for the TradingView global
 declare global {
   interface Window {
     TradingView: any;

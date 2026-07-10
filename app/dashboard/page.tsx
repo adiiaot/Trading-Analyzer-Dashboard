@@ -66,7 +66,7 @@ export default function DashboardPage() {
               <h3 className="text-sm font-bold text-text-primary">Telegram Bot</h3>
             </div>
             <a
-              href="https://t.me/aot_analyzer_bot"
+              href={`https://t.me/${process.env.NEXT_PUBLIC_TELEGRAM_BOT || "aot_analyzer_bot"}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs px-3 py-1.5 rounded-lg bg-accent-gold/10 text-accent-gold hover:bg-accent-gold/20 transition-all font-semibold"
@@ -83,7 +83,7 @@ export default function DashboardPage() {
             ].map((c) => (
               <a
                 key={c.cmd}
-                href={`https://t.me/aot_analyzer_bot?start=${c.cmd.replace("/", "")}`}
+                href={`https://t.me/${process.env.NEXT_PUBLIC_TELEGRAM_BOT || "aot_analyzer_bot"}?start=${c.cmd.replace("/", "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-xs"

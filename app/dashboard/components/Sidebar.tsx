@@ -113,7 +113,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
         </nav>
 
         <a
-          href="https://t.me/aot_analyzer_bot"
+          href={`https://t.me/${process.env.NEXT_PUBLIC_TELEGRAM_BOT || "aot_analyzer_bot"}`}
           target="_blank"
           rel="noopener noreferrer"
           className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-1 rounded-lg text-sm font-medium transition-all ${

@@ -4,7 +4,7 @@ import { Menu, Search, Sun, Moon, Send } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 
-const TELEGRAM_BOT_USERNAME = "aot_analyzer_bot";
+const TELEGRAM_BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT || "aot_analyzer_bot";
 const TELEGRAM_LINK = `https://t.me/${TELEGRAM_BOT_USERNAME}`;
 
 export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {

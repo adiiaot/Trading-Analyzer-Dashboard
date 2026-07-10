@@ -40,18 +40,7 @@ async function fetchPrice(): Promise<PriceData | null> {
 }
 
 export function PricePanel() {
-  const [priceData, setPriceData] = useState<PriceData>({
-    symbol: "XAU/USD",
-    price: 4088.385,
-    change24h: 22.10,
-    changePercent24h: 0.54,
-    high24h: 4092.40,
-    low24h: 4075.80,
-    volume: 195400,
-    bid: 4088.335,
-    ask: 4088.435,
-    spread: 0.5,
-  });
+  const [priceData, setPriceData] = useState<PriceData | null>(null);
   const [pulse, setPulse] = useState(false);
 
   useEffect(() => {
@@ -67,6 +56,32 @@ export function PricePanel() {
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  if (!priceData) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="card"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div>
+              <div className="flex items-center gap-2.5 mb-1">
+                <h2 className="text-lg font-bold text-text-primary">XAU/USD</h2>
+                <span className="badge-gold text-[10px]">Gold</span>
+              </div>
+              <div className="h-10 w-48 rounded bg-glass animate-pulse mt-1" />
+            </div>
+          </div>
+        </div>
+        <div className="mt-2 flex items-center gap-2 text-[10px] text-text-muted">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-status-warn" />
+          Loading...
+        </div>
+      </motion.div>
+    );
+  }
 
   const up = priceData.change24h >= 0;
 

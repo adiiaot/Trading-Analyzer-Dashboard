@@ -9,9 +9,10 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const months = searchParams.get('months') || '12';
     const sessionFilter = searchParams.get('sessionFilter') || 'false';
+    const mc = searchParams.get('mc') || 'false';
 
     const res = await fetch(
-      `${BOT_API}/api/backtest?months=${months}&sessionFilter=${sessionFilter}`,
+      `${BOT_API}/api/backtest?months=${months}&sessionFilter=${sessionFilter}&mc=${mc}`,
       { signal: AbortSignal.timeout(120_000) }
     );
 

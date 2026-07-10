@@ -41,7 +41,7 @@ const defaultPrice = { ...PRICE, high24h: PRICE.price + 12, low24h: PRICE.price 
 
 const defaultData: DashboardData = {
   trades: [], signals: [], stats: null, price: defaultPrice,
-  balance: 5245.50, setBalance: () => {},
+  balance: 0, setBalance: () => {},
   positions: [],
   signalsFeed: [], quickStats: { todayPnl: 0, winRate: 0, totalTrades: 0, openPositions: 0 },
   loading: true,

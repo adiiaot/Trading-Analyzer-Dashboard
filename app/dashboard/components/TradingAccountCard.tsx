@@ -7,7 +7,7 @@ import { useDashboardData } from "@/lib/data-context";
 import { formatCurrency } from "@/lib/utils";
 
 export function TradingAccountCard() {
-  const { balance, setBalance } = useDashboardData();
+  const { balance, setBalance, stats } = useDashboardData();
   const [visible, setVisible] = useState(true);
   const [editing, setEditing] = useState(false);
   const [newBalance, setNewBalance] = useState(balance.toString());
@@ -63,11 +63,17 @@ export function TradingAccountCard() {
             >
               {visible ? formatCurrency(balance) : "****"}
             </motion.p>
-            <span className="flex items-center gap-1 text-[11px] font-medium text-status-win px-2 py-0.5 rounded-full"
-              style={{ background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.12)" }}>
-              <TrendingUpIcon className="w-2.5 h-2.5" />
-              +2.3%
-            </span>
+            {stats && stats.total_trades > 0 && (() => {
+              const pct = (stats.total_pnl / (balance - stats.total_pnl || 1)) * 100;
+              const pos = pct >= 0;
+              return (
+                <span className={`flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${pos ? "text-status-win" : "text-status-loss"}`}
+                  style={{ background: pos ? "rgba(0,230,118,0.08)" : "rgba(255,82,82,0.08)", border: `1px solid ${pos ? "rgba(0,230,118,0.12)" : "rgba(255,82,82,0.12)"}` }}>
+                  <TrendingUpIcon className={`w-2.5 h-2.5 ${pos ? "" : "rotate-180"}`} />
+                  {pos ? "+" : ""}{pct.toFixed(1)}%
+                </span>
+              );
+            })()}
           </div>
         </div>
 

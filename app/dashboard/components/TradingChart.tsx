@@ -57,15 +57,7 @@ export function TradingChart() {
   const widgetRef = useRef<any>(null);
   const [tf, setTf] = useState("1H");
   const [ready, setReady] = useState(false);
-  const [price, setPrice] = useState<PriceSnapshot>({
-    price: 4088.39,
-    change24h: 22.10,
-    changePercent24h: 0.54,
-    high24h: 4092.40,
-    low24h: 4075.80,
-    bid: 4088.34,
-    ask: 4088.44,
-  });
+  const [price, setPrice] = useState<PriceSnapshot | null>(null);
   const [pulse, setPulse] = useState(false);
 
   // Fetch live price
@@ -133,13 +125,14 @@ export function TradingChart() {
   const handleAnalyze = () => {
     const summary = {
       timeframe: tf,
-      currentPrice: price.price,
+      currentPrice: price?.price ?? 0,
       source: "TradingView OANDA:XAUUSD",
     };
     router.push(`/dashboard/learning?chart=${encodeURIComponent(JSON.stringify(summary))}`);
   };
 
-  const up = price.change24h >= 0;
+  const showPrice = price !== null;
+  const up = showPrice && price.change24h >= 0;
 
   return (
     <motion.div
@@ -155,43 +148,53 @@ export function TradingChart() {
             <div className="flex items-center gap-2.5 mb-0.5">
               <h3 className="text-base font-bold text-text-primary">XAU/USD</h3>
               <span className="badge-gold text-[10px]">Gold</span>
-              <span className={`flex items-center gap-1 text-[10px] font-mono ${up ? "text-status-win" : "text-status-loss"}`}>
-                {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                {up ? "+" : ""}{price.change24h.toFixed(2)} ({up ? "+" : ""}{price.changePercent24h.toFixed(2)}%)
-              </span>
+              {showPrice && (
+                <span className={`flex items-center gap-1 text-[10px] font-mono ${up ? "text-status-win" : "text-status-loss"}`}>
+                  {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                  {up ? "+" : ""}{price.change24h.toFixed(2)} ({up ? "+" : ""}{price.changePercent24h.toFixed(2)}%)
+                </span>
+              )}
             </div>
             <div className="flex items-baseline gap-3">
-              <motion.span
-                key={price.price.toFixed(2)}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`text-3xl font-bold font-mono ${up ? "text-status-win" : "text-status-loss"}`}
-              >
-                ${price.price.toFixed(2)}
-              </motion.span>
-              {pulse && (
-                <span className="w-1.5 h-1.5 rounded-full bg-accent-gold animate-ping" />
+              {showPrice ? (
+                <>
+                  <motion.span
+                    key={price.price.toFixed(2)}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`text-3xl font-bold font-mono ${up ? "text-status-win" : "text-status-loss"}`}
+                  >
+                    ${price.price.toFixed(2)}
+                  </motion.span>
+                  {pulse && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent-gold animate-ping" />
+                  )}
+                  <span className="text-[11px] text-text-muted font-mono">
+                    B: ${price.bid.toFixed(2)} A: ${price.ask.toFixed(2)}
+                  </span>
+                </>
+              ) : (
+                <div className="h-8 w-36 rounded bg-glass animate-pulse" />
               )}
-              <span className="text-[11px] text-text-muted font-mono">
-                B: ${price.bid.toFixed(2)} A: ${price.ask.toFixed(2)}
-              </span>
             </div>
           </div>
         </div>
 
         {/* Right: Market stats + controls */}
         <div className="flex items-center gap-4">
-          <div className="hidden lg:flex items-center gap-4 text-xs">
-            <div className="text-center">
-              <p className="text-text-muted">High</p>
-              <p className="font-mono text-text-primary font-medium">${price.high24h.toFixed(2)}</p>
+          {showPrice && (
+            <div className="hidden lg:flex items-center gap-4 text-xs">
+              <div className="text-center">
+                <p className="text-text-muted">High</p>
+                <p className="font-mono text-text-primary font-medium">${price.high24h.toFixed(2)}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-text-muted">Low</p>
+                <p className="font-mono text-text-primary font-medium">${price.low24h.toFixed(2)}</p>
+              </div>
+              <div className="w-px h-8" style={{ background: "var(--glass-border)" }} />
             </div>
-            <div className="text-center">
-              <p className="text-text-muted">Low</p>
-              <p className="font-mono text-text-primary font-medium">${price.low24h.toFixed(2)}</p>
-            </div>
-            <div className="w-px h-8" style={{ background: "var(--glass-border)" }} />
-          </div>
+          )}
           <button
             onClick={handleAnalyze}
             className="px-3 py-1.5 rounded-md text-xs font-medium text-accent-gold transition-all whitespace-nowrap"

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, BarChart3, BookOpen, Radio, GraduationCap,
   Shield, Calendar, Settings, ChevronLeft, ChevronRight, X,
-  FileText, Lock,
+  FileText, Lock, BarChart4,
 } from "lucide-react";
 
 const NAV = [
@@ -15,6 +15,7 @@ const NAV = [
   { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { label: "Journal", href: "/dashboard/journal", icon: BookOpen },
   { label: "Signals", href: "/dashboard/signals", icon: Radio },
+  { label: "Backtest", href: "/dashboard/backtest", icon: BarChart4 },
   { label: "Learning", href: "/dashboard/learning", icon: GraduationCap },
   { label: "Risk Calculator", href: "/dashboard/risk-calculator", icon: Shield },
   { label: "Calendar", href: "/dashboard/economic-calendar", icon: Calendar },

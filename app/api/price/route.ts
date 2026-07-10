@@ -2,51 +2,55 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const YAHOO_SYMBOLS = ['GC=F', 'XAUUSD=X'];
-const YAHOO_BASE = 'https://query1.finance.yahoo.com/v8/finance/chart';
+const BOT_API = process.env.NEXT_PUBLIC_BOT_API_URL || 'http://localhost:8000';
+const CACHE_TTL = 30_000; // 30s cache
+
+let cache: { data: any; ts: number } | null = null;
 
 export async function GET() {
-  for (const sym of YAHOO_SYMBOLS) {
-    try {
-      const res = await fetch(`${YAHOO_BASE}/${sym}?interval=1m&range=1d`, {
-        signal: AbortSignal.timeout(5_000),
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        },
-      });
-
-      if (!res.ok) continue;
-
-      const json = await res.json();
-      const result = json?.chart?.result?.[0];
-      if (!result) continue;
-
-      const meta = result.meta;
-      const price = meta.regularMarketPrice;
-      const prevClose = meta.previousClose;
-      const change24h = price - prevClose;
-      const changePercent24h = (change24h / prevClose) * 100;
-
-      return NextResponse.json({
-        success: true,
-        symbol: 'XAU/USD',
-        price,
-        change24h: parseFloat(change24h.toFixed(2)),
-        changePercent24h: parseFloat(changePercent24h.toFixed(2)),
-        high24h: meta.regularMarketDayHigh ?? price + 5,
-        low24h: meta.regularMarketDayLow ?? price - 5,
-        volume: meta.regularMarketVolume ?? 0,
-        bid: price - 0.05,
-        ask: price + 0.05,
-        spread: 0.5,
-      });
-    } catch {
-      continue;
-    }
+  // Serve from cache if fresh
+  if (cache && Date.now() - cache.ts < CACHE_TTL) {
+    return NextResponse.json(cache.data);
   }
 
-  return NextResponse.json(
-    { success: false, error: 'No price data source available' },
-    { status: 503 },
-  );
+  try {
+    const res = await fetch(`${BOT_API}/api/price`, {
+      signal: AbortSignal.timeout(6_000),
+    });
+
+    if (!res.ok) {
+      // Fallback to cached if stale but available
+      if (cache) return NextResponse.json(cache.data);
+      throw new Error(`Bot returned ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    // Normalize to the PricePanel schema
+    const result = {
+      success: true,
+      symbol: 'XAU/USD',
+      price: data.price ?? data.close ?? 0,
+      change24h: data.change24h ?? 0,
+      changePercent24h: data.changePercent24h ?? 0,
+      high24h: data.high ?? (data.close ?? 0) + 3,
+      low24h: data.low ?? (data.close ?? 0) - 3,
+      volume: data.volume ?? 0,
+      bid: (data.price ?? data.close ?? 0) - 0.05,
+      ask: (data.price ?? data.close ?? 0) + 0.05,
+      spread: data.spread ?? 0.5,
+    };
+
+    cache = { data: result, ts: Date.now() };
+    return NextResponse.json(result);
+  } catch (err) {
+    // Return stale cache if available
+    if (cache) {
+      return NextResponse.json({ ...cache.data, _cached: true });
+    }
+    return NextResponse.json(
+      { success: false, error: 'Price unavailable' },
+      { status: 503 },
+    );
+  }
 }

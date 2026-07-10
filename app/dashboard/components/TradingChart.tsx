@@ -1,139 +1,139 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
-} from "recharts";
 
-const TIMEFRAMES = ["5m", "15m", "1H", "4H", "D"];
-const MAX_CANDLES = 30;
-
-function seedCandles(basePrice: number) {
-  let prevClose = basePrice;
-  return Array.from({ length: MAX_CANDLES }, (_, i) => {
-    const open = prevClose + (Math.random() - 0.5) * 4;
-    const close = open + (Math.random() - 0.5) * 6;
-    const high = Math.max(open, close) + Math.random() * 3;
-    const low = Math.min(open, close) - Math.random() * 3;
-    prevClose = close;
-    return {
-      time: `${i}h`,
-      open: parseFloat(open.toFixed(2)),
-      high: parseFloat(high.toFixed(2)),
-      low: parseFloat(low.toFixed(2)),
-      close: parseFloat(close.toFixed(2)),
-      volume: Math.floor(Math.random() * 4000 + 500),
-      isUp: close >= open,
-    };
-  });
-}
-
-function Candlestick({ x, y, width, height, payload }: any) {
-  const { open, close, high, low } = payload;
-  const isUp = close >= open;
-  const color = isUp ? "var(--profit)" : "var(--loss)";
-  const scaleMin = payload._chartMin;
-  const scaleMax = payload._chartMax;
-  const range = scaleMax - scaleMin || 1;
-
-  const toY = (val: number) => {
-    const ratio = (val - scaleMin) / range;
-    return y + height - ratio * height;
-  };
-
-  const cx = x + width / 2;
-  const wickTop = toY(high);
-  const wickBottom = toY(low);
-  const bodyTop = toY(Math.max(open, close));
-  const bodyBottom = toY(Math.min(open, close));
-  const bodyW = Math.max(width * 0.6, 2);
-
-  return (
-    <g>
-      <line x1={cx} y1={wickTop} x2={cx} y2={wickBottom} stroke={color} strokeWidth={1.2} />
-      <rect
-        x={cx - bodyW / 2}
-        y={bodyTop}
-        width={bodyW}
-        height={Math.max(bodyBottom - bodyTop, 1)}
-        fill={color}
-        stroke={color}
-        strokeWidth={0.5}
-        rx={1}
-      />
-    </g>
-  );
-}
+const TIMEFRAMES = ["5m", "15m", "1H", "4H", "1D", "1W"];
 
 export function TradingChart() {
   const router = useRouter();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const widgetRef = useRef<any>(null);
   const [tf, setTf] = useState("1H");
-  const [candles, setCandles] = useState(() => seedCandles(4088.385));
-  const tickRef = useRef(0);
+  const [ready, setReady] = useState(false);
+
+  // Map our timeframe labels to TradingView intervals
+  const intervalMap: Record<string, string> = {
+    "5m": "5",
+    "15m": "15",
+    "1H": "60",
+    "4H": "240",
+    "1D": "D",
+    "1W": "W",
+  };
 
   useEffect(() => {
-    const interval = setInterval(async () => {
-      let currentPrice = 4088.385;
-      try {
-        const res = await fetch("/api/price");
-        const data = await res.json();
-        if (data?.success && data.price) currentPrice = data.price;
-      } catch {}
+    if (!containerRef.current || widgetRef.current) return;
 
-      const tick = tickRef.current;
+    const script = document.createElement("script");
+    script.src = "https://s3.tradingview.com/tv.js";
+    script.async = true;
+    script.onload = () => {
+      if (!containerRef.current || !window.TradingView) return;
 
-      setCandles((prev) => {
-        const next = [...prev];
-        const last = { ...next[next.length - 1] };
-
-        if (tick > 0 && tick % 60 === 0) {
-          const newOpen = last.close;
-          const newClose = currentPrice;
-          const newHigh = Math.max(newOpen, newClose) + Math.random() * 0.5;
-          const newLow = Math.min(newOpen, newClose) - Math.random() * 0.5;
-          next.push({
-            time: `${tick}`,
-            open: parseFloat(newOpen.toFixed(2)),
-            high: parseFloat(newHigh.toFixed(2)),
-            low: parseFloat(newLow.toFixed(2)),
-            close: parseFloat(newClose.toFixed(2)),
-            volume: Math.floor(Math.random() * 4000 + 500),
-            isUp: newClose >= newOpen,
-          });
-          if (next.length > MAX_CANDLES) next.shift();
-        } else {
-          if (currentPrice > last.high) last.high = currentPrice;
-          if (currentPrice < last.low) last.low = currentPrice;
-          last.close = currentPrice;
-          last.isUp = last.close >= last.open;
-          last.time = `${tick}`;
-          next[next.length - 1] = last;
-        }
-
-        return next;
+      widgetRef.current = new window.TradingView.widget({
+        container_id: containerRef.current.id,
+        symbol: "OANDA:XAUUSD",
+        interval: intervalMap[tf] || "60",
+        timezone: "Africa/Lagos",
+        theme: "dark",
+        style: "1", // Candles
+        locale: "en",
+        toolbar_bg: "#080c24",
+        enable_publishing: false,
+        hide_side_toolbar: false,
+        allow_symbol_change: false,
+        hideideas: true,
+        show_popup_button: false,
+        studies: ["RSI@tv-basicstudies", "MASimple@tv-basicstudies"],
+        studies_overrides: {
+          "MASimple.length": 20,
+        },
+        overrides: {
+          "paneProperties.background": "#080c24",
+          "paneProperties.backgroundType": "solid",
+          "paneProperties.vertGridProperties.color": "rgba(255,255,255,0.04)",
+          "paneProperties.horzGridProperties.color": "rgba(255,255,255,0.04)",
+          "paneProperties.crossHairProperties.color": "rgba(240,180,41,0.5)",
+          "scalesProperties.textColor": "rgba(255,255,255,0.6)",
+          "scalesProperties.lineColor": "rgba(255,255,255,0.08)",
+        },
+        autosize: true,
+        loading_screen: { backgroundColor: "#080c24" },
       });
 
-      tickRef.current += 1;
-    }, 1000);
+      widgetRef.current.onChartReady(() => setReady(true));
+    };
+    document.body.appendChild(script);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (widgetRef.current) {
+        try { widgetRef.current.remove(); } catch {}
+        widgetRef.current = null;
+      }
+    };
   }, []);
 
-  const chartMin = useMemo(() => Math.min(...candles.map(d => d.low)) - 1, [candles]);
-  const chartMax = useMemo(() => Math.max(...candles.map(d => d.high)) + 1, [candles]);
+  // Change timeframe on the widget without reloading
+  const changeTimeframe = (newTf: string) => {
+    setTf(newTf);
+    if (widgetRef.current?.chart) {
+      widgetRef.current.chart.setChartType(1); // candles
+    }
+    // Reload widget with new timeframe (TV SDK limitation)
+    if (widgetRef.current) {
+      try { widgetRef.current.remove(); } catch {}
+      widgetRef.current = null;
+    }
+    setReady(false);
+    // Small delay to let DOM settle before re-init
+    setTimeout(() => {
+      if (!containerRef.current || !window.TradingView) return;
+      widgetRef.current = new window.TradingView.widget({
+        container_id: containerRef.current.id,
+        symbol: "OANDA:XAUUSD",
+        interval: intervalMap[newTf] || "60",
+        timezone: "Africa/Lagos",
+        theme: "dark",
+        style: "1",
+        locale: "en",
+        toolbar_bg: "#080c24",
+        enable_publishing: false,
+        hide_side_toolbar: false,
+        allow_symbol_change: false,
+        hideideas: true,
+        show_popup_button: false,
+        studies: ["RSI@tv-basicstudies", "MASimple@tv-basicstudies"],
+        studies_overrides: { "MASimple.length": 20 },
+        overrides: {
+          "paneProperties.background": "#080c24",
+          "paneProperties.backgroundType": "solid",
+          "paneProperties.vertGridProperties.color": "rgba(255,255,255,0.04)",
+          "paneProperties.horzGridProperties.color": "rgba(255,255,255,0.04)",
+          "paneProperties.crossHairProperties.color": "rgba(240,180,41,0.5)",
+          "scalesProperties.textColor": "rgba(255,255,255,0.6)",
+          "scalesProperties.lineColor": "rgba(255,255,255,0.08)",
+        },
+        autosize: true,
+        loading_screen: { backgroundColor: "#080c24" },
+      });
+      widgetRef.current.onChartReady(() => setReady(true));
+    }, 100);
+  };
 
-  const dataWithBounds = candles.map(d => ({ ...d, _chartMin: chartMin, _chartMax: chartMax }));
-
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
+    // Fetch recent price data for the AI analysis payload
+    let price = 4088;
+    try {
+      const res = await fetch("/api/price");
+      const data = await res.json();
+      if (data?.price) price = data.price;
+    } catch {}
     const summary = {
       timeframe: tf,
-      candles: candles.slice(-12),
-      currentPrice: candles[candles.length - 1]?.close,
-      high24h: Math.max(...candles.map(d => d.high)),
-      low24h: Math.min(...candles.map(d => d.low)),
-      volume24h: candles.reduce((s, d) => s + d.volume, 0),
+      currentPrice: price,
+      source: "TradingView OANDA:XAUUSD",
     };
     const encoded = encodeURIComponent(JSON.stringify(summary));
     router.push(`/dashboard/learning?chart=${encoded}`);
@@ -148,10 +148,11 @@ export function TradingChart() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <h3 className="text-sm font-bold text-text-primary">XAU/USD</h3>
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className="badge-win font-mono">RSI 68</span>
-            <span className="badge-win font-mono">MACD Bullish</span>
-          </div>
+          <span className="text-[10px] badge-gold">TradingView</span>
+          <span className="flex items-center gap-1.5 text-[10px] text-text-muted">
+            <span className={`inline-block w-1.5 h-1.5 rounded-full ${ready ? "bg-status-win" : "bg-status-warn"}`} />
+            {ready ? "Live" : "Loading..."}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -165,7 +166,7 @@ export function TradingChart() {
             {TIMEFRAMES.map((t) => (
               <button
                 key={t}
-                onClick={() => setTf(t)}
+                onClick={() => changeTimeframe(t)}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                   tf === t
                     ? "text-accent-gold shadow-sm"
@@ -180,93 +181,19 @@ export function TradingChart() {
         </div>
       </div>
 
-      <div className="h-[280px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={dataWithBounds} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-            <CartesianGrid stroke="var(--text-muted)" strokeOpacity={0.12} strokeDasharray="4 4" />
-            <XAxis
-              dataKey="time"
-              stroke="var(--text-primary)"
-              strokeOpacity={0.6}
-              fontSize={11}
-              tickLine={false}
-              axisLine={false}
-            />
-            <YAxis
-              domain={[chartMin, chartMax]}
-              stroke="var(--text-primary)"
-              strokeOpacity={0.6}
-              fontSize={11}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(v) => `$${v.toFixed(0)}`}
-            />
-            <Tooltip
-              content={({ active, payload }) => {
-                if (!active || !payload?.length) return null;
-                const d = payload[0].payload;
-                return (
-                  <div style={{
-                    background: "var(--glass-bg)",
-                    backdropFilter: "blur(12px)",
-                    border: "1px solid var(--glass-border)",
-                    borderRadius: "8px",
-                    padding: "8px 12px",
-                    color: "var(--text-primary)",
-                    fontSize: "12px",
-                  }}>
-                    <p style={{ color: "var(--text-muted)", marginBottom: 4 }}>{d.time}</p>
-                    <p>O: <span style={{ fontFamily: "monospace" }}>${d.open.toFixed(2)}</span></p>
-                    <p>H: <span style={{ fontFamily: "monospace" }}>${d.high.toFixed(2)}</span></p>
-                    <p>L: <span style={{ fontFamily: "monospace" }}>${d.low.toFixed(2)}</span></p>
-                    <p>C: <span style={{ fontFamily: "monospace", color: d.isUp ? "var(--profit)" : "var(--loss)" }}>${d.close.toFixed(2)}</span></p>
-                  </div>
-                );
-              }}
-            />
-            <Bar dataKey="high" shape={<Candlestick />}>
-              {dataWithBounds.map((entry, idx) => (
-                <Cell key={idx} fill={entry.isUp ? "var(--profit)" : "var(--loss)"} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="mt-2 h-[60px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={candles}>
-            <CartesianGrid stroke="var(--text-muted)" strokeOpacity={0.08} strokeDasharray="4 4" />
-            <Bar dataKey="volume" stroke="none" radius={[2, 2, 0, 0]}>
-              {candles.map((entry, idx) => (
-                <Cell key={idx} fill={entry.isUp ? "rgba(0, 230, 118, 0.25)" : "rgba(255, 82, 82, 0.25)"} />
-              ))}
-            </Bar>
-            <Tooltip
-              contentStyle={{
-                background: "var(--glass-bg)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid var(--glass-border)",
-                borderRadius: "12px",
-                color: "var(--text-primary)",
-                fontSize: "12px",
-              }}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="flex items-center gap-4 mt-3 pt-3 text-xs" style={{ borderTop: "1px solid var(--glass-border)" }}>
-        <span className="flex items-center gap-1.5 text-text-muted">
-          <span className="w-5 h-0.5 rounded" style={{ background: "rgba(240, 180, 41, 0.6)" }} /> MA20: $4,068
-        </span>
-        <span className="flex items-center gap-1.5 text-text-muted">
-          <span className="w-5 h-0.5 rounded" style={{ background: "rgba(0, 230, 118, 0.6)" }} /> MA50: $4,055
-        </span>
-        <span className="flex items-center gap-1.5 text-text-muted">
-          <span className="w-5 h-0.5 rounded" style={{ background: "rgba(68, 138, 255, 0.6)" }} /> MA200: $4,010
-        </span>
-      </div>
+      <div
+        ref={containerRef}
+        id="tv-chart-container"
+        className="h-[400px] rounded-lg overflow-hidden"
+        style={{ background: "#080c24" }}
+      />
     </motion.div>
   );
+}
+
+// Type declaration for the TradingView global
+declare global {
+  interface Window {
+    TradingView: any;
+  }
 }

@@ -1,21 +1,18 @@
 # Analyzer Dashboard
 
-> **Live:** [analyzer-dashboard-kohl.vercel.app](https://analyzer-dashboard-kohl.vercel.app)
+Next.js 14 dashboard for the AOT Analyzer Bot — live XAU/USD signals, trade journal, analytics, and AI learning hub.
 
-Next.js 14 dashboard for the AOT Analyzer Bot — real-time trading signals, AI-powered trade analysis, and chart screenshot verification.
+## Dashboard Pages
 
-## Features
-
-- **Dashboard** — Performance overview with stats cards and charts (Recharts)
-- **Trade Log** — Filterable trade history table
-- **AI Trade Analyzer** — Analyze trades with Nvidia Llama 3.3 70B
-- **Screenshot Upload** — Upload chart screenshots for dual AI verification
-- **Learning Q&A** — Ask questions about trading strategies
-- **Firebase Firestore** — Real-time data sync
-
-## Tech Stack
-
-Next.js 14 · TypeScript · Tailwind CSS · Recharts · Firebase Web SDK · Framer Motion · Axios
+| Route | What it does |
+|-------|-------------|
+| `/dashboard` | Live TradingView chart, quick stats, account card, open positions, signal feed |
+| `/dashboard/analytics` | P&L breakdown, win rate, profit factor, trade history |
+| `/dashboard/signals` | Active signals with entry levels, signal history table, alert settings |
+| `/dashboard/journal` | Trades displayed as journal cards, filter by win/loss, stats summary |
+| `/dashboard/backtest` | Walk-forward backtest simulator with Monte Carlo option |
+| `/dashboard/learning` | AI chat (Learn mode + Analyze Chart with screenshot upload) |
+| `/dashboard/settings` | Balance editing, risk parameters, position calculator, AI Risk Wizard |
 
 ## Getting Started
 
@@ -24,63 +21,12 @@ npm install
 npm run dev
 ```
 
-Create `web/.env.local` with your Firebase config and API keys.
+Create `web/.env.local` from `.env.example` with Firebase Web SDK config and bot URL.
 
-## Environment Variables
+## Key Features
 
-| Variable | Description |
-|----------|-------------|
-| `NEXT_PUBLIC_FIREBASE_API_KEY` | Firebase API key |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase auth domain |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project ID |
-| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Firebase storage bucket |
-| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID |
-| `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase app ID |
-| `BOT_API_URL` | Analyzer bot API base URL |
-| `NVIDIA_API_KEY` | Nvidia NIM API key |
-
-## Project Structure
-
-```
-web/
-├── app/
-│   ├── layout.tsx
-│   ├── page.tsx              # Home / landing
-│   ├── dashboard/
-│   │   ├── page.tsx          # Overview with stats & charts
-│   │   ├── trades/page.tsx   # Trade history table
-│   │   ├── analytics/page.tsx # Charts & AI analysis
-│   │   └── learning/page.tsx # Q&A chatbot
-│   └── api/                  # Next.js API routes
-│       ├── trades/
-│       ├── stats/
-│       ├── analyze-trade-nvidia/
-│       ├── learn/
-│       ├── analyze-screenshot/
-│       └── verification-history/
-├── components/
-│   ├── layout/               # Header, Sidebar
-│   ├── dashboard/            # StatsCards, PerformanceChart
-│   ├── trades/               # TradeTable, TradeFilters
-│   ├── ai/                   # TradeAnalyzer, LearningBot, ScreenshotAnalyzer
-│   └── ui/                   # Card, Button, Tabs, Spinner
-├── lib/                      # Firebase config, API client, formatters
-├── types/                    # TypeScript interfaces
-├── public/                   # Static assets
-└── .env.local                # Local environment variables (gitignored)
-```
-
-## API Routes
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/trades` | Fetch all trades |
-| GET | `/api/stats` | Fetch trading stats |
-| POST | `/api/analyze-trade-nvidia` | AI trade analysis |
-| POST | `/api/learn` | Learning Q&A query |
-| POST | `/api/analyze-screenshot` | Upload & verify screenshot |
-| GET | `/api/verification-history` | Screenshot verification log |
-
----
-
-*Part of the AOT Analyzer Bot system.*
+- **Glassmorphism design** — responsive mobile-first dark/light theme
+- **Live data** — Firestore subscriptions with API fallback, no mock data
+- **Price** — fetches directly from Hyperliquid (no API key needed)
+- **Responsive** — fully adaptive to all screen sizes
+- **Shared balance** — persisted to localStorage, synced across all pages

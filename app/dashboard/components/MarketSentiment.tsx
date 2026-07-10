@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { AlertTriangle, Gauge, TrendingUp, Globe, DollarSign, Activity } from "lucide-react";
-import { useDashboardData } from "@/lib/data-context";
 
 const IMPACT: Record<string, string> = {
   HIGH: "bg-status-loss/10 text-status-loss",
@@ -10,9 +9,15 @@ const IMPACT: Record<string, string> = {
   LOW: "bg-status-info/10 text-status-info",
 };
 
+const marketData = {
+  usdStrength: 52,
+  volatility: 18,
+  riskSentiment: "NEUTRAL",
+  events: [] as { time: string; event: string; impact: string; xau: string }[],
+};
+
 export function MarketSentiment() {
-  const { sentiment } = useDashboardData();
-  const { events } = sentiment;
+  const { usdStrength, volatility, riskSentiment, events } = marketData;
 
   return (
     <motion.div
@@ -36,12 +41,12 @@ export function MarketSentiment() {
                 <DollarSign className="w-3.5 h-3.5 text-status-info" />
                 <span className="text-xs font-medium text-text-muted">USD Strength</span>
               </div>
-              <span className="text-xs font-mono text-text-primary">{sentiment.usdStrength}%</span>
+              <span className="text-xs font-mono text-text-primary">{usdStrength}%</span>
             </div>
             <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: `${sentiment.usdStrength}%` }}
+                animate={{ width: `${usdStrength}%` }}
                 transition={{ duration: 1, ease: "easeOut" }}
                 className="h-full rounded-full"
                 style={{ background: "linear-gradient(90deg, rgba(68,138,255,0.5), rgb(var(--status-info-rgb)))" }}
@@ -55,12 +60,12 @@ export function MarketSentiment() {
                 <Activity className="w-3.5 h-3.5 text-accent-gold" />
                 <span className="text-xs font-medium text-text-muted">Volatility</span>
               </div>
-              <span className="text-xs font-mono text-text-primary">{sentiment.volatility}%</span>
+              <span className="text-xs font-mono text-text-primary">{volatility}%</span>
             </div>
             <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: `${sentiment.volatility}%` }}
+                animate={{ width: `${volatility}%` }}
                 transition={{ duration: 1, ease: "easeOut", delay: 0.15 }}
                 className="h-full rounded-full"
                 style={{ background: "linear-gradient(90deg, rgba(240,180,41,0.5), rgb(var(--accent-gold-rgb)))" }}
@@ -75,7 +80,7 @@ export function MarketSentiment() {
             <Gauge className="w-3.5 h-3.5 text-accent-gold" />
             <span className="text-xs text-text-muted">Risk Sentiment</span>
           </div>
-          <span className="text-xs font-semibold font-mono text-accent-gold">{sentiment.riskSentiment}</span>
+          <span className="text-xs font-semibold font-mono text-accent-gold">{riskSentiment}</span>
         </div>
 
         {/* Events */}

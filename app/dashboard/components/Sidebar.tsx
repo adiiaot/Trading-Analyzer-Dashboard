@@ -1,27 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, BarChart3, BookOpen, Radio, GraduationCap,
-  Shield, Calendar, Settings, ChevronLeft, ChevronRight, X,
-  FileText, Lock, BarChart4,
+  LayoutDashboard, BarChart3, Radio, GraduationCap,
+  Settings, ChevronLeft, ChevronRight, X, BarChart4,
 } from "lucide-react";
 
 const NAV = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-  { label: "Journal", href: "/dashboard/journal", icon: BookOpen },
   { label: "Signals", href: "/dashboard/signals", icon: Radio },
   { label: "Backtest", href: "/dashboard/backtest", icon: BarChart4 },
   { label: "Learning", href: "/dashboard/learning", icon: GraduationCap },
-  { label: "Risk Calculator", href: "/dashboard/risk-calculator", icon: Shield },
-  { label: "Calendar", href: "/dashboard/economic-calendar", icon: Calendar },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
-  { label: "Privacy", href: "/dashboard/privacy", icon: Lock },
-  { label: "Terms", href: "/dashboard/terms", icon: FileText },
 ];
 
 const sidebarVariants = {
@@ -63,17 +58,19 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
       >
         <div className={`flex items-center border-b h-14 shrink-0 ${collapsed ? "justify-center px-0" : "px-5 gap-3"}`}
           style={{ borderColor: "var(--glass-border)" }}>
-          <motion.div
-            whileHover={{ scale: 1.1, rotate: -5 }}
-            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-            style={{ background: "rgba(240, 180, 41, 0.15)" }}
-          >
-            <span className="text-accent-gold font-bold text-sm">A</span>
-          </motion.div>
+          <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
+            <Image
+              src="/images/tcc-logo.jpg"
+              alt="TCC Logo"
+              width={32}
+              height={32}
+              className="w-full h-full object-cover"
+            />
+          </div>
           {!collapsed && (
             <div className="overflow-hidden">
-              <h1 className="text-sm font-bold text-text-primary truncate">AOT</h1>
-              <p className="text-[10px] text-text-muted uppercase tracking-widest truncate">Analyzer Bot</p>
+              <h1 className="text-sm font-bold text-text-primary truncate">TCC</h1>
+              <p className="text-[10px] text-text-muted uppercase tracking-widest truncate">Command Center</p>
             </div>
           )}
         </div>

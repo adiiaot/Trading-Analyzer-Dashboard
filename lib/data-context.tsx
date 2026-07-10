@@ -2,30 +2,29 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from "react";
 import {
-  subscribeTrades, subscribeSignals, subscribeEconCalendar,
-  subscribeJournalEntries, calculateStats,
+  subscribeTrades, subscribeSignals, calculateStats,
 } from "@/lib/firebase";
 import type { Trade, Signal, TradingStats } from "@/types";
-import { QUICK_STATS, PRICE, POSITIONS, SIGNALS, SENTIMENT, ACCOUNT } from "@/lib/constants";
+import { PRICE } from "@/lib/constants";
+
+interface Position {
+  direction: "BUY" | "SELL";
+  entry: number;
+  current: number;
+  pips: number;
+  pnl: number | null;
+  tp: number;
+  sl: number;
+}
 
 interface DashboardData {
   trades: Trade[];
   signals: Signal[];
   stats: TradingStats | null;
   price: typeof PRICE & { high24h: number; low24h: number; volume: number; bid: number; ask: number; spread: number };
-  positions: {
-    direction: "BUY" | "SELL";
-    entry: number;
-    current: number;
-    pips: number;
-    pnl: number | null;
-    tp: number;
-    sl: number;
-  }[];
-  sentiment: typeof SENTIMENT;
-  account: typeof ACCOUNT;
   balance: number;
   setBalance: (val: number) => void;
+  positions: Position[];
   signalsFeed: {
     id: number;
     time: string;
@@ -35,33 +34,16 @@ interface DashboardData {
     pnl: number | null;
   }[];
   quickStats: { todayPnl: number; winRate: number; totalTrades: number; openPositions: number };
-  econEvents: any[];
-  journalEntries: any[];
-  addJournalEntry: (entry: any) => Promise<void>;
-  chartContext: any;
-  setChartContext: (data: any) => void;
   loading: boolean;
 }
 
 const defaultPrice = { ...PRICE, high24h: PRICE.price + 12, low24h: PRICE.price - 12, volume: 189200, bid: PRICE.price - 0.05, ask: PRICE.price + 0.05, spread: 0.5 };
 
 const defaultData: DashboardData = {
-  trades: [],
-  signals: [],
-  stats: null,
-  price: defaultPrice,
+  trades: [], signals: [], stats: null, price: defaultPrice,
+  balance: 5245.50, setBalance: () => {},
   positions: [],
-  sentiment: SENTIMENT,
-  account: ACCOUNT,
-  balance: 5245.50,
-  setBalance: () => {},
-  signalsFeed: [],
-  quickStats: { todayPnl: 0, winRate: 0, totalTrades: 0, openPositions: 0 },
-  econEvents: [],
-  journalEntries: [],
-  addJournalEntry: async () => {},
-  chartContext: null,
-  setChartContext: () => {},
+  signalsFeed: [], quickStats: { todayPnl: 0, winRate: 0, totalTrades: 0, openPositions: 0 },
   loading: true,
 };
 
@@ -83,12 +65,9 @@ async function fetchFromApi(url: string) {
 export function DataProvider({ children }: { children: ReactNode }) {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [signals, setSignals] = useState<Signal[]>([]);
-  const [econEvents, setEconEvents] = useState<any[]>([]);
-  const [journalEntries, setJournalEntries] = useState<any[]>([]);
   const [tradesLoading, setTradesLoading] = useState(true);
   const [signalsLoading, setSignalsLoading] = useState(true);
   const [usingFallback, setUsingFallback] = useState(false);
-  const [chartContext, setChartContext] = useState<any>(null);
   const [livePrice, setLivePrice] = useState(defaultPrice);
   const prevPriceRef = useRef(defaultPrice.price);
   const [balance, setBalanceState] = useState(() => {
@@ -106,23 +85,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const addJournalEntry = useCallback(async (entry: any) => {
-    try {
-      const res = await fetch("/api/journal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(entry),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setJournalEntries((prev) => [{ ...entry, id: data.id }, ...prev]);
-      }
-    } catch {
-      setJournalEntries((prev) => [{ ...entry, id: Date.now().toString() }, ...prev]);
-    }
-  }, []);
-
-  // Live price streaming — polls every 3 seconds
+  // Live price — poll every 10 seconds
   useEffect(() => {
     const fetchPrice = async () => {
       const data = await fetchFromApi("/api/price");
@@ -143,14 +106,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
     };
     fetchPrice();
-    const interval = setInterval(fetchPrice, 1000);
+    const interval = setInterval(fetchPrice, 10000);
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     let unsubTrades: (() => void) | undefined;
     let unsubSignals: (() => void) | undefined;
-    let pollInterval: ReturnType<typeof setInterval> | undefined;
 
     const init = async () => {
       let tradesSubscribed = false;
@@ -187,19 +149,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     init();
 
-    const unsubEcon = subscribeEconCalendar((data) => {
-      if (data.length > 0) setEconEvents(data);
-    });
-    const unsubJournal = subscribeJournalEntries((data) => {
-      if (data.length > 0) setJournalEntries(data);
-    });
-
     return () => {
       unsubTrades?.();
       unsubSignals?.();
-      unsubEcon();
-      unsubJournal();
-      if (pollInterval) clearInterval(pollInterval);
     };
   }, []);
 
@@ -219,15 +171,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const stats = trades.length > 0 ? calculateStats(trades) : null;
 
   const value: DashboardData = {
-    trades,
-    signals,
-    stats,
-    price: livePrice,
-    positions: trades.length > 0 ? mapTradesToPositions(trades) : [],
-    sentiment: SENTIMENT,
-    account: { ...ACCOUNT, balance },
-    balance,
-    setBalance,
+    trades, signals, stats, price: livePrice,
+    balance, setBalance,
+    positions: trades.filter(t => t.status === 'open').map(t => ({
+      direction: t.trend === 'UP' ? 'BUY' as const : 'SELL' as const,
+      entry: t.entryPrice,
+      current: livePrice.price,
+      pips: t.trend === 'UP' ? (livePrice.price - t.entryPrice) * 10 : (t.entryPrice - livePrice.price) * 10,
+      pnl: t.pnl ?? null,
+      tp: t.takeProfit,
+      sl: t.stopLoss,
+    })),
     signalsFeed: signals.length > 0 ? mapSignalsToFeed(signals) : [],
     quickStats: stats
       ? {
@@ -237,27 +191,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
           openPositions: trades.filter((t) => t.status === "open").length,
         }
       : { todayPnl: 0, winRate: 0, totalTrades: 0, openPositions: 0 },
-    econEvents,
-    journalEntries,
-    addJournalEntry,
-    chartContext,
-    setChartContext,
     loading: tradesLoading || signalsLoading,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
-}
-
-function mapTradesToPositions(trades: Trade[]) {
-  return trades.filter((t) => t.status === "open").slice(0, 5).map((t) => ({
-    direction: (t.trend === "UP" ? "BUY" : "SELL") as "BUY" | "SELL",
-    entry: t.entryPrice,
-    current: t.entryPrice + (t.pnl ? t.pnl / t.entrySize : 0),
-    pips: t.pnl ? parseFloat(((t.pnl / 0.01) * 0.1).toFixed(1)) : 0,
-    pnl: t.pnl ?? null,
-    tp: t.takeProfit,
-    sl: t.stopLoss,
-  }));
 }
 
 function mapSignalsToFeed(signals: Signal[]) {

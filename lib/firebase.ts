@@ -8,12 +8,10 @@ import {
   limit,
   onSnapshot,
   doc,
-  setDoc,
   updateDoc,
   deleteDoc,
   addDoc,
   Timestamp,
-  where,
 } from 'firebase/firestore';
 import type { Trade, TradingStats, Signal } from '@/types';
 
@@ -32,30 +30,14 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
 
-export const getAnalytics = async () => {
-  if (typeof window !== 'undefined') {
-    const { getAnalytics: ga } = await import('firebase/analytics');
-    return ga(app);
-  }
-  return null;
-};
-
 export const getTrades = async (limitCount: number = 100): Promise<Trade[]> => {
-  const q = query(
-    collection(db, 'trades'),
-    orderBy('timestamp', 'desc'),
-    limit(limitCount)
-  );
+  const q = query(collection(db, 'trades'), orderBy('timestamp', 'desc'), limit(limitCount));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Trade));
 };
 
 export const getSignals = async (limitCount: number = 50): Promise<Signal[]> => {
-  const q = query(
-    collection(db, 'signals'),
-    orderBy('timestamp', 'desc'),
-    limit(limitCount)
-  );
+  const q = query(collection(db, 'signals'), orderBy('timestamp', 'desc'), limit(limitCount));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Signal));
 };
@@ -74,30 +56,6 @@ export const subscribeSignals = (callback: (signals: Signal[]) => void, onError?
     const signals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Signal));
     callback(signals);
   }, () => onError?.());
-};
-
-export const subscribeEconCalendar = (callback: (events: any[]) => void) => {
-  const q = query(collection(db, 'econCalendar'), orderBy('timestamp', 'asc'));
-  return onSnapshot(q, (snapshot) => {
-    const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    callback(events);
-  }, () => callback([]));
-};
-
-export const subscribeAnalytics = (callback: (analytics: any[]) => void) => {
-  const q = query(collection(db, 'analytics'), orderBy('periodStart', 'desc'), limit(10));
-  return onSnapshot(q, (snapshot) => {
-    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    callback(data);
-  }, () => callback([]));
-};
-
-export const subscribeJournalEntries = (callback: (entries: any[]) => void) => {
-  const q = query(collection(db, 'journal'), orderBy('date', 'desc'), limit(50));
-  return onSnapshot(q, (snapshot) => {
-    const entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    callback(entries);
-  }, () => callback([]));
 };
 
 export const addTrade = async (trade: Omit<Trade, 'id'>) => {

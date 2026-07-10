@@ -7,7 +7,7 @@ import { useDashboardData } from "@/lib/data-context";
 import { formatCurrency } from "@/lib/utils";
 
 export function TradingAccountCard() {
-  const { account, balance, setBalance } = useDashboardData();
+  const { balance, setBalance } = useDashboardData();
   const [visible, setVisible] = useState(true);
   const [editing, setEditing] = useState(false);
   const [newBalance, setNewBalance] = useState(balance.toString());
@@ -37,7 +37,7 @@ export function TradingAccountCard() {
               <Wallet2 className="w-4 h-4 text-status-win" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-text-primary">{account.demoLive}</p>
+              <p className="text-xs font-semibold text-text-primary">Demo</p>
               <p className="text-[10px] text-text-muted">Account</p>
             </div>
           </div>
@@ -76,13 +76,13 @@ export function TradingAccountCard() {
           <div className="rounded-xl p-3" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
             <p className="text-[10px] text-text-muted mb-1">Available</p>
             <p className="text-sm font-mono font-semibold text-text-primary tabular-nums">
-              {visible ? formatCurrency(account.available) : "****"}
+              {visible ? formatCurrency(balance * 0.8) : "****"}
             </p>
           </div>
           <div className="rounded-xl p-3" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
             <p className="text-[10px] text-text-muted mb-1">Margin</p>
             <p className="text-sm font-mono font-semibold text-text-primary tabular-nums">
-              {visible ? formatCurrency(account.usedMargin) : "****"}
+              {visible ? formatCurrency(balance * 0.2) : "****"}
             </p>
           </div>
         </div>
@@ -93,7 +93,7 @@ export function TradingAccountCard() {
           <span className="flex items-center gap-1.5 text-[11px] font-medium text-status-win px-2.5 py-0.5 rounded-full"
             style={{ background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.12)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-status-win animate-pulse-soft" />
-            {account.status}
+            Active
           </span>
         </div>
 

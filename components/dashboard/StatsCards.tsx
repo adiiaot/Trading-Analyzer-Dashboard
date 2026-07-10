@@ -6,7 +6,7 @@ import { TradingStats } from '@/types';
 import {
   DollarSign, Target, TrendingUp, Wallet, Link, Clock,
 } from 'lucide-react';
-import { animations } from '@/lib/animations/variants';
+
 
 interface StatsCardsProps {
   stats: TradingStats;
@@ -141,9 +141,9 @@ export const StatsCards = ({ stats, currentCapital }: StatsCardsProps) => {
 
   return (
     <motion.div
-      variants={animations.container}
-      initial="hidden"
-      animate="show"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, staggerChildren: 0.08 }}
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4"
     >
       {cards.map((card, idx) => {
@@ -151,7 +151,9 @@ export const StatsCards = ({ stats, currentCapital }: StatsCardsProps) => {
         return (
           <motion.div
             key={idx}
-            variants={animations.item}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: idx * 0.08 }}
             whileHover={{
               y: -2,
               boxShadow: '0 0 20px rgba(0, 255, 136, 0.15)',

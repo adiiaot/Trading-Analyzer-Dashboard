@@ -6,6 +6,7 @@ import { Providers } from "./providers";
 export const metadata: Metadata = {
   title: "Trading Command Center — XAU/USD",
   description: "Professional gold trading analytics for day traders and scalpers.",
+  icons: { icon: "/images/tcc-logo.jpg" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

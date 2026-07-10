@@ -2,7 +2,20 @@
 
 import React, { useState, useRef } from 'react';
 import { Upload, Loader, AlertCircle, CheckCircle, X } from 'lucide-react';
-import { Signal, ScreenshotAnalysisResult } from '@/types';
+import { Signal } from '@/types';
+
+interface ScreenshotAnalysisResult {
+  success: boolean;
+  message?: string;
+  signal?: Signal;
+  verification: {
+    score: number;
+    data_source: string;
+    confidence_boost: string;
+    vision_confidence?: number;
+    discrepancies?: string[];
+  };
+}
 
 interface ScreenshotAnalyzerProps {
   onSignalReceived?: (signal: Signal) => void;

@@ -79,46 +79,8 @@ export interface TradingStats {
   consecutive_losses: number;
 }
 
-export interface AnalysisRequest {
-  trade_id: string;
-  trade: Trade;
-}
-
-export interface AnalysisResult {
-  trade_id: string;
-  analysis: string;
-  improvements: string[];
-  confidence: number;
-  timestamp: string;
-}
-
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
-}
-
-export interface LearningTopic {
-  question: string;
-  answer: string;
-  topic: 'forex' | 'gold' | 'trading' | 'risk_management';
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-}
-
-export interface VerificationResult {
-  verified: boolean;
-  score: number;
-  confidence_boost: string;
-  data_source: string;
-  discrepancies: string[];
-  vision_confidence: number;
-}
-
-export interface ScreenshotAnalysisResult {
-  success: boolean;
-  signal?: Signal;
-  mode: 'api_only' | 'api_with_screenshot';
-  final_confidence?: number;
-  verification: VerificationResult;
-  message: string;
 }

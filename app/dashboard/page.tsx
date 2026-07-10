@@ -7,7 +7,6 @@ import { QuickStats } from "./components/QuickStats";
 import { TradingChart } from "./components/TradingChart";
 import { OpenPositionsTable } from "./components/OpenPositionsTable";
 import { SignalFeed } from "./components/SignalFeed";
-import { MarketSentiment } from "./components/MarketSentiment";
 
 const container = {
   hidden: { opacity: 0 },
@@ -57,10 +56,9 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* Bottom: Signal Feed, Sentiment, Telegram */}
-      <motion.div variants={section} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* Bottom: Signal Feed, Telegram */}
+      <motion.div variants={section} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <SignalFeed />
-        <MarketSentiment />
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">

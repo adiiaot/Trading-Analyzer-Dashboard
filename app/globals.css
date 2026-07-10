@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root, [data-theme="dark"] {
-  --surface-rgb: 8 12 36;
-  --surface-raised-rgb: 12 17 48;
-  --surface-overlay-rgb: 17 22 61;
-  --text-primary-rgb: 232 237 245;
-  --text-secondary-rgb: 139 155 181;
-  --text-muted-rgb: 90 106 133;
+  --surface-rgb: 19 23 34;
+  --surface-raised-rgb: 30 34 45;
+  --surface-overlay-rgb: 42 46 57;
+  --text-primary-rgb: 209 212 220;
+  --text-secondary-rgb: 120 123 134;
+  --text-muted-rgb: 93 96 107;
   --accent-gold-rgb: 240 180 41;
   --accent-gold-hover-rgb: 212 149 42;
   --accent-green-rgb: 0 230 118;
@@ -21,15 +21,15 @@
   --shadow-card: 0 2px 8px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.15);
   --shadow-card-hover: 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2), 0 0 0 1px rgba(240,180,41,0.12);
   --shadow-card-glow: 0 4px 20px rgba(240,180,41,0.2), 0 0 60px rgba(240,180,41,0.06);
-  --glass-bg: rgba(12, 17, 48, 0.60);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shine: rgba(255, 255, 255, 0.03);
+  --glass-bg: rgba(30, 34, 45, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-shine: rgba(255, 255, 255, 0.02);
   --profit: #00e676;
   --loss: #ff5252;
   --gold: #f0b429;
-  --card: #0c1130;
-  --bg-gradient: linear-gradient(135deg, #080c24 0%, #0d1233 25%, #0f1a3a 50%, #0c1130 75%, #080c24 100%);
-  --bg-radial: radial-gradient(ellipse at 50% 0%, rgba(240,180,41,0.03) 0%, transparent 60%);
+  --card: #1e222d;
+  --bg-gradient: linear-gradient(180deg, #131722 0%, #1a1e2a 50%, #131722 100%);
+  --bg-radial: radial-gradient(ellipse at 50% 0%, rgba(240,180,41,0.02) 0%, transparent 60%);
 }
 
 [data-theme="light"] {

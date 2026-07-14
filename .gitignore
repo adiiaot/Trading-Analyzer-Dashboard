@@ -14,6 +14,9 @@ serviceAccountKey.json
 .next/
 out/
 
+#BACKTEST RESULTS
+backtest_results/
+
 # Dependencies
 node_modules/
 

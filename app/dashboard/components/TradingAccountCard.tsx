@@ -42,10 +42,10 @@ export function TradingAccountCard() {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <button onClick={() => setVisible(!visible)} className="p-1.5 rounded-lg transition-colors hover:bg-glass" style={{ color: "var(--text-muted)" }}>
+            <button onClick={() => setVisible(!visible)} className="p-1.5 rounded-lg transition-colors hover:bg-[var(--glass-bg)]" style={{ color: "var(--text-muted)" }}>
               {visible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
             </button>
-            <button onClick={() => setEditing(true)} className="p-1.5 rounded-lg transition-colors hover:bg-glass" style={{ color: "var(--text-muted)" }}>
+            <button onClick={() => setEditing(true)} className="p-1.5 rounded-lg transition-colors hover:bg-[var(--glass-bg)]" style={{ color: "var(--text-muted)" }}>
               <Pencil className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -139,7 +139,7 @@ export function TradingAccountCard() {
             >
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-lg font-bold text-text-primary">Edit Balance</h3>
-                <button onClick={() => setEditing(false)} className="p-1 rounded-lg hover:bg-glass">
+                <button onClick={() => setEditing(false)} className="p-1 rounded-lg hover:bg-[var(--glass-bg)]">
                   <X className="w-5 h-5" style={{ color: "var(--text-muted)" }} />
                 </button>
               </div>

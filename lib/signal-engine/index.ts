@@ -10,3 +10,5 @@ export { sessionTracker } from './session-tracker';
 export { fetchCandles, fetchCandlesMulti, fetchCurrentPrice } from './hyperliquid-client';
 export { generateSignal } from './signal-generator';
 export { runBacktest } from './backtester';
+export { checkDxyCorrelation } from './dxy-correlation';
+export type { DxyState } from './dxy-correlation';

@@ -44,7 +44,7 @@ export function QuickStats() {
       value: openPositions.toString(),
       icon: Briefcase,
       accent: openPositions > 0 ? "text-accent-gold" : "text-text-muted",
-      bg: openPositions > 0 ? "bg-accent-gold/10" : "bg-glass",
+      bg: openPositions > 0 ? "bg-accent-gold/10" : "bg-[var(--glass-bg)]",
       border: openPositions > 0 ? "rgba(240,180,41,0.15)" : "var(--glass-border)",
       trend: null,
     },

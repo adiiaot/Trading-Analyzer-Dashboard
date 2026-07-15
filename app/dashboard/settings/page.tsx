@@ -329,7 +329,7 @@ export default function SettingsPage() {
                         {WIZARD_QUESTIONS.map((_, i) => (
                           <div
                             key={i}
-                            className={`h-1.5 flex-1 rounded-full ${i <= wizardStep ? "bg-accent-gold" : "bg-glass-border"}`}
+                            className={`h-1.5 flex-1 rounded-full ${i <= wizardStep ? "bg-accent-gold" : "bg-[var(--glass-border)]"}`}
                           />
                         ))}
                       </div>

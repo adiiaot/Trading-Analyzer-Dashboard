@@ -71,7 +71,7 @@ export function PricePanel() {
                 <h2 className="text-lg font-bold text-text-primary">XAU/USD</h2>
                 <span className="badge-gold text-[10px]">Gold</span>
               </div>
-              <div className="h-10 w-48 rounded bg-glass animate-pulse mt-1" />
+              <div className="h-10 w-48 rounded bg-[var(--glass-bg)] animate-pulse mt-1" />
             </div>
           </div>
         </div>

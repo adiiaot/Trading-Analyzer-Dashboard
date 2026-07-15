@@ -17,7 +17,7 @@ const impacts: Record<string, { label: string; color: string }> = {
 };
 
 function ImpactBadge({ impact }: { impact: string }) {
-  const info = impacts[impact.toLowerCase()] || impacts.low;
+  const info = impacts[impact?.toLowerCase() || 'low'] || impacts.low;
   return (
     <span className="text-[10px] font-bold px-2 py-0.5 rounded" style={{
       background: `${info.color}15`,

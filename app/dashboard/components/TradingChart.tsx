@@ -182,7 +182,7 @@ export function TradingChart() {
               </span>
             </>
           ) : (
-            <div className="h-7 sm:h-8 w-32 sm:w-36 rounded bg-glass animate-pulse" />
+            <div className="h-7 sm:h-8 w-32 sm:w-36 rounded bg-[var(--glass-bg)] animate-pulse" />
           )}
 
           {/* Actions: pull right on desktop */}

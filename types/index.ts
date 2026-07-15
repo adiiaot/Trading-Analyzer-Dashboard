@@ -84,3 +84,47 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
 }
+
+export interface JournalEntry {
+  id: string;
+  userId?: string;
+  timestamp: string;
+  source?: string;
+  notes: string;
+  sentiment?: string;
+  analysis?: {
+    theme?: string;
+    actionItems?: string[];
+    relatedSignals?: string[];
+  };
+  relatedTradeId?: string;
+}
+
+export interface EconEvent {
+  id: string;
+  title: string;
+  timestamp: number;
+  impact: 'high' | 'medium' | 'low';
+  forecast?: string;
+  previous?: string;
+  actual?: string;
+  currency?: string;
+  description?: string;
+  goldPrediction?: {
+    direction: 'bullish' | 'bearish' | 'neutral';
+    confidence: number;
+    explanation: string;
+  };
+}
+
+export interface BriefData {
+  price: number;
+  priceChange24h: number;
+  priceChangePercent24h: number;
+  high24h: number;
+  low24h: number;
+  activeSignals: number;
+  activeSignalDetails: { trend: string; confidence: number; entry: number }[];
+  todayTrades: { count: number; wins: number; losses: number; totalPnl: number };
+  sessionWindow: string;
+}

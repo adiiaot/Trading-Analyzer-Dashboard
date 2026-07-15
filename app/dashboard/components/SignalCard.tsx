@@ -11,7 +11,7 @@ interface SignalOrder {
 interface SignalCardProps {
   signalId: number;
   timestamp: string;
-  status: "pending" | "filling" | "filled" | "expired" | "closed";
+  status: "pending" | "filling" | "filled" | "expired" | "closed" | "won" | "lost";
   confidence: number;
   orders: SignalOrder[];
   pnl?: number;
@@ -33,6 +33,8 @@ export function SignalCard({
     filled: "win",
     expired: "loss",
     closed: "info",
+    won: "win",
+    lost: "loss",
   };
 
   const statusEmojis: Record<string, string> = {
@@ -41,10 +43,16 @@ export function SignalCard({
     filled: "✓",
     expired: "⏹️",
     closed: "✓",
+    won: "✅",
+    lost: "❌",
   };
 
+  const borderColor = status === 'won' ? 'rgb(var(--status-win-rgb))'
+    : status === 'lost' ? 'rgb(var(--status-loss-rgb))'
+    : '#f0b429';
+
   return (
-    <Card className="mb-4" style={{ borderLeft: "4px solid #f0b429" }}>
+    <Card className="mb-4" style={{ borderLeft: `4px solid ${borderColor}` }}>
       <div className="flex justify-between items-start mb-4">
         <div>
           <h4 className="font-bold text-lg text-text-primary">Signal #{signalId}</h4>

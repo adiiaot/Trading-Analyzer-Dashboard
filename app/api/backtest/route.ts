@@ -1,36 +1,27 @@
 import { NextResponse } from 'next/server';
+import { runBacktest } from '@/lib/signal-engine/backtester';
 
 export const dynamic = 'force-dynamic';
-
-const BOT_API = process.env.NEXT_PUBLIC_BOT_API_URL || 'http://localhost:8000';
+// Vercel: 60s (Hobby), 300s (Pro), 900s (Enterprise)
+export const maxDuration = 300;
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const months = searchParams.get('months') || '12';
-    const sessionFilter = searchParams.get('sessionFilter') || 'false';
-    const mc = searchParams.get('mc') || 'false';
+    const months = parseInt(searchParams.get('months') || '12', 10);
+    const sessionFilter = searchParams.get('sessionFilter') === 'true';
+    const mc = searchParams.get('mc') === 'true';
 
-    const res = await fetch(
-      `${BOT_API}/api/backtest?months=${months}&sessionFilter=${sessionFilter}&mc=${mc}`,
-      { signal: AbortSignal.timeout(120_000) }
-    );
+    const result = await runBacktest(months, sessionFilter, false, mc);
 
-    if (!res.ok) {
-      const text = await res.text();
-      return NextResponse.json(
-        { success: false, error: `Bot returned ${res.status}: ${text}` },
-        { status: 502 }
-      );
-    }
-
-    const data = await res.json();
-    return NextResponse.json(data);
+    return NextResponse.json(result, {
+      status: result.success ? 200 : 503,
+    });
   } catch (error: any) {
-    console.error('Backtest proxy error:', error);
+    console.error('Backtest error:', error);
     return NextResponse.json(
-      { success: false, error: error?.message || 'Backend unreachable' },
-      { status: 503 }
+      { success: false, error: error?.message || 'Backtest failed' },
+      { status: 500 }
     );
   }
 }

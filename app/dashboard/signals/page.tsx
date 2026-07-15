@@ -1,11 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { SignalCard } from "../components/SignalCard";
-import { Table } from "../components/ui/Table";
 import { useDashboardData } from "@/lib/data-context";
+import { TrendingUp, Loader2 } from "lucide-react";
 
 const container = {
   hidden: { opacity: 0 },
@@ -19,9 +20,24 @@ const item = {
 
 export default function SignalsPage() {
   const { signals } = useDashboardData();
+  const [signalLoading, setSignalLoading] = useState(false);
+  const [signalResult, setSignalResult] = useState<{ success: boolean; message: string; signal?: any } | null>(null);
   const active = signals.filter((s) => s.status === "active");
   const expired = signals.filter((s) => s.status === "expired");
   const today = signals.filter((s) => new Date(s.timestamp).toDateString() === new Date().toDateString());
+
+  const generateSignal = async () => {
+    setSignalLoading(true);
+    setSignalResult(null);
+    try {
+      const res = await fetch('/api/signal/generate', { method: 'POST' });
+      const data = await res.json();
+      setSignalResult(data);
+    } catch {
+      setSignalResult({ success: false, message: 'Network error — try again' });
+    }
+    setSignalLoading(false);
+  };
 
   const signalStats = [
     { label: "Signals Today", value: today.length.toString() },
@@ -50,6 +66,80 @@ export default function SignalsPage() {
             <p className="stat-value text-text-primary">{s.value}</p>
           </motion.div>
         ))}
+      </motion.div>
+
+      <motion.div variants={item}>
+        <Card header="Signal Generator" glow>
+          <div className="space-y-3">
+            <p className="text-xs text-text-muted">Run the 4-timeframe signal engine (1D macro → 4H ADX → 1H EMA → 15M entry) to generate a new XAU/USD signal.</p>
+            <button
+              onClick={generateSignal}
+              disabled={signalLoading}
+              className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              style={{
+                background: signalLoading ? 'rgba(240, 180, 41, 0.1)' : 'linear-gradient(135deg, var(--accent-gold), #d4a52a)',
+                color: signalLoading ? 'var(--accent-gold)' : '#080c24',
+              }}>
+              {signalLoading ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing XAU/USD...</>
+              ) : (
+                <><TrendingUp className="w-4 h-4" /> Generate New Signal</>
+              )}
+            </button>
+            {signalResult && (
+              <div className={`p-4 rounded-xl ${signalResult.success ? 'bg-[rgba(0,230,118,0.06)] border border-[rgba(0,230,118,0.15)]' : 'bg-[rgba(255,82,82,0.06)] border border-[rgba(255,82,82,0.15)]'}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`text-sm font-bold ${signalResult.success ? 'text-status-win' : 'text-status-loss'}`}>
+                    {signalResult.success ? '✅ Signal Generated' : '❌ ' + signalResult.message}
+                  </span>
+                </div>
+                {signalResult.signal && (
+                  <div className="space-y-2 text-xs">
+                    <div className="flex gap-4">
+                      <div className="flex-1 p-2 rounded-lg" style={{ background: 'var(--glass-bg)' }}>
+                        <span className="text-text-muted">Trend</span>
+                        <p className="font-bold mt-0.5" style={{ color: signalResult.signal.trend === 'UP' ? 'var(--status-win)' : 'var(--status-loss)' }}>
+                          {signalResult.signal.trend}
+                        </p>
+                      </div>
+                      <div className="flex-1 p-2 rounded-lg" style={{ background: 'var(--glass-bg)' }}>
+                        <span className="text-text-muted">Confidence</span>
+                        <p className="font-bold mt-0.5 text-text-primary">{Math.round(signalResult.signal.confidence * 100)}%</p>
+                      </div>
+                      <div className="flex-1 p-2 rounded-lg" style={{ background: 'var(--glass-bg)' }}>
+                        <span className="text-text-muted">R:R</span>
+                        <p className="font-bold mt-0.5 text-accent-gold">{signalResult.signal.rr_ratio?.toFixed(2)}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="flex-1 p-2 rounded-lg" style={{ background: 'var(--glass-bg)' }}>
+                        <span className="text-text-muted">Entry</span>
+                        <p className="font-mono font-bold mt-0.5 text-text-primary">${signalResult.signal.entries?.[0]?.price?.toFixed(2)}</p>
+                      </div>
+                      <div className="flex-1 p-2 rounded-lg" style={{ background: 'var(--glass-bg)' }}>
+                        <span className="text-text-muted">Stop Loss</span>
+                        <p className="font-mono font-bold mt-0.5 text-status-loss">${signalResult.signal.stop_loss?.toFixed(2)}</p>
+                      </div>
+                      <div className="flex-1 p-2 rounded-lg" style={{ background: 'var(--glass-bg)' }}>
+                        <span className="text-text-muted">Take Profit</span>
+                        <p className="font-mono font-bold mt-0.5 text-status-win">${signalResult.signal.tp1?.toFixed(2)}</p>
+                      </div>
+                    </div>
+                    {signalResult.signal.entries?.length > 1 && (
+                      <div className="p-2 rounded-lg" style={{ background: 'var(--glass-bg)' }}>
+                        <span className="text-text-muted">Alt Entries: </span>
+                        {signalResult.signal.entries.slice(1).map((e: any, i: number) => (
+                          <span key={i} className="text-text-primary font-mono ml-2">E{i+2} @ ${e.price.toFixed(2)} TP ${e.tp.toFixed(2)}</span>
+                        ))}
+                      </div>
+                    )}
+                    <p className="text-text-muted text-[10px]">{signalResult.signal.description}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </Card>
       </motion.div>
 
       {active.length > 0 && (

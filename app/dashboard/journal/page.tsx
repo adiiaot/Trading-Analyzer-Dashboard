@@ -17,10 +17,21 @@ const item = {
 };
 
 export default function JournalPage() {
-  const { trades, stats } = useDashboardData();
+  const { trades, stats, journalEntries } = useDashboardData();
   const closed = useMemo(() => trades.filter((t) => t.status === "closed"), [trades]);
   const [filter, setFilter] = useState<"all" | "win" | "loss">("all");
   const [sortNewest, setSortNewest] = useState(true);
+
+  // Trade logger state
+  const [showLogger, setShowLogger] = useState(false);
+  const [tradeForm, setTradeForm] = useState({ entryPrice: '', exitPrice: '', direction: 'LONG', result: 'win', notes: '' });
+  const [tradeLoading, setTradeLoading] = useState(false);
+  const [tradeResult, setTradeResult] = useState<string | null>(null);
+
+  // Journal note state
+  const [journalText, setJournalText] = useState('');
+  const [journalLoading, setJournalLoading] = useState(false);
+  const [journalResult, setJournalResult] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     let list = filter === "all" ? closed : closed.filter((t) => t.result === filter);
@@ -31,7 +42,51 @@ export default function JournalPage() {
   const wins = closed.filter((t) => t.result === "win").length;
   const losses = closed.filter((t) => t.result === "loss").length;
 
-  const telegramLink = `https://t.me/${process.env.NEXT_PUBLIC_TELEGRAM_BOT || "aot_analyzer_bot"}`;
+  const logTrade = async () => {
+    const { entryPrice, exitPrice, direction, result, notes } = tradeForm;
+    if (!entryPrice || !exitPrice) return;
+    setTradeLoading(true);
+    setTradeResult(null);
+    try {
+      const res = await fetch('/api/trades', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entryPrice: parseFloat(entryPrice),
+          exitPrice: parseFloat(exitPrice),
+          direction,
+          result,
+          notes,
+          quantity: 0.01,
+        }),
+      });
+      const data = await res.json();
+      setTradeResult(data.message || 'Trade logged');
+      setTradeForm({ entryPrice: '', exitPrice: '', direction: 'LONG', result: 'win', notes: '' });
+    } catch {
+      setTradeResult('Failed to log trade');
+    }
+    setTradeLoading(false);
+  };
+
+  const addJournalNote = async () => {
+    if (!journalText.trim()) return;
+    setJournalLoading(true);
+    setJournalResult(null);
+    try {
+      const res = await fetch('/api/journal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: journalText }),
+      });
+      const data = await res.json();
+      setJournalResult(data.message || 'Journal entry saved');
+      setJournalText('');
+    } catch {
+      setJournalResult('Failed to save journal entry');
+    }
+    setJournalLoading(false);
+  };
 
   return (
     <motion.div initial="hidden" animate="visible" variants={container} className="space-y-5">
@@ -40,15 +95,65 @@ export default function JournalPage() {
           <h1 className="text-lg md:text-xl font-bold text-text-primary">Trade Journal</h1>
           <p className="text-sm text-text-muted">Every trade tells a story</p>
         </div>
-        <a
-          href={telegramLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-primary flex items-center gap-2 px-4 py-2 text-xs w-fit"
-        >
-          <Send className="w-3.5 h-3.5" /> Log via Telegram
-        </a>
+        <div className="flex gap-2">
+          <button onClick={() => setShowLogger(!showLogger)}
+            className="btn-primary flex items-center gap-2 px-4 py-2 text-xs w-fit">
+            <Send className="w-3.5 h-3.5" /> {showLogger ? 'Close' : 'Log Trade'}
+          </button>
+        </div>
       </motion.div>
+
+      {showLogger && (
+        <motion.div variants={item} initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+          <Card header="Log a Trade" glow>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] text-text-muted mb-1 block">Entry Price</label>
+                  <input placeholder="4062.50" type="number" step="0.01"
+                    value={tradeForm.entryPrice}
+                    onChange={e => setTradeForm(p => ({ ...p, entryPrice: e.target.value }))}
+                    className="input w-full text-xs px-3 py-2 rounded-lg" />
+                </div>
+                <div>
+                  <label className="text-[10px] text-text-muted mb-1 block">Exit Price</label>
+                  <input placeholder="4075.00" type="number" step="0.01"
+                    value={tradeForm.exitPrice}
+                    onChange={e => setTradeForm(p => ({ ...p, exitPrice: e.target.value }))}
+                    className="input w-full text-xs px-3 py-2 rounded-lg" />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => setTradeForm(p => ({ ...p, direction: 'LONG' }))}
+                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'LONG' ? 'bg-[rgba(0,230,118,0.15)] text-status-win' : 'glass'}`}>
+                  LONG ↗
+                </button>
+                <button onClick={() => setTradeForm(p => ({ ...p, direction: 'SHORT' }))}
+                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'SHORT' ? 'bg-[rgba(255,82,82,0.15)] text-status-loss' : 'glass'}`}>
+                  SHORT ↘
+                </button>
+                <button onClick={() => setTradeForm(p => ({ ...p, result: 'win' }))}
+                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.result === 'win' ? 'bg-[rgba(0,230,118,0.15)] text-status-win' : 'glass'}`}>
+                  WIN
+                </button>
+                <button onClick={() => setTradeForm(p => ({ ...p, result: 'loss' }))}
+                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.result === 'loss' ? 'bg-[rgba(255,82,82,0.15)] text-status-loss' : 'glass'}`}>
+                  LOSS
+                </button>
+              </div>
+              <input placeholder="Optional notes about this trade..."
+                value={tradeForm.notes}
+                onChange={e => setTradeForm(p => ({ ...p, notes: e.target.value }))}
+                className="input w-full text-xs px-3 py-2 rounded-lg" />
+              <button onClick={logTrade} disabled={tradeLoading || !tradeForm.entryPrice || !tradeForm.exitPrice}
+                className="btn-primary w-full py-2.5 rounded-lg text-xs font-bold disabled:opacity-50">
+                {tradeLoading ? 'Logging...' : 'Log Trade'}
+              </button>
+              {tradeResult && <p className="text-xs text-accent-gold">{tradeResult}</p>}
+            </div>
+          </Card>
+        </motion.div>
+      )}
 
       {closed.length > 0 && (
         <motion.div variants={item} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -177,6 +282,50 @@ export default function JournalPage() {
               <p className="text-sm text-text-muted">No trades logged yet</p>
               <p className="text-xs text-text-muted mt-1 opacity-60">Use <span className="font-mono text-accent-gold">/log_trade</span> in Telegram to record your first trade</p>
             </div>
+          )}
+        </Card>
+      </motion.div>
+
+      <motion.div variants={item}>
+        <Card header="Journal Notes">
+          <div className="space-y-3 mb-4">
+            <textarea placeholder="Write a journal note about your trading mindset, strategy thoughts, or market observations..."
+              value={journalText}
+              onChange={e => setJournalText(e.target.value)}
+              className="input w-full text-xs px-3 py-2 rounded-lg resize-none"
+              rows={3} />
+            <button onClick={addJournalNote} disabled={journalLoading || !journalText.trim()}
+              className="btn-primary px-4 py-2 rounded-lg text-xs font-medium disabled:opacity-50">
+              {journalLoading ? 'Saving...' : 'Save Note'}
+            </button>
+            {journalResult && <p className="text-xs text-accent-gold">{journalResult}</p>}
+          </div>
+
+          {journalEntries.length > 0 ? (
+            <div className="space-y-2">
+              {journalEntries.slice(0, 10).map((entry: any, i: number) => (
+                <motion.div key={entry.id || i}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  className="p-3 rounded-lg" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
+                  <p className="text-xs text-text-primary whitespace-pre-wrap">{entry.notes || '(empty)'}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] text-text-muted">
+                      {entry.timestamp?.toDate?.()?.toLocaleString() || entry.timestamp || ''}
+                    </span>
+                    {entry.sentiment && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded" style={{
+                        background: 'rgba(240, 180, 41, 0.1)',
+                        color: 'var(--accent-gold)',
+                      }}>{entry.sentiment}</span>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-text-muted text-center py-6">No journal notes yet. Start journaling to track your trading psychology.</p>
           )}
         </Card>
       </motion.div>

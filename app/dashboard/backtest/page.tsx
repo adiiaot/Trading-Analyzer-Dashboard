@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Play, RefreshCw, Clock, TrendingUp, TrendingDown, Activity, Target, BarChart4, Sigma } from "lucide-react";
@@ -72,6 +72,10 @@ export default function BacktestPage() {
   const [mcResult, setMcResult] = useState<MonteCarloResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState<number | null>(null);
+  const MAX_RETRIES = 5;
+  const retryCountRef = useRef(0);
+  const [autoRetrying, setAutoRetrying] = useState(false);
+  const autoRetryRef = useRef<NodeJS.Timeout>();
 
   const runBacktest = async () => {
     setLoading(true);
@@ -92,12 +96,49 @@ export default function BacktestPage() {
       setReport(data.report);
       if (data.monte_carlo) setMcResult(data.monte_carlo);
       setElapsed(Date.now() - start);
+      retryCountRef.current = 0;
+      setAutoRetrying(false);
     } catch (err: any) {
       setError(err?.message || "Backend unreachable");
+      scheduleRetry();
     } finally {
       setLoading(false);
     }
   };
+
+  const scheduleRetry = () => {
+    retryCountRef.current += 1;
+    if (retryCountRef.current > MAX_RETRIES) {
+      setAutoRetrying(false);
+      return;
+    }
+    setAutoRetrying(true);
+    if (autoRetryRef.current) clearTimeout(autoRetryRef.current);
+    autoRetryRef.current = setTimeout(() => {
+      runBacktest();
+    }, 5000);
+  };
+
+  const cancelRetry = () => {
+    if (autoRetryRef.current) clearTimeout(autoRetryRef.current);
+    setAutoRetrying(false);
+    retryCountRef.current = 0;
+  };
+
+  const wakeBot = async () => {
+    try {
+      await fetch("/api/backtest?months=1&sessionFilter=false&mc=false", { signal: AbortSignal.timeout(5000) });
+    } catch {
+      // ignore — wake call is fire-and-forget
+    }
+    scheduleRetry();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (autoRetryRef.current) clearTimeout(autoRetryRef.current);
+    };
+  }, []);
 
   return (
     <motion.div initial="hidden" animate="visible" variants={container} className="space-y-5">
@@ -184,8 +225,64 @@ export default function BacktestPage() {
       </motion.div>
 
       {error && (
-        <motion.div variants={item} className="card p-4 border-status-loss/30">
-          <p className="text-sm text-status-loss">{error}</p>
+        <motion.div variants={item} className="card p-4 sm:p-5 border-status-warn/30">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-start gap-3">
+              <div className={`mt-0.5 w-2 h-2 rounded-full flex-shrink-0 ${autoRetrying ? 'bg-status-warn animate-pulse' : 'bg-status-loss'}`} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-status-loss font-medium">
+                  {autoRetrying ? 'Bot is waking up...' : 'Bot offline'}
+                </p>
+                <p className="text-xs text-text-muted mt-1">
+                  {autoRetrying
+                    ? `The backend is on a free-tier host and may be sleeping. Retrying automatically...`
+                    : `Backend unreachable — the bot server may be asleep.`}
+                </p>
+                <p className="text-xs text-text-muted mt-1 font-mono">{error}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {autoRetrying ? (
+                <>
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-status-warn"
+                    style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    <span>Retry {retryCountRef.current}/{MAX_RETRIES}</span>
+                  </div>
+                  <button
+                    onClick={cancelRetry}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-text-muted hover:text-text-primary transition-colors"
+                    style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => runBacktest()}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(240,180,41,0.2), rgba(240,180,41,0.05))",
+                      border: "1px solid rgba(240,180,41,0.3)",
+                      color: "rgb(var(--accent-gold-rgb))",
+                    }}
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    Retry
+                  </button>
+                  <button
+                    onClick={wakeBot}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-text-muted hover:text-text-primary"
+                    style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}
+                  >
+                    Wake Bot + Auto-Retry
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
         </motion.div>
       )}
 

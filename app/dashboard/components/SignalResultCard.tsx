@@ -41,6 +41,8 @@ interface DxyStateData {
 interface SignalResultCardProps {
   signal: SignalResultData;
   dxyState?: DxyStateData | null;
+  confirmed?: boolean;
+  onConfirm?: (signalId: string) => void;
   onWon?: (signalId: string) => void;
   onLost?: (signalId: string) => void;
   outcomeUpdating?: boolean;
@@ -120,6 +122,8 @@ function buildCopyText(signal: SignalResultData, dxyState?: DxyStateData | null)
 export function SignalResultCard({
   signal,
   dxyState,
+  confirmed,
+  onConfirm,
   onWon,
   onLost,
   outcomeUpdating,
@@ -341,7 +345,18 @@ export function SignalResultCard({
             <ExternalLink className="w-3.5 h-3.5" />
             Post on X
           </button>
-          {onWon && (
+          {!confirmed && onConfirm && (
+            <button
+              onClick={() => onConfirm(signal.id)}
+              disabled={outcomeUpdating}
+              className="flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
+              style={{ background: 'rgba(240, 180, 41, 0.12)', color: 'var(--accent-gold)', border: '1px solid rgba(240, 180, 41, 0.2)' }}
+            >
+              {outcomeUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+              Confirm
+            </button>
+          )}
+          {confirmed && onWon && (
             <button
               onClick={() => onWon(signal.id)}
               disabled={outcomeUpdating}
@@ -352,7 +367,7 @@ export function SignalResultCard({
               Won
             </button>
           )}
-          {onLost && (
+          {confirmed && onLost && (
             <button
               onClick={() => onLost(signal.id)}
               disabled={outcomeUpdating}

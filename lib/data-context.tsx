@@ -182,31 +182,54 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, []);
 
-  const stats = trades.length > 0 ? calculateStats(trades) : null;
+  // Only show user-generated data (excludes seed data which has userId like 'user_abc123')
+  const userTrades = trades.filter(t => t.userId === 'dashboard');
+  const userSignals = signals.filter(s => s.userId === 'dashboard');
+  const userJournal = journalEntries.filter(e => e.userId === 'dashboard');
+
+  const stats = userTrades.length > 0 ? calculateStats(userTrades) : null;
+
+  // Confirmed signals appear as tracking positions
+  const confirmedSignals = userSignals.filter(s => s.confirmed && s.status === 'active');
+  const openTrades = userTrades.filter(t => t.status === 'open');
 
   const value: DashboardData = {
-    trades, signals, stats, price: livePrice,
+    trades: userTrades, signals: userSignals, stats, price: livePrice,
     balance, setBalance,
-    positions: trades.filter(t => t.status === 'open').map(t => ({
-      direction: t.trend === 'UP' ? 'BUY' as const : 'SELL' as const,
-      entry: t.entryPrice,
-      current: livePrice.price,
-      pips: t.trend === 'UP' ? (livePrice.price - t.entryPrice) * 10 : (t.entryPrice - livePrice.price) * 10,
-      pnl: t.pnl ?? null,
-      tp: t.takeProfit,
-      sl: t.stopLoss,
-    })),
-    signalsFeed: signals.length > 0 ? mapSignalsToFeed(signals) : [],
+    positions: [
+      ...openTrades.map(t => ({
+        direction: t.trend === 'UP' ? 'BUY' as const : 'SELL' as const,
+        entry: t.entryPrice,
+        current: livePrice.price,
+        pips: t.trend === 'UP' ? (livePrice.price - t.entryPrice) * 10 : (t.entryPrice - livePrice.price) * 10,
+        pnl: t.pnl ?? null,
+        tp: t.takeProfit,
+        sl: t.stopLoss,
+      })),
+      ...confirmedSignals.map(s => {
+        const entry = s.entries?.[0]?.price || 0;
+        return {
+          direction: s.trend === 'UP' ? 'BUY' as const : 'SELL' as const,
+          entry,
+          current: livePrice.price,
+          pips: s.trend === 'UP' ? (livePrice.price - entry) * 10 : (entry - livePrice.price) * 10,
+          pnl: null as number | null,
+          tp: s.entries?.[0]?.tp || 0,
+          sl: s.stopLoss || 0,
+        };
+      }),
+    ],
+    signalsFeed: userSignals.length > 0 ? mapSignalsToFeed(userSignals) : [],
     quickStats: stats
       ? {
           todayPnl: stats.total_pnl,
           winRate: parseFloat((stats.win_rate * 100).toFixed(1)),
           totalTrades: stats.total_trades,
-          openPositions: trades.filter((t) => t.status === "open").length,
+          openPositions: openTrades.length + confirmedSignals.length,
         }
       : { todayPnl: 0, winRate: 0, totalTrades: 0, openPositions: 0 },
     loading: tradesLoading || signalsLoading,
-    journalEntries,
+    journalEntries: userJournal,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

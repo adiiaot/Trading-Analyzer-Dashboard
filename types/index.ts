@@ -54,6 +54,7 @@ export interface Signal {
   deliveredVia?: string;
   deliveredAt?: string;
   acknowledged?: boolean;
+  confirmed?: boolean;
   outcome?: 'won' | 'lost' | null;
   dxyState?: {
     trend: string;

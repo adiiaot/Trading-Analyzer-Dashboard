@@ -73,7 +73,9 @@ export async function POST(request: Request) {
       const db = getAdminDb();
       const signalData = {
         id: signal.id,
+        userId: 'dashboard',
         timestamp: FieldValue.serverTimestamp(),
+        confirmed: false,
         trend: signal.trend,
         entries: signal.entries.map(e => ({
           entryNumber: e.entry_number,

@@ -70,6 +70,26 @@ export default function SignalsPage() {
     setOutcomeUpdating(false);
   }, [signalResult]);
 
+  const handleConfirm = useCallback(async (signalId: string) => {
+    setOutcomeUpdating(true);
+    setOutcomeMessage(null);
+    try {
+      const res = await fetch('/api/signal/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signalId, confirm: true }),
+      });
+      const data = await res.json();
+      setOutcomeMessage(data.message || 'Signal confirmed');
+      if (signalResult?.signal?.id === signalId) {
+        setSignalResult(prev => prev ? { ...prev, signal: { ...prev.signal, confirmed: true } } : prev);
+      }
+    } catch {
+      setOutcomeMessage('Failed to confirm signal');
+    }
+    setOutcomeUpdating(false);
+  }, [signalResult]);
+
   const handleLost = useCallback(async (signalId: string) => {
     setOutcomeUpdating(true);
     setOutcomeMessage(null);
@@ -159,8 +179,10 @@ export default function SignalsPage() {
               <SignalResultCard
                 signal={signalResult.signal}
                 dxyState={signalResult.dxyState}
-                onWon={signalResult.signal.outcome ? undefined : handleWon}
-                onLost={signalResult.signal.outcome ? undefined : handleLost}
+                confirmed={signalResult.signal.confirmed}
+                onConfirm={signalResult.signal.confirmed ? undefined : handleConfirm}
+                onWon={signalResult.signal.outcome || !signalResult.signal.confirmed ? undefined : handleWon}
+                onLost={signalResult.signal.outcome || !signalResult.signal.confirmed ? undefined : handleLost}
                 outcomeUpdating={outcomeUpdating}
               />
             )}

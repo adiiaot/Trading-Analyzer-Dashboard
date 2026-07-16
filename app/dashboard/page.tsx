@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { Send, BarChart3, Terminal, Radio, BookOpen, Activity, BarChart4 } from "lucide-react";
 import Link from "next/link";
-import { TradingAccountCard } from "./components/TradingAccountCard";
 import { QuickStats } from "./components/QuickStats";
 import { TradingChart } from "./components/TradingChart";
 import { OpenPositionsTable } from "./components/OpenPositionsTable";
@@ -60,14 +59,9 @@ export default function DashboardPage() {
         <TradingChart />
       </motion.div>
 
-      {/* Account + Positions side by side */}
-      <motion.div variants={section} className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <div className="lg:col-span-1">
-          <TradingAccountCard />
-        </div>
-        <div className="lg:col-span-3">
-          <OpenPositionsTable />
-        </div>
+      {/* Open Positions */}
+      <motion.div variants={section}>
+        <OpenPositionsTable />
       </motion.div>
 
       {/* Bottom: Signal Feed + Quick Links */}

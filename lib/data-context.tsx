@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode, useCallback,
 import {
   subscribeTrades, subscribeSignals, calculateStats,
 } from "@/lib/firebase";
-import type { Trade, Signal, TradingStats, JournalEntry, EconEvent } from "@/types";
+import type { Trade, Signal, TradingStats, JournalEntry } from "@/types";
 import { PRICE } from "@/lib/constants";
 
 interface Position {
@@ -36,7 +36,6 @@ interface DashboardData {
   quickStats: { todayPnl: number; winRate: number; totalTrades: number; openPositions: number };
   loading: boolean;
   journalEntries: JournalEntry[];
-  econEvents: EconEvent[];
 }
 
 const defaultPrice = { ...PRICE, high24h: PRICE.price + 12, low24h: PRICE.price - 12, volume: 189200, bid: PRICE.price - 0.05, ask: PRICE.price + 0.05, spread: 0.5 };
@@ -47,7 +46,7 @@ const defaultData: DashboardData = {
   positions: [],
   signalsFeed: [], quickStats: { todayPnl: 0, winRate: 0, totalTrades: 0, openPositions: 0 },
   loading: true,
-  journalEntries: [], econEvents: [],
+  journalEntries: [],
 };
 
 const DataContext = createContext<DashboardData>(defaultData);
@@ -73,7 +72,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [usingFallback, setUsingFallback] = useState(false);
   const [livePrice, setLivePrice] = useState(defaultPrice);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
-  const [econEvents, setEconEvents] = useState<EconEvent[]>([]);
   const prevPriceRef = useRef(defaultPrice.price);
   const [balance, setBalanceState] = useState(() => {
     if (typeof window !== "undefined") {
@@ -184,17 +182,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Econ events — poll every 5min
-  useEffect(() => {
-    const fetchEcon = async () => {
-      const data = await fetchFromApi("/api/econ-calendar");
-      if (data?.events) setEconEvents(data.events);
-    };
-    fetchEcon();
-    const interval = setInterval(fetchEcon, 300000);
-    return () => clearInterval(interval);
-  }, []);
-
   const stats = trades.length > 0 ? calculateStats(trades) : null;
 
   const value: DashboardData = {
@@ -219,7 +206,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
       : { todayPnl: 0, winRate: 0, totalTrades: 0, openPositions: 0 },
     loading: tradesLoading || signalsLoading,
-    journalEntries, econEvents,
+    journalEntries,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
@@ -235,7 +222,7 @@ function mapSignalsToFeed(signals: Signal[]) {
       : s.status === "expired" ? "EXPIRED"
       : s.status === "closed" ? "CLOSED" : "FILLING") as "PENDING" | "FILLING" | "CLOSED" | "EXPIRED",
     confidence: Math.round(s.confidence * 100),
-    entries: (s.entries || []).map((e) => e.price.toFixed(2)),
+    entries: (s.entries || []).map((e) => e?.price?.toFixed(2) ?? '0'),
     pnl: null as number | null,
   }));
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Send, BarChart3, Terminal, Radio, BookOpen, Activity, Calendar } from "lucide-react";
+import { Send, BarChart3, Terminal, Radio, BookOpen, Activity, BarChart4 } from "lucide-react";
 import Link from "next/link";
 import { TradingAccountCard } from "./components/TradingAccountCard";
 import { QuickStats } from "./components/QuickStats";
@@ -23,7 +23,7 @@ const section = {
 const quickLinks = [
   { href: "/dashboard/commands", label: "All Commands", icon: Terminal, desc: "Signal generator, trade logger, journal & more" },
   { href: "/dashboard/signals", label: "Generate Signal", icon: Radio, desc: "Run 4-timeframe XAU/USD analysis" },
-  { href: "/dashboard/economic-calendar", label: "Economic Calendar", icon: Calendar, desc: "Upcoming events & AI gold predictions" },
+  { href: "/dashboard/backtest", label: "Backtest", icon: BarChart4, desc: "Run historical signal engine backtest" },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3, desc: "Win rate, P&L, strategy breakdown" },
 ];
 

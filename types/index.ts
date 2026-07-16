@@ -34,19 +34,33 @@ export interface Signal {
   timestamp: string;
   trend: 'UP' | 'DOWN' | 'NEUTRAL';
   entries: SignalEntry[];
+  stopLoss?: number;
   supportLevel: number;
   resistanceLevel: number;
   pullbackDetected: boolean;
   entryConfirmation: boolean;
   validUntil: string;
   confidence: number;
+  rrRatio?: number;
   status: 'active' | 'expired' | 'pending' | 'closed';
+  signalType?: string;
+  tp1?: number;
+  tp2?: number | null;
+  macroTrend?: string;
+  description?: string;
   userId?: string;
   signalId?: string;
   executedEntries?: number[];
   deliveredVia?: string;
   deliveredAt?: string;
   acknowledged?: boolean;
+  outcome?: 'won' | 'lost' | null;
+  dxyState?: {
+    trend: string;
+    expectedGoldDirection: string;
+    correlationConfirmed: boolean;
+    summary: string;
+  };
   analysis?: {
     reasonGenerated?: string;
     confidence_breakdown?: {

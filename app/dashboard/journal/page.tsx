@@ -1,10 +1,35 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { useDashboardData } from "@/lib/data-context";
-import { TrendingUp, TrendingDown, ChevronDown, Filter, Send, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, ChevronDown, Send, BarChart3 } from "lucide-react";
+
+function formatTimestamp(ts: unknown): string {
+  if (!ts) return '';
+  if (typeof ts === 'string') {
+    try {
+      return new Date(ts).toLocaleDateString("en-US", {
+        month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+      });
+    } catch { return ts; }
+  }
+  if (typeof ts === 'object' && ts !== null) {
+    const obj = ts as Record<string, unknown>;
+    if (typeof obj._seconds === 'number') {
+      try {
+        return new Date(obj._seconds * 1000).toLocaleDateString("en-US", {
+          month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+        });
+      } catch { return String(ts); }
+    }
+    if (typeof obj.toDate === 'function') {
+      try { return (obj as any).toDate().toLocaleString(); } catch { return String(ts); }
+    }
+  }
+  return String(ts);
+}
 
 const container = {
   hidden: { opacity: 0 },
@@ -17,8 +42,8 @@ const item = {
 };
 
 export default function JournalPage() {
-  const { trades, stats, journalEntries } = useDashboardData();
-  const closed = useMemo(() => trades.filter((t) => t.status === "closed"), [trades]);
+  const { trades, journalEntries } = useDashboardData();
+  const closed = useMemo(() => (trades || []).filter((t) => t?.status === "closed"), [trades]);
   const [filter, setFilter] = useState<"all" | "win" | "loss">("all");
   const [sortNewest, setSortNewest] = useState(true);
 
@@ -34,13 +59,13 @@ export default function JournalPage() {
   const [journalResult, setJournalResult] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    let list = filter === "all" ? closed : closed.filter((t) => t.result === filter);
+    const list = filter === "all" ? closed : closed.filter((t) => t?.result === filter);
     return sortNewest ? [...list].reverse() : list;
   }, [closed, filter, sortNewest]);
 
-  const totalPnl = closed.reduce((s, t) => s + (t.pnl ?? 0), 0);
-  const wins = closed.filter((t) => t.result === "win").length;
-  const losses = closed.filter((t) => t.result === "loss").length;
+  const totalPnl = closed.reduce((s, t) => s + (t?.pnl ?? 0), 0);
+  const wins = closed.filter((t) => t?.result === "win").length;
+  const losses = closed.filter((t) => t?.result === "loss").length;
 
   const logTrade = async () => {
     const { entryPrice, exitPrice, direction, result, notes } = tradeForm;
@@ -244,9 +269,7 @@ export default function JournalPage() {
                               {t.trend === "UP" ? "LONG" : "SHORT"} #{t.id?.slice(-4)}
                             </p>
                             <p className="text-[10px] text-text-muted">
-                              {new Date(t.timestamp).toLocaleDateString("en-US", {
-                                month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
-                              })}
+                              {formatTimestamp(t.timestamp)}
                             </p>
                           </div>
                         </div>
@@ -301,20 +324,20 @@ export default function JournalPage() {
             {journalResult && <p className="text-xs text-accent-gold">{journalResult}</p>}
           </div>
 
-          {journalEntries.length > 0 ? (
+          {(journalEntries || []).length > 0 ? (
             <div className="space-y-2">
-              {journalEntries.slice(0, 10).map((entry: any, i: number) => (
-                <motion.div key={entry.id || i}
+              {(journalEntries || []).slice(0, 10).map((entry: any, i: number) => (
+                <motion.div key={entry?.id || i}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.03 }}
                   className="p-3 rounded-lg" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
-                  <p className="text-xs text-text-primary whitespace-pre-wrap">{entry.notes || '(empty)'}</p>
+                  <p className="text-xs text-text-primary whitespace-pre-wrap">{entry?.notes || '(empty)'}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-[10px] text-text-muted">
-                      {entry.timestamp?.toDate?.()?.toLocaleString() || entry.timestamp || ''}
+                      {formatTimestamp(entry?.timestamp)}
                     </span>
-                    {entry.sentiment && (
+                    {entry?.sentiment && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded" style={{
                         background: 'rgba(240, 180, 41, 0.1)',
                         color: 'var(--accent-gold)',

@@ -35,8 +35,8 @@ export async function checkDxyCorrelation(
     return {
       trend: 'NEUTRAL',
       expectedGoldDirection: 'UP',
-      correlationConfirmed: false,
-      summary: 'Insufficient data for DXY correlation check',
+      correlationConfirmed: true,
+      summary: 'DXY data unavailable — proceeding without correlation check',
     };
   }
 

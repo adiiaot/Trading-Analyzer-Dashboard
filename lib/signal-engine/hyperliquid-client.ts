@@ -40,7 +40,8 @@ function parseCandles(raw: RawBar[]): CandleData[] {
         close: Math.round(parseFloat(bar.c) * 100) / 100,
         volume: parseFloat(String(bar.v || 0)),
       });
-    } catch {
+    } catch (e) {
+      console.warn('[HL] Skipping malformed candle bar:', bar, e);
       continue;
     }
   }
@@ -71,11 +72,18 @@ export async function fetchCandles(timeframe: string, limit: number): Promise<Ca
 
   try {
     const raw = await postWithTimeout(CONFIG.HYPERLIQUID_URL, payload, TIMEOUT_MS) as RawBar[];
-    if (!Array.isArray(raw) || raw.length === 0) return null;
+    if (!Array.isArray(raw) || raw.length === 0) {
+      console.warn(`[HL] Empty response for ${timeframe} (limit=${limit})`);
+      return null;
+    }
     const candles = parseCandles(raw);
-    if (candles.length === 0) return null;
+    if (candles.length === 0) {
+      console.warn(`[HL] Zero valid candles for ${timeframe} (${raw.length} raw bars)`);
+      return null;
+    }
     return candles.slice(-limit);
-  } catch {
+  } catch (e) {
+    console.error(`[HL] Fetch failed for ${timeframe}:`, e);
     return null;
   }
 }
@@ -84,7 +92,11 @@ export async function fetchCandlesMulti(requests: Record<string, number>): Promi
   const results: Record<string, CandleData[] | null> = {};
   const entries = Object.entries(requests);
   const fetches = entries.map(async ([tf, limit]) => {
-    results[tf] = await fetchCandles(tf, limit);
+    const candles = await fetchCandles(tf, limit);
+    if (!candles) {
+      console.warn(`[HL] Timeframe ${tf} returned no data`);
+    }
+    results[tf] = candles;
   });
   await Promise.all(fetches);
   return results;

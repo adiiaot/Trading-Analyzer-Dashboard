@@ -277,8 +277,8 @@ export async function runBacktest(
         })).filter((c: any) => c.close > 0);
       }
     }
-  } catch {
-    // DXY unavailable — proceed without correlation check
+  } catch (e) {
+    console.warn('[Backtest] DXY fetch failed — proceeding without correlation check:', e);
   }
 
   let totalSignals = 0;
@@ -337,8 +337,9 @@ export async function runBacktest(
     try {
       const dxyForBar = dxyCandlesRaw.filter(c => c.time <= nowTs);
       [signal, message] = await generateSignal(mockFetch, useAdaptiveParams, dxyForBar.length >= 20 ? dxyForBar : undefined);
-    } catch {
+    } catch (e) {
       rejectionLog['exception'] = (rejectionLog['exception'] || 0) + 1;
+      console.warn(`[Backtest] Signal exception at bar ${i}/${candlesEntry.length}:`, e);
       continue;
     }
 

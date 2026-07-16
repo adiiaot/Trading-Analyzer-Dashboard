@@ -302,10 +302,6 @@ async function trySessionBreakout(
   const currentPrice = entryCandles[entryCandles.length - 1].close;
 
   sessionTracker.update(currentPrice);
-  if (!sessionTracker.isWithinTradingSession()) {
-    return [null, 'Outside London/NY overlap session'];
-  }
-
   const [asianLow, asianHigh, rangeWidth] = sessionTracker.getAsianRange();
   if (rangeWidth < CONFIG.BREAKOUT_MIN_RANGE) {
     return [null, `Asian range too narrow ($${rangeWidth.toFixed(2)} < $${CONFIG.BREAKOUT_MIN_RANGE.toFixed(2)})`];

@@ -76,9 +76,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [balance, setBalanceState] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("account_balance");
-      return saved ? parseFloat(saved) : 5245.50;
+      if (saved) {
+        const val = parseFloat(saved);
+        // Migrate old hardcoded default ($5,245.50) → 0
+        if (val === 5245.50) return 0;
+        return val;
+      }
+      return 0;
     }
-    return 5245.50;
+    return 0;
   });
 
   const setBalance = useCallback((val: number) => {
@@ -182,9 +188,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Include web-generated (userId='dashboard') and bot-generated (Telegram ID) data.
-  // Exclude seed data which has userId format 'user_abc123'.
-  const isReal = (uid: string | undefined | null) => uid && !uid.startsWith('user_');
+  // Only include web-generated (userId='dashboard') and bot-generated (numeric Telegram ID) data.
+  // Excludes seed data ('user_abc123'), auto-scheduler ('auto'), and any other test data.
+  const isReal = (uid: string | undefined | null) => {
+    if (!uid) return false;
+    if (uid === 'dashboard') return true;
+    if (/^\d+$/.test(uid)) return true;
+    return false;
+  };
   const userTrades = trades.filter(t => isReal(t.userId));
   const userSignals = signals.filter(s => isReal(s.userId));
   const userJournal = journalEntries.filter(e => isReal(e.userId));

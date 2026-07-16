@@ -47,8 +47,8 @@ export async function checkDxyCorrelation(
     return {
       trend: 'NEUTRAL',
       expectedGoldDirection: 'UP',
-      correlationConfirmed: false,
-      summary: 'DXY in consolidation — no clear directional bias',
+      correlationConfirmed: true,
+      summary: 'DXY in consolidation — no clear directional bias (proceeding with other indicators)',
     };
   }
 

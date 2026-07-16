@@ -182,10 +182,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Only show user-generated data (excludes seed data which has userId like 'user_abc123')
-  const userTrades = trades.filter(t => t.userId === 'dashboard');
-  const userSignals = signals.filter(s => s.userId === 'dashboard');
-  const userJournal = journalEntries.filter(e => e.userId === 'dashboard');
+  // Include web-generated (userId='dashboard') and bot-generated (Telegram ID) data.
+  // Exclude seed data which has userId format 'user_abc123'.
+  const isReal = (uid: string | undefined | null) => uid && !uid.startsWith('user_');
+  const userTrades = trades.filter(t => isReal(t.userId));
+  const userSignals = signals.filter(s => isReal(s.userId));
+  const userJournal = journalEntries.filter(e => isReal(e.userId));
 
   const stats = userTrades.length > 0 ? calculateStats(userTrades) : null;
 

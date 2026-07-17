@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   TrendingUp, TrendingDown, Copy, ExternalLink,
-  CheckCircle, XCircle, Loader2, Check, DollarSign,
+  CheckCircle, XCircle, Loader2, Check, DollarSign, RefreshCw,
 } from "lucide-react";
 import { useDashboardData } from "@/lib/data-context";
 
@@ -32,21 +32,15 @@ interface SignalResultData {
   valid_until: string;
 }
 
-interface DxyStateData {
-  trend: string;
-  expectedGoldDirection: string;
-  correlationConfirmed: boolean;
-  summary: string;
-}
-
 interface SignalResultCardProps {
   signal: SignalResultData;
-  dxyState?: DxyStateData | null;
   confirmed?: boolean;
   onConfirm?: (signalId: string) => void;
   onWon?: (signalId: string) => void;
   onLost?: (signalId: string) => void;
+  onGenerateNext?: () => void;
   outcomeUpdating?: boolean;
+  generatingNext?: boolean;
 }
 
 function formatEntryPrice(p: number): string {
@@ -62,7 +56,7 @@ function formatTimestamp(ts: string): string {
   }
 }
 
-function buildTweetText(signal: SignalResultData, dxyState?: DxyStateData | null): string {
+function buildTweetText(signal: SignalResultData): string {
   const trendEmoji = signal.trend === 'UP' ? '📈' : '📉';
   const typeLabel = signal.signal_type?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Signal';
   const entry1 = signal.entries?.[0];
@@ -76,15 +70,12 @@ function buildTweetText(signal: SignalResultData, dxyState?: DxyStateData | null
     '',
     `Confidence: ${Math.round(signal.confidence * 100)}% | R:R ${signal.rr_ratio?.toFixed(2) || '—'}`,
   ];
-  if (dxyState) {
-    lines.push(`DXY: ${dxyState.correlationConfirmed ? '✅' : '❌'} ${dxyState.summary}`);
-  }
   lines.push('');
   lines.push('#XAUUSD #GoldTrading #ForexSignals');
   return lines.join('\n');
 }
 
-function buildCopyText(signal: SignalResultData, dxyState?: DxyStateData | null): string {
+function buildCopyText(signal: SignalResultData): string {
   const trendEmoji = signal.trend === 'UP' ? '📈' : '📉';
   const typeLabel = signal.signal_type?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Signal';
   const lines = [
@@ -104,9 +95,6 @@ function buildCopyText(signal: SignalResultData, dxyState?: DxyStateData | null)
   }
   lines.push('');
   lines.push(`Confidence: ${Math.round(signal.confidence * 100)}% | R:R ${signal.rr_ratio?.toFixed(2)}`);
-  if (dxyState) {
-    lines.push(`DXY: ${dxyState.correlationConfirmed ? '✅' : '❌'} ${dxyState.summary}`);
-  }
   if (signal.macro_trend) {
     lines.push(`Daily Trend: ${signal.macro_trend}`);
   }
@@ -122,37 +110,55 @@ function buildCopyText(signal: SignalResultData, dxyState?: DxyStateData | null)
 
 export function SignalResultCard({
   signal,
-  dxyState,
   confirmed,
   onConfirm,
   onWon,
   onLost,
+  onGenerateNext,
   outcomeUpdating,
+  generatingNext,
 }: SignalResultCardProps) {
   const [copied, setCopied] = useState(false);
   const { balance, compounding } = useDashboardData();
   const isUp = signal.trend === 'UP';
   const confidencePct = Math.round((signal.confidence ?? 0) * 100);
+  const [outcomeSet, setOutcomeSet] = useState(false);
 
-  // Position sizing
+  const [lotSize, setLotSize] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("last_lot_size");
+      if (saved) return parseFloat(saved);
+    }
+    return 0.05;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("last_lot_size", lotSize.toString());
+    }
+  }, [lotSize]);
+
+  // Margin calculations
+  const contractSize = 100;
+  const price = signal.entries?.[0]?.price || 2600;
+  const marginRequired = parseFloat(((lotSize * contractSize * price) / compounding.leverage).toFixed(2));
+  const freeMargin = parseFloat((balance - marginRequired).toFixed(2));
+  const pipValue = parseFloat((lotSize * 10).toFixed(2));
   const slDistance = signal.stop_loss && signal.entries?.[0]?.price
     ? Math.abs(signal.entries[0].price - signal.stop_loss)
-    : 10;
-  const riskAmount = balance > 0 ? parseFloat((balance * compounding.riskPercent / 100).toFixed(2)) : 0;
-  const suggestedLots = riskAmount > 0 && slDistance > 0
-    ? parseFloat((riskAmount / slDistance).toFixed(2))
     : 0;
-  const potentialProfit1R = riskAmount;
-  const potentialProfit2R = riskAmount * 2;
+  const riskInDollars = slDistance > 0 ? parseFloat((pipValue * slDistance).toFixed(2)) : 0;
+  const marginPct = balance > 0 ? parseFloat(((marginRequired / balance) * 100).toFixed(1)) : 0;
+  const marginOk = marginPct < 90;
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(buildCopyText(signal, dxyState));
+      await navigator.clipboard.writeText(buildCopyText(signal));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       const ta = document.createElement('textarea');
-      ta.value = buildCopyText(signal, dxyState);
+      ta.value = buildCopyText(signal);
       document.body.appendChild(ta);
       ta.select();
       document.execCommand('copy');
@@ -163,10 +169,24 @@ export function SignalResultCard({
   };
 
   const handlePostX = () => {
-    const text = buildTweetText(signal, dxyState);
+    const text = buildTweetText(signal);
     const url = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
+
+  const handleWon = () => {
+    onWon?.(signal.id);
+    setOutcomeSet(true);
+  };
+
+  const handleLost = () => {
+    onLost?.(signal.id);
+    setOutcomeSet(true);
+  };
+
+  const showGenerateNext = outcomeSet || (confirmed && (onLost || onWon));
+
+  const lotSizePresets = [0.02, 0.05, 0.09, 0.1];
 
   return (
     <motion.div
@@ -280,14 +300,6 @@ export function SignalResultCard({
               <span className="text-text-muted text-[10px]">R:R</span>
               <p className="font-bold font-mono text-accent-gold">{signal.rr_ratio?.toFixed(2) || '—'}</p>
             </div>
-            {dxyState && (
-              <div className="pl-3" style={{ borderLeft: '1px solid var(--glass-border)' }}>
-                <span className="text-text-muted text-[10px]">DXY</span>
-                <p className={`font-semibold text-[11px] flex items-center gap-1 ${dxyState.correlationConfirmed ? 'text-status-win' : 'text-status-loss'}`}>
-                  {dxyState.correlationConfirmed ? '✅' : '❌'} {dxyState.correlationConfirmed ? 'Aligned' : 'Conflict'}
-                </p>
-              </div>
-            )}
             {signal.macro_trend && (
               <div className="pl-3" style={{ borderLeft: '1px solid var(--glass-border)' }}>
                 <span className="text-text-muted text-[10px]">Daily</span>
@@ -302,25 +314,82 @@ export function SignalResultCard({
           </div>
         </div>
 
-        {/* Position Size */}
-        {balance > 0 && (
-          <div className="flex items-center justify-between px-2 py-2 rounded-lg text-[10px]"
-            style={{ background: "rgba(240, 180, 41, 0.05)", border: "1px solid rgba(240, 180, 41, 0.1)" }}
-          >
+        {/* Lot Size & Margin */}
+        <div className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(240, 180, 41, 0.04)', border: '1px solid rgba(240, 180, 41, 0.1)' }}>
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <DollarSign className="w-3 h-3 text-accent-gold" />
-              <span className="text-text-muted">Size:</span>
-              <span className="font-mono font-bold text-accent-gold">{suggestedLots.toFixed(2)} lots</span>
+              <DollarSign className="w-3.5 h-3.5 text-accent-gold" />
+              <span className="text-[10px] font-semibold text-text-muted">Lot Size</span>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-text-muted">Risk <span className="font-mono font-semibold" style={{ color: "var(--status-loss)" }}>${riskAmount.toFixed(2)}</span></span>
-              <span className="text-text-muted">1R <span className="font-mono font-semibold text-status-win">${potentialProfit1R.toFixed(2)}</span></span>
-              {potentialProfit2R > 0 && (
-                <span className="text-text-muted">2R <span className="font-mono font-semibold text-status-win">${potentialProfit2R.toFixed(2)}</span></span>
-              )}
+            <div className="flex items-center gap-1.5">
+              {lotSizePresets.map(p => (
+                <button
+                  key={p}
+                  onClick={() => setLotSize(p)}
+                  className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold transition-all ${
+                    Math.abs(lotSize - p) < 0.001
+                      ? 'text-white'
+                      : 'text-text-muted hover:text-text-primary'
+                  }`}
+                  style={{
+                    background: Math.abs(lotSize - p) < 0.001
+                      ? 'rgba(240, 180, 41, 0.25)'
+                      : 'rgba(255,255,255,0.04)',
+                    border: Math.abs(lotSize - p) < 0.001
+                      ? '1px solid rgba(240, 180, 41, 0.3)'
+                      : '1px solid transparent',
+                  }}
+                >
+                  {p.toFixed(2)}
+                </button>
+              ))}
             </div>
           </div>
-        )}
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={0.01}
+              max={1.0}
+              step={0.01}
+              value={lotSize}
+              onChange={e => setLotSize(parseFloat(e.target.value) || 0.01)}
+              className="w-20 px-2 py-1 rounded-lg text-xs font-mono font-bold outline-none text-center"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)', color: 'var(--accent-gold)' }}
+            />
+            <span className="text-[10px] text-text-muted">lots</span>
+            <div className="ml-auto flex items-center gap-3 text-[10px]">
+              <span className="text-text-muted">
+                Margin: <span className={`font-mono font-bold ${marginOk ? 'text-accent-gold' : 'text-status-loss'}`}>
+                  ${marginRequired.toFixed(2)}
+                </span>
+                <span className="text-text-muted ml-1">({marginPct}%)</span>
+              </span>
+              <span className="text-text-muted">
+                Free: <span className="font-mono font-bold" style={{ color: freeMargin > 0 ? 'var(--status-win)' : 'var(--status-loss)' }}>
+                  ${freeMargin.toFixed(2)}
+                </span>
+              </span>
+              <span className="text-text-muted">
+                Pip: <span className="font-mono font-bold text-text-primary">${pipValue.toFixed(2)}</span>
+              </span>
+            </div>
+          </div>
+          {!marginOk && (
+            <p className="text-[10px] text-status-loss flex items-center gap-1">
+              <XCircle className="w-3 h-3" />
+              Margin exceeds 90% of balance — reduce lot size
+            </p>
+          )}
+          {riskInDollars > 0 && (
+            <p className="text-[10px] text-text-muted">
+              Risk: <span className="font-mono font-semibold" style={{ color: 'var(--status-loss)' }}>
+                ${riskInDollars.toFixed(2)}
+              </span>
+              {' | '}1R: <span className="font-mono font-semibold text-status-win">${riskInDollars.toFixed(2)}</span>
+              {' | '}2R: <span className="font-mono font-semibold text-status-win">${(riskInDollars * 2).toFixed(2)}</span>
+            </p>
+          )}
+        </div>
 
         {/* Multi-Entry Ladder */}
         {signal.entries && signal.entries.length > 1 && (
@@ -378,7 +447,22 @@ export function SignalResultCard({
             <ExternalLink className="w-3.5 h-3.5" />
             Post on X
           </button>
-          {!confirmed && onConfirm && (
+          {showGenerateNext && onGenerateNext && (
+            <button
+              onClick={onGenerateNext}
+              disabled={generatingNext}
+              className="flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
+              style={{ background: 'rgba(240, 180, 41, 0.15)', color: 'var(--accent-gold)', border: '1px solid rgba(240, 180, 41, 0.25)' }}
+            >
+              {generatingNext ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <RefreshCw className="w-3.5 h-3.5" />
+              )}
+              Generate Next
+            </button>
+          )}
+          {!showGenerateNext && !confirmed && onConfirm && (
             <button
               onClick={() => onConfirm(signal.id)}
               disabled={outcomeUpdating}
@@ -389,9 +473,9 @@ export function SignalResultCard({
               Confirm
             </button>
           )}
-          {confirmed && onWon && (
+          {!showGenerateNext && confirmed && onWon && (
             <button
-              onClick={() => onWon(signal.id)}
+              onClick={handleWon}
               disabled={outcomeUpdating}
               className="flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
               style={{ background: 'rgba(0,230,118,0.1)', color: 'var(--status-win)', border: '1px solid rgba(0,230,118,0.15)' }}
@@ -400,9 +484,9 @@ export function SignalResultCard({
               Won
             </button>
           )}
-          {confirmed && onLost && (
+          {!showGenerateNext && confirmed && onLost && (
             <button
-              onClick={() => onLost(signal.id)}
+              onClick={handleLost}
               disabled={outcomeUpdating}
               className="flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
               style={{ background: 'rgba(255,82,82,0.1)', color: 'var(--status-loss)', border: '1px solid rgba(255,82,82,0.15)' }}

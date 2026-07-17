@@ -20,6 +20,7 @@ export interface CompoundingState {
   riskPercent: number;
   targetReturn: number;
   withdrawPercent: number;
+  leverage: number;
   withdrawals: Withdrawal[];
 }
 
@@ -30,6 +31,7 @@ const DEFAULT_COMPOUNDING: CompoundingState = {
   riskPercent: 10,
   targetReturn: 14,
   withdrawPercent: 20,
+  leverage: 2000,
   withdrawals: [],
 };
 
@@ -43,6 +45,21 @@ interface Position {
   sl: number;
 }
 
+export interface SessionEntry {
+  signalId: string;
+  outcome: 'won' | 'lost';
+  riskAmount: number;
+  profit: number;
+  lotSize: number;
+  timestamp: string;
+}
+
+export interface SessionState {
+  entries: SessionEntry[];
+  startBalance: number;
+  lastSignalTimestamp: string;
+}
+
 interface DashboardData {
   trades: Trade[];
   signals: Signal[];
@@ -54,6 +71,9 @@ interface DashboardData {
   updateCompounding: (patch: Partial<CompoundingState>) => void;
   recordWithdrawal: (amount: number) => void;
   completeCycle: () => { profit: number; suggestedWithdrawal: number };
+  session: SessionState;
+  addSessionEntry: (entry: SessionEntry) => void;
+  resetSession: () => void;
   positions: Position[];
   signalsFeed: {
     id: number;
@@ -77,6 +97,9 @@ const defaultData: DashboardData = {
   updateCompounding: () => {},
   recordWithdrawal: () => {},
   completeCycle: () => ({ profit: 0, suggestedWithdrawal: 0 }),
+  session: { entries: [], startBalance: 0, lastSignalTimestamp: '' },
+  addSessionEntry: () => {},
+  resetSession: () => {},
   positions: [],
   signalsFeed: [], quickStats: { todayPnl: 0, winRate: 0, totalTrades: 0, openPositions: 0 },
   loading: true,
@@ -200,6 +223,50 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return { profit, suggestedWithdrawal };
   }, [balance, compounding.cycleStartBalance, compounding.withdrawPercent]);
 
+  // ─── Session State ──────────────────────────────────────────────────────
+  const DEFAULT_SESSION: SessionState = { entries: [], startBalance: 0, lastSignalTimestamp: '' };
+  const [session, setSession] = useState<SessionState>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("trading_session");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved) as SessionState;
+          // Auto-expire after 30 min of inactivity
+          const elapsed = Date.now() - new Date(parsed.lastSignalTimestamp).getTime();
+          if (elapsed > 1_800_000) return DEFAULT_SESSION;
+          return parsed;
+        } catch {}
+      }
+    }
+    return DEFAULT_SESSION;
+  });
+
+  const persistSession = useCallback((next: SessionState) => {
+    setSession(next);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("trading_session", JSON.stringify(next));
+    }
+  }, []);
+
+  const addSessionEntry = useCallback((entry: SessionEntry) => {
+    setSession(prev => {
+      const isFirst = prev.entries.length === 0;
+      const next: SessionState = {
+        entries: [...prev.entries, entry],
+        startBalance: isFirst ? balance : prev.startBalance,
+        lastSignalTimestamp: entry.timestamp,
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("trading_session", JSON.stringify(next));
+      }
+      return next;
+    });
+  }, [balance]);
+
+  const resetSession = useCallback(() => {
+    persistSession(DEFAULT_SESSION);
+  }, [persistSession]);
+
   // Live price — poll every 10 seconds
   useEffect(() => {
     const fetchPrice = async () => {
@@ -316,6 +383,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     trades: userTrades, signals: userSignals, stats, price: livePrice,
     balance, setBalance,
     compounding, updateCompounding, recordWithdrawal, completeCycle,
+    session, addSessionEntry, resetSession,
     positions: [
       ...openTrades.map(t => ({
         direction: t.trend === 'UP' ? 'BUY' as const : 'SELL' as const,

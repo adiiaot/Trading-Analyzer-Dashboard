@@ -20,10 +20,11 @@ const item = {
 };
 
 export default function SignalsPage() {
-  const { signals } = useDashboardData();
+  const { signals, addSessionEntry } = useDashboardData();
   const [signalLoading, setSignalLoading] = useState(false);
+  const [generatingNext, setGeneratingNext] = useState(false);
   const [signalResult, setSignalResult] = useState<{
-    success: boolean; message: string; signal?: any; dxyState?: any;
+    success: boolean; message: string; signal?: any;
   } | null>(null);
   const [outcomeUpdating, setOutcomeUpdating] = useState(false);
   const [outcomeMessage, setOutcomeMessage] = useState<string | null>(null);
@@ -39,6 +40,7 @@ export default function SignalsPage() {
 
   const generateSignal = async () => {
     setSignalLoading(true);
+    setGeneratingNext(false);
     setSignalResult(null);
     try {
       const res = await fetch('/api/signal/generate', { method: 'POST' });
@@ -62,13 +64,20 @@ export default function SignalsPage() {
       const data = await res.json();
       setOutcomeMessage(data.message || 'Marked as won');
       if (signalResult?.signal?.id === signalId) {
+        const lotSize = parseFloat(localStorage.getItem("last_lot_size") || "0.05");
+        const slDist = Math.abs(signalResult.signal.entries?.[0]?.price - signalResult.signal.stop_loss) || 0;
+        const riskAmt = parseFloat((lotSize * 10 * slDist).toFixed(2));
+        const entryPrice = signalResult.signal.entries?.[0]?.price || 0;
+        const tpPrice = signalResult.signal.entries?.[0]?.tp || entryPrice;
+        const profit = parseFloat((lotSize * 10 * Math.abs(tpPrice - entryPrice)).toFixed(2));
+        addSessionEntry({ signalId, outcome: 'won', riskAmount: riskAmt, profit, lotSize, timestamp: new Date().toISOString() });
         setSignalResult(prev => prev ? { ...prev, signal: { ...prev.signal, outcome: 'won' } } : prev);
       }
     } catch {
       setOutcomeMessage('Failed to update outcome');
     }
     setOutcomeUpdating(false);
-  }, [signalResult]);
+  }, [signalResult, addSessionEntry]);
 
   const handleConfirm = useCallback(async (signalId: string) => {
     setOutcomeUpdating(true);
@@ -102,13 +111,17 @@ export default function SignalsPage() {
       const data = await res.json();
       setOutcomeMessage(data.message || 'Marked as lost');
       if (signalResult?.signal?.id === signalId) {
+        const lotSize = parseFloat(localStorage.getItem("last_lot_size") || "0.05");
+        const slDist = Math.abs(signalResult.signal.entries?.[0]?.price - signalResult.signal.stop_loss) || 0;
+        const riskAmt = parseFloat((lotSize * 10 * slDist).toFixed(2));
+        addSessionEntry({ signalId, outcome: 'lost', riskAmount: riskAmt, profit: -riskAmt, lotSize, timestamp: new Date().toISOString() });
         setSignalResult(prev => prev ? { ...prev, signal: { ...prev.signal, outcome: 'lost' } } : prev);
       }
     } catch {
       setOutcomeMessage('Failed to update outcome');
     }
     setOutcomeUpdating(false);
-  }, [signalResult]);
+  }, [signalResult, addSessionEntry]);
 
   const signalStats = [
     { label: "Signals Today", value: today.length.toString(), color: "text-text-primary" },
@@ -178,24 +191,22 @@ export default function SignalsPage() {
             {signalResult && signalResult.signal && (
               <SignalResultCard
                 signal={signalResult.signal}
-                dxyState={signalResult.dxyState}
                 confirmed={signalResult.signal.confirmed}
                 onConfirm={signalResult.signal.confirmed ? undefined : handleConfirm}
                 onWon={signalResult.signal.outcome || !signalResult.signal.confirmed ? undefined : handleWon}
                 onLost={signalResult.signal.outcome || !signalResult.signal.confirmed ? undefined : handleLost}
+                onGenerateNext={() => {
+                  setGeneratingNext(true);
+                  generateSignal();
+                }}
                 outcomeUpdating={outcomeUpdating}
+                generatingNext={generatingNext}
               />
             )}
 
             {signalResult && !signalResult.signal && (
               <div className="p-4 rounded-xl bg-[rgba(255,82,82,0.06)] border border-[rgba(255,82,82,0.15)]">
                 <p className="text-sm font-medium text-status-loss">❌ {signalResult.message}</p>
-                {signalResult.dxyState && !signalResult.dxyState.correlationConfirmed && (
-                  <div className="mt-2 text-xs text-text-muted space-y-1">
-                    <p>DXY correlation check: <span className="text-status-loss">Not confirmed</span></p>
-                    <p className="text-[10px]">{signalResult.dxyState.summary}</p>
-                  </div>
-                )}
               </div>
             )}
           </div>

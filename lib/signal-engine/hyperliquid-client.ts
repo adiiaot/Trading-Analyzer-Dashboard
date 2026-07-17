@@ -1,5 +1,6 @@
 import { CandleData } from './types';
 import { CONFIG } from './config';
+import { getCached, setCached } from './candle-cache';
 
 interface RawBar {
   t: number;
@@ -66,7 +67,12 @@ function buildPayload(timeframe: string, limit: number) {
   };
 }
 
-export async function fetchCandles(timeframe: string, limit: number): Promise<CandleData[] | null> {
+export async function fetchCandles(timeframe: string, limit: number, forceFetch: boolean = false): Promise<CandleData[] | null> {
+  if (!forceFetch) {
+    const cached = getCached(timeframe);
+    if (cached) return cached.slice(-limit);
+  }
+
   const payload = buildPayload(timeframe, limit);
   if (!payload) return null;
 
@@ -81,18 +87,20 @@ export async function fetchCandles(timeframe: string, limit: number): Promise<Ca
       console.warn(`[HL] Zero valid candles for ${timeframe} (${raw.length} raw bars)`);
       return null;
     }
-    return candles.slice(-limit);
+    const sliced = candles.slice(-limit);
+    setCached(timeframe, sliced);
+    return sliced;
   } catch (e) {
     console.error(`[HL] Fetch failed for ${timeframe}:`, e);
     return null;
   }
 }
 
-export async function fetchCandlesMulti(requests: Record<string, number>): Promise<Record<string, CandleData[] | null>> {
+export async function fetchCandlesMulti(requests: Record<string, number>, forceFetch: boolean = false): Promise<Record<string, CandleData[] | null>> {
   const results: Record<string, CandleData[] | null> = {};
   const entries = Object.entries(requests);
   const fetches = entries.map(async ([tf, limit]) => {
-    const candles = await fetchCandles(tf, limit);
+    const candles = await fetchCandles(tf, limit, forceFetch);
     if (!candles) {
       console.warn(`[HL] Timeframe ${tf} returned no data`);
     }

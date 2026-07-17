@@ -33,6 +33,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, signal: null, message });
     }
 
+    // Dashboard signals: short validity (30 min)
+    const shortenedValidUntil = new Date(Date.now() + 30 * 60 * 1000);
+    const signalOutput = {
+      ...signal,
+      timestamp: signal.timestamp.toISOString(),
+      valid_until: shortenedValidUntil.toISOString(),
+    };
+
     try {
       const db = getAdminDb();
       const signalData = {
@@ -53,7 +61,7 @@ export async function POST(request: Request) {
         resistanceLevel: signal.resistance_level,
         pullbackDetected: signal.pullback_detected,
         entryConfirmation: signal.entry_confirmation,
-        validUntil: signal.valid_until,
+        validUntil: shortenedValidUntil,
         confidence: signal.confidence,
         rrRatio: signal.rr_ratio,
         description: signal.description,
@@ -73,11 +81,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      signal: {
-        ...signal,
-        timestamp: signal.timestamp.toISOString(),
-        valid_until: signal.valid_until.toISOString(),
-      },
+      signal: signalOutput,
       message,
     });
   } catch (error) {

@@ -6,6 +6,14 @@ import { getMacroTrend } from './macro-trend';
 import { sessionTracker } from './session-tracker';
 import { CONFIG } from './config';
 
+const RSI_PERIOD = 14;
+const RSI_OVERBOUGHT = 72;
+const RSI_OVERSOLD = 30;
+const BB_PERIOD = 20;
+let BB_STD = 2.0;
+
+export const sweepConfig: { BB_STD?: number; RSI_OVERBOUGHT?: number; RSI_OVERSOLD?: number } = {};
+
 function roundPrice(p: number): number {
   return Math.round(p * 100) / 100;
 }
@@ -156,12 +164,15 @@ function buildSignal(
 }
 
 function checkIndicators(trendCandles: CandleData[]): [boolean, string] {
-  const rsi = calculateRSI(trendCandles, 14);
+  const rsi = calculateRSI(trendCandles, RSI_PERIOD);
   if (rsi !== null) {
-    if (rsi > 72) return [false, `RSI overbought (${rsi.toFixed(1)}) — no LONG`];
-    if (rsi < 30) return [false, `RSI oversold (${rsi.toFixed(1)}) — no LONG`];
+    const rsiOb = sweepConfig.RSI_OVERBOUGHT ?? RSI_OVERBOUGHT;
+    const rsiOs = sweepConfig.RSI_OVERSOLD ?? RSI_OVERSOLD;
+    if (rsi > rsiOb) return [false, `RSI overbought (${rsi.toFixed(1)}) — no LONG`];
+    if (rsi < rsiOs) return [false, `RSI oversold (${rsi.toFixed(1)}) — no LONG`];
   }
-  const bb = calculateBollingerBands(trendCandles, 20, 2);
+  const bbStd = sweepConfig.BB_STD ?? BB_STD;
+  const bb = calculateBollingerBands(trendCandles, BB_PERIOD, bbStd);
   if (bb) {
     const currentPrice = trendCandles[trendCandles.length - 1].close;
     if (currentPrice > bb.upper) return [false, `Price above upper BB ($${currentPrice.toFixed(2)} > $${bb.upper.toFixed(2)})`];

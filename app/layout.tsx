@@ -4,9 +4,9 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "Trading Command Center — XAU/USD",
-  description: "Professional gold trading analytics for day traders and scalpers.",
-  icons: { icon: "/images/tcc-logo.jpg" },
+  title: "AOT Analyzer - Intraday Trading Center",
+  description: "Professional XAU/USD signal engine, real-time analytics, and compounding tracker for serious gold traders.",
+  icons: { icon: "/images/aot-analyzer-logo-icon.png" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

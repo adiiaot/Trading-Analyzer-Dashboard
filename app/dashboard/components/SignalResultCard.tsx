@@ -4,8 +4,9 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   TrendingUp, TrendingDown, Copy, ExternalLink,
-  CheckCircle, XCircle, Loader2, Check,
+  CheckCircle, XCircle, Loader2, Check, DollarSign,
 } from "lucide-react";
+import { useDashboardData } from "@/lib/data-context";
 
 interface SignalResultEntry {
   entry_number: number;
@@ -129,8 +130,20 @@ export function SignalResultCard({
   outcomeUpdating,
 }: SignalResultCardProps) {
   const [copied, setCopied] = useState(false);
+  const { balance, compounding } = useDashboardData();
   const isUp = signal.trend === 'UP';
   const confidencePct = Math.round((signal.confidence ?? 0) * 100);
+
+  // Position sizing
+  const slDistance = signal.stop_loss && signal.entries?.[0]?.price
+    ? Math.abs(signal.entries[0].price - signal.stop_loss)
+    : 10;
+  const riskAmount = balance > 0 ? parseFloat((balance * compounding.riskPercent / 100).toFixed(2)) : 0;
+  const suggestedLots = riskAmount > 0 && slDistance > 0
+    ? parseFloat((riskAmount / slDistance).toFixed(2))
+    : 0;
+  const potentialProfit1R = riskAmount;
+  const potentialProfit2R = riskAmount * 2;
 
   const handleCopy = async () => {
     try {
@@ -288,6 +301,26 @@ export function SignalResultCard({
             {signal.entries?.length || 1} entry ladder
           </div>
         </div>
+
+        {/* Position Size */}
+        {balance > 0 && (
+          <div className="flex items-center justify-between px-2 py-2 rounded-lg text-[10px]"
+            style={{ background: "rgba(240, 180, 41, 0.05)", border: "1px solid rgba(240, 180, 41, 0.1)" }}
+          >
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-3 h-3 text-accent-gold" />
+              <span className="text-text-muted">Size:</span>
+              <span className="font-mono font-bold text-accent-gold">{suggestedLots.toFixed(2)} lots</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-text-muted">Risk <span className="font-mono font-semibold" style={{ color: "var(--status-loss)" }}>${riskAmount.toFixed(2)}</span></span>
+              <span className="text-text-muted">1R <span className="font-mono font-semibold text-status-win">${potentialProfit1R.toFixed(2)}</span></span>
+              {potentialProfit2R > 0 && (
+                <span className="text-text-muted">2R <span className="font-mono font-semibold text-status-win">${potentialProfit2R.toFixed(2)}</span></span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Multi-Entry Ladder */}
         {signal.entries && signal.entries.length > 1 && (

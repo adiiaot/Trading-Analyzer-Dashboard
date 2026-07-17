@@ -1,13 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Send, BarChart3, Terminal, Radio, BookOpen, Activity, BarChart4 } from "lucide-react";
+import { Send, BarChart3, Terminal, Radio, BookOpen, Activity, BarChart4, TrendingUp, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { QuickStats } from "./components/QuickStats";
 import { TradingChart } from "./components/TradingChart";
 import { OpenPositionsTable } from "./components/OpenPositionsTable";
 import { SignalFeed } from "./components/SignalFeed";
 import BriefPanel from "./components/BriefPanel";
+import { useDashboardData } from "@/lib/data-context";
 
 const container = {
   hidden: { opacity: 0 },
@@ -25,6 +26,54 @@ const quickLinks = [
   { href: "/dashboard/backtest", label: "Backtest", icon: BarChart4, desc: "Run historical signal engine backtest" },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3, desc: "Win rate, P&L, strategy breakdown" },
 ];
+
+function CompoundingSummary() {
+  const { balance, compounding } = useDashboardData();
+  if (balance <= 0) return null;
+  const nextTarget = parseFloat((compounding.cycleStartBalance * (1 + compounding.targetReturn / 100)).toFixed(2));
+  const progress = Math.min(100, Math.max(0, ((balance - compounding.cycleStartBalance) / (nextTarget - compounding.cycleStartBalance)) * 100));
+  const riskAmount = parseFloat((balance * compounding.riskPercent / 100).toFixed(2));
+  return (
+    <Link href="/dashboard/compounding"
+      className="block rounded-xl overflow-hidden transition-all hover:opacity-95"
+      style={{ background: "var(--glass-bg)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid var(--glass-border)", boxShadow: "var(--shadow-card)" }}
+    >
+      <div className="p-4 flex items-center gap-4">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(240, 180, 41, 0.12)" }}>
+          <TrendingUp className="w-5 h-5 text-accent-gold" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-text-primary">Cycle {compounding.cycleNumber}</span>
+              <span className="text-[10px] font-mono font-bold" style={{ color: "var(--accent-gold)" }}>
+                {formatUSD(balance)}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[10px]">
+              <span className="text-text-muted">Next: {formatUSD(nextTarget)}</span>
+              <ChevronRight className="w-3 h-3 text-text-muted" />
+            </div>
+          </div>
+          <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+            <div className="h-full rounded-full transition-all" style={{
+              width: `${progress}%`,
+              background: "linear-gradient(90deg, #f0b429, #ffd54f)",
+            }} />
+          </div>
+          <div className="flex items-center justify-between mt-1 text-[10px]">
+            <span className="text-text-muted">Risk: {formatUSD(riskAmount)}/trade</span>
+            <span className="font-mono font-semibold" style={{ color: "var(--accent-gold)" }}>{progress.toFixed(0)}%</span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function formatUSD(v: number): string {
+  return v < 0 ? `-$${Math.abs(v).toFixed(2)}` : `$${v.toFixed(2)}`;
+}
 
 export default function DashboardPage() {
   return (
@@ -52,6 +101,11 @@ export default function DashboardPage() {
       {/* Brief Panel */}
       <motion.div variants={section}>
         <BriefPanel />
+      </motion.div>
+
+      {/* Compounding Summary */}
+      <motion.div variants={section}>
+        <CompoundingSummary />
       </motion.div>
 
       {/* Hero: Full-width chart */}

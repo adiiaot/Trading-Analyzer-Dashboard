@@ -128,6 +128,78 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // ─── Compounding State ──────────────────────────────────────────────────
+  const [compounding, setCompoundingState] = useState<CompoundingState>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("compounding_state");
+      if (saved) {
+        try { return JSON.parse(saved); } catch {}
+      }
+    }
+    return { ...DEFAULT_COMPOUNDING };
+  });
+
+  const persistCompounding = useCallback((next: CompoundingState) => {
+    setCompoundingState(next);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("compounding_state", JSON.stringify(next));
+    }
+  }, []);
+
+  const updateCompounding = useCallback((patch: Partial<CompoundingState>) => {
+    setCompoundingState(prev => {
+      const next = { ...prev, ...patch };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("compounding_state", JSON.stringify(next));
+      }
+      return next;
+    });
+  }, []);
+
+  const recordWithdrawal = useCallback((amount: number) => {
+    setBalanceState(prev => {
+      const next = prev - amount;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("account_balance", next.toString());
+      }
+      return next;
+    });
+    setCompoundingState(prev => {
+      const next = {
+        ...prev,
+        withdrawals: [...prev.withdrawals, { amount, date: new Date().toISOString(), cycle: prev.cycleNumber }],
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("compounding_state", JSON.stringify(next));
+      }
+      return next;
+    });
+  }, []);
+
+  const completeCycle = useCallback(() => {
+    const profit = parseFloat((balance - compounding.cycleStartBalance).toFixed(2));
+    const suggestedWithdrawal = parseFloat((profit * compounding.withdrawPercent / 100).toFixed(2));
+    const nextCycleStart = parseFloat((balance - suggestedWithdrawal).toFixed(2));
+    setCompoundingState(prev => {
+      const next = {
+        ...prev,
+        cycleNumber: prev.cycleNumber + 1,
+        cycleStartBalance: nextCycleStart,
+        initialCapital: nextCycleStart,
+        withdrawals: [...prev.withdrawals, { amount: suggestedWithdrawal, date: new Date().toISOString(), cycle: prev.cycleNumber }],
+      };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("compounding_state", JSON.stringify(next));
+      }
+      return next;
+    });
+    setBalanceState(nextCycleStart);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("account_balance", nextCycleStart.toString());
+    }
+    return { profit, suggestedWithdrawal };
+  }, [balance, compounding.cycleStartBalance, compounding.withdrawPercent]);
+
   // Live price — poll every 10 seconds
   useEffect(() => {
     const fetchPrice = async () => {
@@ -243,6 +315,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const value: DashboardData = {
     trades: userTrades, signals: userSignals, stats, price: livePrice,
     balance, setBalance,
+    compounding, updateCompounding, recordWithdrawal, completeCycle,
     positions: [
       ...openTrades.map(t => ({
         direction: t.trend === 'UP' ? 'BUY' as const : 'SELL' as const,

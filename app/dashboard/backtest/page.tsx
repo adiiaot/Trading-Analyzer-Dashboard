@@ -201,8 +201,8 @@ export default function BacktestPage() {
               disabled={loading}
               className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all disabled:opacity-50 whitespace-nowrap"
               style={{
-                background: "linear-gradient(135deg, rgba(240,180,41,0.2), rgba(240,180,41,0.05))",
-                border: "1px solid rgba(240,180,41,0.3)",
+                background: "linear-gradient(135deg, rgba(var(--accent-gold-rgb), 0.2), rgba(var(--accent-gold-rgb), 0.05))",
+                border: "1px solid rgba(var(--accent-gold-rgb), 0.3)",
                 color: "rgb(var(--accent-gold-rgb))",
               }}
             >
@@ -264,8 +264,8 @@ export default function BacktestPage() {
                     onClick={() => runBacktest()}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
                     style={{
-                      background: "linear-gradient(135deg, rgba(240,180,41,0.2), rgba(240,180,41,0.05))",
-                      border: "1px solid rgba(240,180,41,0.3)",
+                      background: "linear-gradient(135deg, rgba(var(--accent-gold-rgb), 0.2), rgba(var(--accent-gold-rgb), 0.05))",
+                      border: "1px solid rgba(var(--accent-gold-rgb), 0.3)",
                       color: "rgb(var(--accent-gold-rgb))",
                     }}
                   >

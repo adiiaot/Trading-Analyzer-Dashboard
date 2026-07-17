@@ -45,7 +45,7 @@ export default function BriefPanel() {
         </div>
         <button onClick={fetchBrief} disabled={loading}
           className="text-[10px] font-medium px-2 py-1 rounded flex items-center gap-1"
-          style={{ background: 'rgba(240, 180, 41, 0.1)', color: 'var(--accent-gold)' }}>
+          style={{ background: 'rgba(var(--accent-gold-rgb), 0.1)', color: 'var(--accent-gold)' }}>
           <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </button>

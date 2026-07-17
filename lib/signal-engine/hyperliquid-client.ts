@@ -87,9 +87,8 @@ export async function fetchCandles(timeframe: string, limit: number, forceFetch:
       console.warn(`[HL] Zero valid candles for ${timeframe} (${raw.length} raw bars)`);
       return null;
     }
-    const sliced = candles.slice(-limit);
-    setCached(timeframe, sliced);
-    return sliced;
+    setCached(timeframe, candles);
+    return candles.slice(-limit);
   } catch (e) {
     console.error(`[HL] Fetch failed for ${timeframe}:`, e);
     return null;

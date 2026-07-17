@@ -35,12 +35,12 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
           rel="noopener noreferrer"
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
           style={{
-            background: "rgba(240, 180, 41, 0.1)",
+            background: "rgba(var(--accent-gold-rgb), 0.1)",
             color: "rgb(var(--accent-gold-rgb))",
-            border: "1px solid rgba(240, 180, 41, 0.15)",
+            border: "1px solid rgba(var(--accent-gold-rgb), 0.15)",
           }}
-          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(240, 180, 41, 0.2)"}
-          onMouseLeave={(e) => e.currentTarget.style.background = "rgba(240, 180, 41, 0.1)"}
+          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(var(--accent-gold-rgb), 0.2)"}
+          onMouseLeave={(e) => e.currentTarget.style.background = "rgba(var(--accent-gold-rgb), 0.1)"}
         >
           <Send className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Telegram Bot</span>

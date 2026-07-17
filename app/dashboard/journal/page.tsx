@@ -150,19 +150,19 @@ export default function JournalPage() {
               </div>
               <div className="flex gap-2">
                 <button onClick={() => setTradeForm(p => ({ ...p, direction: 'LONG' }))}
-                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'LONG' ? 'bg-[rgba(0,230,118,0.15)] text-status-win' : 'glass'}`}>
+                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'LONG' ? 'bg-[rgba(var(--status-win-rgb),0.15)] text-status-win' : 'glass'}`}>
                   LONG ↗
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, direction: 'SHORT' }))}
-                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'SHORT' ? 'bg-[rgba(255,82,82,0.15)] text-status-loss' : 'glass'}`}>
+                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'SHORT' ? 'bg-[rgba(var(--status-loss-rgb),0.15)] text-status-loss' : 'glass'}`}>
                   SHORT ↘
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, result: 'win' }))}
-                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.result === 'win' ? 'bg-[rgba(0,230,118,0.15)] text-status-win' : 'glass'}`}>
+                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.result === 'win' ? 'bg-[rgba(var(--status-win-rgb),0.15)] text-status-win' : 'glass'}`}>
                   WIN
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, result: 'loss' }))}
-                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.result === 'loss' ? 'bg-[rgba(255,82,82,0.15)] text-status-loss' : 'glass'}`}>
+                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.result === 'loss' ? 'bg-[rgba(var(--status-loss-rgb),0.15)] text-status-loss' : 'glass'}`}>
                   LOSS
                 </button>
               </div>
@@ -246,7 +246,7 @@ export default function JournalPage() {
                       style={{
                         background: "var(--glass-bg)",
                         border: `1px solid ${
-                          isWin ? "rgba(0,230,118,0.12)" : "rgba(255,82,82,0.12)"
+                          isWin ? "rgba(var(--status-win-rgb), 0.12)" : "rgba(var(--status-loss-rgb), 0.12)"
                         }`,
                         borderLeft: `3px solid ${
                           isWin ? "rgb(var(--status-win-rgb))" : "rgb(var(--status-loss-rgb))"
@@ -339,7 +339,7 @@ export default function JournalPage() {
                     </span>
                     {entry?.sentiment && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded" style={{
-                        background: 'rgba(240, 180, 41, 0.1)',
+                        background: 'rgba(var(--accent-gold-rgb), 0.1)',
                         color: 'var(--accent-gold)',
                       }}>{entry.sentiment}</span>
                     )}

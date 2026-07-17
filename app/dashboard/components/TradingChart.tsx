@@ -42,7 +42,7 @@ function buildWidget(containerId: string, interval: string) {
       "paneProperties.backgroundType": "solid",
       "paneProperties.vertGridProperties.color": "rgba(255,255,255,0.04)",
       "paneProperties.horzGridProperties.color": "rgba(255,255,255,0.04)",
-      "paneProperties.crossHairProperties.color": "rgba(240,180,41,0.5)",
+      "paneProperties.crossHairProperties.color": "rgba(var(--accent-gold-rgb), 0.5)",
       "scalesProperties.textColor": "rgba(255,255,255,0.6)",
       "scalesProperties.lineColor": "rgba(255,255,255,0.08)",
     },
@@ -190,7 +190,7 @@ export function TradingChart() {
             <button
               onClick={handleAnalyze}
               className="px-2.5 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-medium text-accent-gold transition-all whitespace-nowrap"
-              style={{ background: "var(--glass-bg)", border: "1px solid rgba(240, 180, 41, 0.3)" }}
+              style={{ background: "var(--glass-bg)", border: "1px solid rgba(var(--accent-gold-rgb), 0.3)" }}
             >
               Analyze
             </button>

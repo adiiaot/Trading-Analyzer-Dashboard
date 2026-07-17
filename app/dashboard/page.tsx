@@ -39,7 +39,7 @@ function CompoundingSummary() {
       style={{ background: "var(--glass-bg)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid var(--glass-border)", boxShadow: "var(--shadow-card)" }}
     >
       <div className="p-4 flex items-center gap-4">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(240, 180, 41, 0.12)" }}>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(var(--accent-gold-rgb), 0.12)" }}>
           <TrendingUp className="w-5 h-5 text-accent-gold" />
         </div>
         <div className="flex-1 min-w-0">
@@ -58,7 +58,7 @@ function CompoundingSummary() {
           <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
             <div className="h-full rounded-full transition-all" style={{
               width: `${progress}%`,
-              background: "linear-gradient(90deg, #f0b429, #ffd54f)",
+              background: "linear-gradient(90deg, var(--accent-gold), rgba(var(--accent-gold-rgb), 0.5))",
             }} />
           </div>
           <div className="flex items-center justify-between mt-1 text-[10px]">
@@ -84,7 +84,7 @@ function SessionCard() {
       style={{ background: "var(--glass-bg)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid var(--glass-border)", boxShadow: "var(--shadow-card)" }}
     >
       <div className="p-4 flex items-center gap-4">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(240, 180, 41, 0.12)" }}>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(var(--accent-gold-rgb), 0.12)" }}>
           <Zap className="w-5 h-5 text-accent-gold" />
         </div>
         <div className="flex-1 min-w-0">
@@ -102,7 +102,7 @@ function SessionCard() {
               <button
                 onClick={resetSession}
                 className="p-1 rounded-lg transition-all hover:opacity-70"
-                style={{ background: "rgba(255,82,82,0.1)", color: "var(--status-loss)" }}
+                style={{ background: "rgba(var(--status-loss-rgb), 0.1)", color: "var(--status-loss)" }}
                 title="End Session"
               >
                 <X className="w-3 h-3" />
@@ -141,7 +141,7 @@ export default function DashboardPage() {
             <span className="text-text-primary"> Analyzer</span>
           </h1>
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium text-status-win"
-            style={{ background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.15)" }}>
+            style={{ background: "rgba(var(--status-win-rgb), 0.08)", border: "1px solid rgba(var(--status-win-rgb), 0.15)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-status-win animate-pulse-soft" />
             Live
           </div>
@@ -192,7 +192,7 @@ export default function DashboardPage() {
             </div>
             <Link href="/dashboard/commands"
               className="text-xs px-3 py-1.5 rounded-lg font-semibold"
-              style={{ background: 'rgba(240, 180, 41, 0.1)', color: 'var(--accent-gold)' }}>
+              style={{ background: 'rgba(var(--accent-gold-rgb), 0.1)', color: 'var(--accent-gold)' }}>
               View All
             </Link>
           </div>
@@ -201,7 +201,7 @@ export default function DashboardPage() {
               <Link key={c.href} href={c.href}
                 className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-xs"
                 style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(240,180,41,0.1)" }}>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(var(--accent-gold-rgb), 0.1)" }}>
                   <c.icon className="w-3.5 h-3.5 text-accent-gold" />
                 </div>
                 <div>

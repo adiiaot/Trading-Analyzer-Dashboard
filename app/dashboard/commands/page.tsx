@@ -31,7 +31,7 @@ function CommandCard({ icon, title, description, action, status = 'standalone' }
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg flex items-center justify-center"
-            style={{ background: 'rgba(240, 180, 41, 0.1)' }}>
+            style={{ background: 'rgba(var(--accent-gold-rgb), 0.1)' }}>
             {icon}
           </div>
           <div>
@@ -41,10 +41,10 @@ function CommandCard({ icon, title, description, action, status = 'standalone' }
         </div>
         <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium"
           style={{
-            background: status === 'active' ? 'rgba(0, 230, 118, 0.12)' : 'rgba(240, 180, 41, 0.1)',
+            background: status === 'active' ? 'rgba(var(--status-win-rgb), 0.12)' : 'rgba(var(--accent-gold-rgb), 0.1)',
             color: status === 'active' ? 'rgb(var(--status-win-rgb))' : 'rgb(var(--accent-gold-rgb))',
           }}>
-          <span className={`w-1.5 h-1.5 rounded-full ${status === 'active' ? 'bg-[#00e676]' : 'bg-[var(--accent-gold)]'}`} />
+          <span className={`w-1.5 h-1.5 rounded-full ${status === 'active' ? 'bg-[var(--status-win)]' : 'bg-[var(--accent-gold)]'}`} />
           {status === 'active' ? 'Live' : 'Ready'}
         </div>
       </div>
@@ -144,7 +144,7 @@ export default function CommandsPage() {
                 onClick={generateSignal}
                 disabled={signalLoading}
                 className="btn-primary w-full py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50"
-                style={{ background: signalLoading ? undefined : 'linear-gradient(135deg, var(--accent-gold), #d4a52a)' }}>
+                style={{ background: signalLoading ? undefined : 'linear-gradient(135deg, var(--accent-gold), rgba(var(--accent-gold-rgb), 0.7))' }}>
                 {signalLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -158,7 +158,8 @@ export default function CommandsPage() {
                 )}
               </button>
               {signalResult && (
-                <div className={`p-3 rounded-lg text-xs ${signalResult.success ? 'bg-[rgba(0,230,118,0.08)] text-status-win' : 'bg-[rgba(255,82,82,0.08)] text-status-loss'}`}>
+                <div className={`p-3 rounded-lg text-xs ${signalResult.success ? 'text-status-win' : 'text-status-loss'}`}
+                  style={{ background: signalResult.success ? 'rgba(var(--status-win-rgb), 0.08)' : 'rgba(var(--status-loss-rgb), 0.08)' }}>
                   <p className="font-medium mb-1">{signalResult.success ? '✅ Signal Generated' : '❌ ' + signalResult.message}</p>
                   {signalResult.signal && (
                     <div className="space-y-1 text-text-secondary mt-2">
@@ -191,19 +192,19 @@ export default function CommandsPage() {
               </div>
               <div className="grid grid-cols-2 sm:flex gap-2">
                 <button onClick={() => setTradeForm(p => ({ ...p, direction: 'LONG' }))}
-                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'LONG' ? 'bg-[rgba(0,230,118,0.15)] text-status-win' : 'glass'}`}>
+                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'LONG' ? 'bg-[rgba(var(--status-win-rgb),0.15)] text-status-win' : 'glass'}`}>
                   LONG ↗
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, direction: 'SHORT' }))}
-                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'SHORT' ? 'bg-[rgba(255,82,82,0.15)] text-status-loss' : 'glass'}`}>
+                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'SHORT' ? 'bg-[rgba(var(--status-loss-rgb),0.15)] text-status-loss' : 'glass'}`}>
                   SHORT ↘
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, result: 'win' }))}
-                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.result === 'win' ? 'bg-[rgba(0,230,118,0.15)] text-status-win' : 'glass'}`}>
+                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.result === 'win' ? 'bg-[rgba(var(--status-win-rgb),0.15)] text-status-win' : 'glass'}`}>
                   WIN
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, result: 'loss' }))}
-                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.result === 'loss' ? 'bg-[rgba(255,82,82,0.15)] text-status-loss' : 'glass'}`}>
+                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.result === 'loss' ? 'bg-[rgba(var(--status-loss-rgb),0.15)] text-status-loss' : 'glass'}`}>
                   LOSS
                 </button>
               </div>
@@ -243,7 +244,7 @@ export default function CommandsPage() {
           action={
             <Link href="/dashboard/backtest"
               className="btn-primary w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2"
-              style={{ background: 'linear-gradient(135deg, var(--accent-gold), #d4a52a)' }}>
+              style={{ background: 'linear-gradient(135deg, var(--accent-gold), rgba(var(--accent-gold-rgb), 0.7))' }}>
               <BarChart4 className="w-4 h-4" />
               Open Backtest
             </Link>
@@ -278,7 +279,7 @@ export default function CommandsPage() {
       </div>
 
       <div className="glass-card rounded-xl p-4 text-xs text-text-muted flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-[#00e676]" />
+        <div className="w-2 h-2 rounded-full" style={{ background: "var(--status-win)" }} />
         <span>All commands are fully self-sufficient — no Telegram bot required. Signal generation fetches live XAU/USD data from Hyperliquid directly.</span>
       </div>
     </motion.div>

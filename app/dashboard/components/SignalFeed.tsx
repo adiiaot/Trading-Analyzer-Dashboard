@@ -27,7 +27,7 @@ export function SignalFeed() {
           <h3 className="text-sm font-bold text-text-primary">Signal Feed</h3>
         </div>
         <span className="flex items-center gap-1.5 text-[10px] font-medium px-2 py-0.5 rounded-full text-status-win"
-          style={{ background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.15)" }}>
+          style={{ background: "rgba(var(--status-win-rgb), 0.08)", border: "1px solid rgba(var(--status-win-rgb), 0.15)" }}>
           <span className="w-1.5 h-1.5 rounded-full bg-status-win animate-pulse-soft" />
           Live
         </span>

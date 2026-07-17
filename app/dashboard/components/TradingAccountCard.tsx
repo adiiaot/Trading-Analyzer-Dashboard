@@ -28,12 +28,12 @@ export function TradingAccountCard() {
         className="card overflow-hidden"
       >
         {/* Decorative top accent */}
-        <div className="h-[2px] rounded-full mx-4" style={{ background: "linear-gradient(90deg, transparent, rgba(0,230,118,0.3), transparent)" }} />
+        <div className="h-[2px] rounded-full mx-4" style={{ background: "linear-gradient(90deg, transparent, rgba(var(--status-win-rgb), 0.3), transparent)" }} />
 
         {/* Header */}
         <div className="flex items-center justify-between px-4 pt-4 pb-1">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(0,230,118,0.1)" }}>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(var(--status-win-rgb), 0.1)" }}>
               <Wallet2 className="w-4 h-4 text-status-win" />
             </div>
             <div>
@@ -68,7 +68,7 @@ export function TradingAccountCard() {
               const pos = pct >= 0;
               return (
                 <span className={`flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${pos ? "text-status-win" : "text-status-loss"}`}
-                  style={{ background: pos ? "rgba(0,230,118,0.08)" : "rgba(255,82,82,0.08)", border: `1px solid ${pos ? "rgba(0,230,118,0.12)" : "rgba(255,82,82,0.12)"}` }}>
+                  style={{ background: pos ? "rgba(var(--status-win-rgb), 0.08)" : "rgba(var(--status-loss-rgb), 0.08)", border: `1px solid ${pos ? "rgba(var(--status-win-rgb), 0.12)" : "rgba(var(--status-loss-rgb), 0.12)"}` }}>
                   <TrendingUpIcon className={`w-2.5 h-2.5 ${pos ? "" : "rotate-180"}`} />
                   {pos ? "+" : ""}{pct.toFixed(1)}%
                 </span>
@@ -97,7 +97,7 @@ export function TradingAccountCard() {
         <div className="flex items-center justify-between px-4 py-2.5" style={{ borderTop: "1px solid var(--glass-border)" }}>
           <span className="text-[11px] text-text-muted">Status</span>
           <span className="flex items-center gap-1.5 text-[11px] font-medium text-status-win px-2.5 py-0.5 rounded-full"
-            style={{ background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.12)" }}>
+            style={{ background: "rgba(var(--status-win-rgb), 0.08)", border: "1px solid rgba(var(--status-win-rgb), 0.12)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-status-win animate-pulse-soft" />
             Active
           </span>

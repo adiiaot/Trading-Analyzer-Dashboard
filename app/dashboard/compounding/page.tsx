@@ -104,7 +104,7 @@ export default function CompoundingPage() {
       {/* Header */}
       <motion.div variants={section} className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(240, 180, 41, 0.12)" }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(var(--accent-gold-rgb), 0.12)" }}>
             <TrendingUp className="w-5 h-5 text-accent-gold" />
           </div>
           <div>
@@ -115,7 +115,7 @@ export default function CompoundingPage() {
         <button
           onClick={() => { setEditMode(!editMode); if (!editMode) setBalanceInput(balance.toString()); }}
           className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
-          style={{ background: "rgba(240, 180, 41, 0.08)", color: "var(--accent-gold)", border: "1px solid rgba(240, 180, 41, 0.12)" }}
+          style={{ background: "rgba(var(--accent-gold-rgb), 0.08)", color: "var(--accent-gold)", border: "1px solid rgba(var(--accent-gold-rgb), 0.12)" }}
         >
           {editMode ? "Cancel" : "Edit Balance"}
         </button>
@@ -141,7 +141,7 @@ export default function CompoundingPage() {
               <button
                 onClick={handleSaveBalance}
                 className="px-4 py-2 rounded-lg text-xs font-bold"
-                style={{ background: "rgba(240, 180, 41, 0.12)", color: "var(--accent-gold)" }}
+                style={{ background: "rgba(var(--accent-gold-rgb), 0.12)", color: "var(--accent-gold)" }}
               >
                 Save
               </button>
@@ -181,8 +181,8 @@ export default function CompoundingPage() {
                 className="h-full rounded-full"
                 style={{
                   background: cycleCompleted
-                    ? "linear-gradient(90deg, #00e676, #69f0ae)"
-                    : "linear-gradient(90deg, #f0b429, #ffd54f)",
+                    ? "linear-gradient(90deg, var(--profit), rgba(var(--status-win-rgb), 0.6))"
+                    : "linear-gradient(90deg, var(--accent-gold), rgba(var(--accent-gold-rgb), 0.5))",
                 }}
               />
             </div>
@@ -201,7 +201,7 @@ export default function CompoundingPage() {
               animate={{ opacity: 1, y: 0 }}
               onClick={handleCompleteCycle}
               className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, rgba(0,230,118,0.12), rgba(240,180,41,0.08))", color: "var(--status-win)", border: "1px solid rgba(0,230,118,0.2)" }}
+               style={{ background: "linear-gradient(135deg, rgba(var(--status-win-rgb),0.12), rgba(var(--accent-gold-rgb),0.08))", color: "var(--status-win)", border: "1px solid rgba(var(--status-win-rgb),0.2)" }}
             >
               <RotateCcw className="w-4 h-4" />
               Complete Cycle {compounding.cycleNumber} — Advance to Cycle {compounding.cycleNumber + 1}
@@ -213,7 +213,7 @@ export default function CompoundingPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="rounded-xl p-4 space-y-2"
-              style={{ background: "rgba(0,230,118,0.06)", border: "1px solid rgba(0,230,118,0.15)" }}
+              style={{ background: "rgba(var(--status-win-rgb),0.06)", border: "1px solid rgba(var(--status-win-rgb),0.15)" }}
             >
               <p className="text-sm font-bold text-status-win">Cycle {compounding.cycleNumber - 1} Complete!</p>
               <div className="grid grid-cols-2 gap-3 text-xs">
@@ -230,7 +230,7 @@ export default function CompoundingPage() {
               <button
                 onClick={() => setShowCycleResult(null)}
                 className="w-full py-2 rounded-lg text-xs font-semibold"
-                style={{ background: "rgba(240, 180, 41, 0.1)", color: "var(--accent-gold)" }}
+                style={{ background: "rgba(var(--accent-gold-rgb), 0.1)", color: "var(--accent-gold)" }}
               >
                 Continue
               </button>
@@ -267,26 +267,26 @@ export default function CompoundingPage() {
                 setLastLotSize(v);
                 localStorage.setItem("last_lot_size", v.toString());
               }}
-              className="w-full accent-[#f0b429]"
+              className="w-full accent-[var(--accent-gold)]"
               style={{ height: "6px", borderRadius: "3px", background: "rgba(255,255,255,0.08)" }}
             />
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="rounded-xl p-3 text-center" style={{ background: "rgba(240, 180, 41, 0.06)", border: "1px solid rgba(240,180,41,0.12)" }}>
+            <div className="rounded-xl p-3 text-center" style={{ background: "rgba(var(--accent-gold-rgb), 0.06)", border: "1px solid rgba(var(--accent-gold-rgb), 0.12)" }}>
               <p className="text-[10px] text-text-muted uppercase">Risk $</p>
               <p className="text-lg font-bold font-mono text-accent-gold">{formatUSD(riskAmount)}</p>
             </div>
-            <div className="rounded-xl p-3 text-center" style={{ background: "rgba(0,230,118,0.06)", border: "1px solid rgba(0,230,118,0.15)" }}>
+            <div className="rounded-xl p-3 text-center" style={{ background: "rgba(var(--status-win-rgb),0.06)", border: "1px solid rgba(var(--status-win-rgb),0.15)" }}>
               <p className="text-[10px] text-text-muted uppercase">Margin</p>
               <p className="text-lg font-bold font-mono text-status-win">{formatUSD(marginRequired)}</p>
               <p className="text-[9px] text-text-muted mt-0.5">1:{compounding.leverage}</p>
             </div>
-            <div className="rounded-xl p-3 text-center" style={{ background: "rgba(240,180,41,0.06)", border: "1px solid rgba(240,180,41,0.12)" }}>
+            <div className="rounded-xl p-3 text-center" style={{ background: "rgba(var(--accent-gold-rgb), 0.06)", border: "1px solid rgba(var(--accent-gold-rgb), 0.12)" }}>
               <p className="text-[10px] text-text-muted uppercase">1R → 2R</p>
               <p className="text-lg font-bold font-mono text-accent-gold">{formatUSD(potential1R)} → {formatUSD(potential2R)}</p>
             </div>
-            <div className="rounded-xl p-3 text-center" style={{ background: "rgba(240,180,41,0.06)", border: "1px solid rgba(240,180,41,0.12)" }}>
+            <div className="rounded-xl p-3 text-center" style={{ background: "rgba(var(--accent-gold-rgb), 0.06)", border: "1px solid rgba(var(--accent-gold-rgb), 0.12)" }}>
               <p className="text-[10px] text-text-muted uppercase">Pip $</p>
               <p className="text-lg font-bold font-mono text-accent-gold">{formatUSD(pipValue)}</p>
             </div>
@@ -417,7 +417,7 @@ export default function CompoundingPage() {
                         <tr key={i} className="border-t" style={{
                           borderColor: "var(--glass-border)",
                           opacity: isCurrent ? 1 : isLast ? 1 : 0.55,
-                          background: isLast ? "rgba(0,230,118,0.04)" : "transparent",
+                          background: isLast ? "rgba(var(--status-win-rgb),0.04)" : "transparent",
                         }}>
                           <td className="py-2 pr-3">
                             <span className="font-semibold" style={{
@@ -439,7 +439,7 @@ export default function CompoundingPage() {
             )}
 
             {targetProjection && (
-              <div className="rounded-xl p-3 flex items-center justify-between text-xs" style={{ background: "rgba(0,230,118,0.06)", border: "1px solid rgba(0,230,118,0.15)" }}>
+              <div className="rounded-xl p-3 flex items-center justify-between text-xs" style={{ background: "rgba(var(--status-win-rgb),0.06)", border: "1px solid rgba(var(--status-win-rgb),0.15)" }}>
                 <div>
                   <span className="text-text-muted">Target reached in</span>
                   <p className="font-bold font-mono text-status-win text-base">{targetProjection.length} cycle{targetProjection.length !== 1 ? 's' : ''}</p>
@@ -549,7 +549,7 @@ export default function CompoundingPage() {
                   }
                 }}
                 className="px-4 py-2 rounded-lg text-xs font-bold"
-                style={{ background: "rgba(255,82,82,0.1)", color: "var(--status-loss)", border: "1px solid rgba(255,82,82,0.15)" }}
+                style={{ background: "rgba(var(--status-loss-rgb),0.1)", color: "var(--status-loss)", border: "1px solid rgba(var(--status-loss-rgb),0.15)" }}
               >
                 Withdraw
               </button>

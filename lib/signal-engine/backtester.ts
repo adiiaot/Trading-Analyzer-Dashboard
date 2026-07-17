@@ -227,7 +227,7 @@ export async function runBacktest(
     [CONFIG.MACRO_TIMEFRAME]: Math.min(months * 30 + 55, MAX_CANDLES_PER_TF),
     [CONFIG.REGIME_TIMEFRAME]: Math.min(months4h + 100, MAX_CANDLES_PER_TF),
     [CONFIG.TREND_TIMEFRAME]: Math.min(months1h + 100, MAX_CANDLES_PER_TF),
-    [CONFIG.ENTRY_TIMEFRAME]: Math.min(months15m + 500, MAX_CANDLES_PER_TF),
+    [CONFIG.ENTRY_TIMEFRAME]: months15m + 500,
   };
 
   let fetched: Record<string, CandleData[] | null>;
@@ -431,7 +431,11 @@ export async function runBacktest(
   };
 
   if (enableMc && tradeRValues.length > 0) {
-    result.monte_carlo = monteCarloSimulate(tradeRValues, 10000, 0.95);
+    try {
+      result.monte_carlo = monteCarloSimulate(tradeRValues, 10000, 0.95);
+    } catch (mcErr) {
+      console.error('[Backtest] Monte Carlo failed:', mcErr);
+    }
   }
 
   return result;

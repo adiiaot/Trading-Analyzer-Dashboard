@@ -9,13 +9,18 @@
   --text-primary-rgb: 209 212 220;
   --text-secondary-rgb: 120 123 134;
   --text-muted-rgb: 93 96 107;
+  --accent-gold: #f0b429;
   --accent-gold-rgb: 240 180 41;
   --accent-gold-hover-rgb: 212 149 42;
   --accent-green-rgb: 0 230 118;
+  --status-win: #00e676;
   --status-win-rgb: 0 230 118;
+  --status-loss: #ff5252;
   --status-loss-rgb: 255 82 82;
   --status-warn-rgb: 255 179 0;
   --status-info-rgb: 68 138 255;
+  --text-primary: rgb(var(--text-primary-rgb));
+  --text-muted: rgb(var(--text-muted-rgb));
   --border: rgba(255, 255, 255, 0.06);
   --border-light: rgba(255, 255, 255, 0.10);
   --shadow-card: 0 2px 8px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.15);
@@ -39,13 +44,18 @@
   --text-primary-rgb: 26 29 43;
   --text-secondary-rgb: 107 122 143;
   --text-muted-rgb: 154 168 185;
+  --accent-gold: #d4952a;
   --accent-gold-rgb: 212 149 42;
   --accent-gold-hover-rgb: 180 120 30;
   --accent-green-rgb: 0 168 84;
+  --status-win: #00a854;
   --status-win-rgb: 0 168 84;
+  --status-loss: #d32f2f;
   --status-loss-rgb: 211 47 47;
   --status-warn-rgb: 245 124 0;
   --status-info-rgb: 41 121 255;
+  --text-primary: rgb(var(--text-primary-rgb));
+  --text-muted: rgb(var(--text-muted-rgb));
   --border: rgba(0, 0, 0, 0.06);
   --border-light: rgba(0, 0, 0, 0.10);
   --shadow-card: 0 2px 8px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.03);
@@ -103,7 +113,7 @@ body {
   pointer-events: none;
 }
 .card:hover {
-  border-color: rgba(240, 180, 41, 0.15);
+  border-color: rgba(var(--accent-gold-rgb), 0.15);
   box-shadow: var(--shadow-card-hover);
 }
 .card-glow {
@@ -111,7 +121,7 @@ body {
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(240, 180, 41, 0.15);
+  border: 1px solid rgba(var(--accent-gold-rgb), 0.15);
   box-shadow: var(--shadow-card-glow);
   position: relative;
   overflow: hidden;

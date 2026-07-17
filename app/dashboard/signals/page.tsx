@@ -154,7 +154,7 @@ export default function SignalsPage() {
 
       {totalOutcome > 0 && (
         <motion.div variants={item} className="flex items-center gap-3 p-3 rounded-xl text-xs"
-          style={{ background: 'rgba(240, 180, 41, 0.06)', border: '1px solid rgba(240, 180, 41, 0.12)' }}>
+          style={{ background: 'rgba(var(--accent-gold-rgb), 0.06)', border: '1px solid rgba(var(--accent-gold-rgb), 0.12)' }}>
           <Trophy className="w-4 h-4 text-accent-gold shrink-0" />
           <span className="text-text-muted">
             Track record: <span className="text-status-win font-bold">{wonCount}W</span> / <span className="text-status-loss font-bold">{lostCount}L</span>
@@ -174,8 +174,9 @@ export default function SignalsPage() {
               disabled={signalLoading}
               className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
               style={{
-                background: signalLoading ? 'rgba(240, 180, 41, 0.1)' : 'linear-gradient(135deg, var(--accent-gold), #d4a52a)',
-                color: signalLoading ? 'var(--accent-gold)' : '#080c24',
+                background: signalLoading ? 'rgba(var(--accent-gold-rgb), 0.1)' : 'linear-gradient(135deg, var(--accent-gold), rgba(var(--accent-gold-rgb), 0.7))',
+                color: signalLoading ? 'var(--accent-gold)' : 'rgb(var(--surface-rgb))',
+                boxShadow: signalLoading ? 'none' : '0 0 20px rgba(var(--accent-gold-rgb), 0.25)',
               }}>
               {signalLoading ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing XAU/USD...</>
@@ -205,7 +206,7 @@ export default function SignalsPage() {
             )}
 
             {signalResult && !signalResult.signal && (
-              <div className="p-4 rounded-xl bg-[rgba(255,82,82,0.06)] border border-[rgba(255,82,82,0.15)]">
+              <div className="p-4 rounded-xl" style={{ background: "rgba(var(--status-loss-rgb), 0.06)", border: "1px solid rgba(var(--status-loss-rgb), 0.15)" }}>
                 <p className="text-sm font-medium text-status-loss">❌ {signalResult.message}</p>
               </div>
             )}

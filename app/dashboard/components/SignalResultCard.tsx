@@ -205,8 +205,8 @@ export function SignalResultCard({
       <div style={{
         height: '4px',
         background: isUp
-          ? 'linear-gradient(90deg, #00e676, #00c853)'
-          : 'linear-gradient(90deg, #ff5252, #d32f2f)',
+          ? 'linear-gradient(90deg, var(--profit), rgba(var(--status-win-rgb), 0.6))'
+          : 'linear-gradient(90deg, var(--loss), rgba(var(--status-loss-rgb), 0.6))',
       }} />
 
       <div className="p-4 md:p-5 space-y-4">
@@ -215,14 +215,14 @@ export function SignalResultCard({
           <div className="flex items-center gap-3">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm ${
               isUp ? 'text-status-win' : 'text-status-loss'
-            }`} style={{ background: isUp ? 'rgba(0,230,118,0.1)' : 'rgba(255,82,82,0.1)' }}>
+            }`} style={{ background: isUp ? 'rgba(var(--status-win-rgb), 0.1)' : 'rgba(var(--status-loss-rgb), 0.1)' }}>
               XAU
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="font-bold text-sm text-text-primary">XAU/USD</h2>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                  style={{ background: 'rgba(240, 180, 41, 0.12)', color: 'var(--accent-gold)' }}>
+                  style={{ background: 'rgba(var(--accent-gold-rgb), 0.12)', color: 'var(--accent-gold)' }}>
                   GOLD
                 </span>
               </div>
@@ -231,7 +231,7 @@ export function SignalResultCard({
           </div>
           <div className="text-right">
             <div className="text-[10px] font-semibold px-2 py-1 rounded-lg"
-              style={{ background: 'rgba(240, 180, 41, 0.08)', color: 'var(--accent-gold)' }}>
+              style={{ background: 'rgba(var(--accent-gold-rgb), 0.08)', color: 'var(--accent-gold)' }}>
               {signal.signal_type?.replace(/_/g, ' ')?.replace(/\b\w/g, l => l.toUpperCase()) || 'Signal'}
             </div>
           </div>
@@ -254,10 +254,10 @@ export function SignalResultCard({
               <div className="h-full rounded-full transition-all duration-500" style={{
                 width: `${confidencePct}%`,
                 background: confidencePct >= 70
-                  ? 'linear-gradient(90deg, #00e676, #69f0ae)'
+                  ? 'linear-gradient(90deg, var(--profit), rgba(var(--status-win-rgb), 0.6))'
                   : confidencePct >= 50
-                  ? 'linear-gradient(90deg, #f0b429, #ffd54f)'
-                  : 'linear-gradient(90deg, #ff5252, #ff8a80)',
+                  ? 'linear-gradient(90deg, var(--accent-gold), rgba(var(--accent-gold-rgb), 0.5))'
+                  : 'linear-gradient(90deg, var(--loss), rgba(var(--status-loss-rgb), 0.6))',
               }} />
             </div>
             <span className="text-xs font-bold font-mono text-text-primary">{confidencePct}%</span>
@@ -266,7 +266,7 @@ export function SignalResultCard({
 
         {/* Entry / SL / TP Columns */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(240, 180, 41, 0.06)', border: '1px solid rgba(240, 180, 41, 0.15)' }}>
+          <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(var(--accent-gold-rgb), 0.06)', border: '1px solid rgba(var(--accent-gold-rgb), 0.15)' }}>
             <p className="text-[10px] text-text-muted uppercase tracking-wider mb-1">Entry</p>
             <p className="text-sm font-bold font-mono" style={{ color: 'var(--accent-gold)' }}>
               ${signal.entries?.[0]?.price?.toFixed(2) || '—'}
@@ -275,7 +275,7 @@ export function SignalResultCard({
               <p className="text-[9px] text-text-muted mt-0.5">+{signal.entries.length - 1} alt levels</p>
             )}
           </div>
-          <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(255,82,82,0.06)', border: '1px solid rgba(255,82,82,0.15)' }}>
+          <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(var(--status-loss-rgb), 0.06)', border: '1px solid rgba(var(--status-loss-rgb), 0.15)' }}>
             <p className="text-[10px] text-text-muted uppercase tracking-wider mb-1">Stop Loss</p>
             <p className="text-sm font-bold font-mono text-status-loss">${signal.stop_loss?.toFixed(2) || '—'}</p>
             {signal.entries?.[0] && (
@@ -284,7 +284,7 @@ export function SignalResultCard({
               </p>
             )}
           </div>
-          <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(0,230,118,0.06)', border: '1px solid rgba(0,230,118,0.15)' }}>
+          <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(var(--status-win-rgb), 0.06)', border: '1px solid rgba(var(--status-win-rgb), 0.15)' }}>
             <p className="text-[10px] text-text-muted uppercase tracking-wider mb-1">Take Profit</p>
             <p className="text-sm font-bold font-mono text-status-win">${signal.tp1?.toFixed(2) || '—'}</p>
             {signal.tp2 && (
@@ -315,7 +315,7 @@ export function SignalResultCard({
         </div>
 
         {/* Lot Size & Margin */}
-        <div className="rounded-xl p-3 md:p-4 space-y-2" style={{ background: 'rgba(240, 180, 41, 0.04)', border: '1px solid rgba(240, 180, 41, 0.1)' }}>
+        <div className="rounded-xl p-3 md:p-4 space-y-2" style={{ background: 'rgba(var(--accent-gold-rgb), 0.04)', border: '1px solid rgba(var(--accent-gold-rgb), 0.1)' }}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <DollarSign className="w-3.5 h-3.5 text-accent-gold" />
@@ -333,10 +333,10 @@ export function SignalResultCard({
                   }`}
                   style={{
                     background: Math.abs(lotSize - p) < 0.001
-                      ? 'rgba(240, 180, 41, 0.25)'
+                      ? 'rgba(var(--accent-gold-rgb), 0.25)'
                       : 'rgba(255,255,255,0.04)',
                     border: Math.abs(lotSize - p) < 0.001
-                      ? '1px solid rgba(240, 180, 41, 0.3)'
+                      ? '1px solid rgba(var(--accent-gold-rgb), 0.3)'
                       : '1px solid transparent',
                   }}
                 >
@@ -406,7 +406,7 @@ export function SignalResultCard({
                       <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${
                         i === 0 ? 'text-accent-gold' : 'text-text-muted'
                       }`} style={{
-                        background: i === 0 ? 'rgba(240, 180, 41, 0.12)' : 'rgba(255,255,255,0.05)',
+                        background: i === 0 ? 'rgba(var(--accent-gold-rgb), 0.12)' : 'rgba(255,255,255,0.05)',
                       }}>
                         E{e.entry_number}
                       </span>
@@ -434,7 +434,7 @@ export function SignalResultCard({
           <button
             onClick={handleCopy}
             className="flex-1 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all hover:opacity-90"
-            style={{ background: 'rgba(240, 180, 41, 0.1)', color: 'var(--accent-gold)', border: '1px solid rgba(240, 180, 41, 0.15)' }}
+            style={{ background: 'rgba(var(--accent-gold-rgb), 0.1)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.15)' }}
           >
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             {copied ? 'Copied!' : 'Copy'}
@@ -452,7 +452,7 @@ export function SignalResultCard({
               onClick={onGenerateNext}
               disabled={generatingNext}
               className="flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ background: 'rgba(240, 180, 41, 0.15)', color: 'var(--accent-gold)', border: '1px solid rgba(240, 180, 41, 0.25)' }}
+              style={{ background: 'rgba(var(--accent-gold-rgb), 0.15)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.25)' }}
             >
               {generatingNext ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -467,7 +467,7 @@ export function SignalResultCard({
               onClick={() => onConfirm(signal.id)}
               disabled={outcomeUpdating}
               className="flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ background: 'rgba(240, 180, 41, 0.12)', color: 'var(--accent-gold)', border: '1px solid rgba(240, 180, 41, 0.2)' }}
+              style={{ background: 'rgba(var(--accent-gold-rgb), 0.12)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.2)' }}
             >
               {outcomeUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
               Confirm
@@ -478,7 +478,7 @@ export function SignalResultCard({
               onClick={handleWon}
               disabled={outcomeUpdating}
               className="flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ background: 'rgba(0,230,118,0.1)', color: 'var(--status-win)', border: '1px solid rgba(0,230,118,0.15)' }}
+              style={{ background: 'rgba(var(--status-win-rgb), 0.1)', color: 'var(--status-win)', border: '1px solid rgba(var(--status-win-rgb), 0.15)' }}
             >
               {outcomeUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
               Won
@@ -489,7 +489,7 @@ export function SignalResultCard({
               onClick={handleLost}
               disabled={outcomeUpdating}
               className="flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ background: 'rgba(255,82,82,0.1)', color: 'var(--status-loss)', border: '1px solid rgba(255,82,82,0.15)' }}
+              style={{ background: 'rgba(var(--status-loss-rgb), 0.1)', color: 'var(--status-loss)', border: '1px solid rgba(var(--status-loss-rgb), 0.15)' }}
             >
               {outcomeUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
               Lost

@@ -18,7 +18,7 @@ export function QuickStats() {
       icon: TrendingUp,
       accent: "text-status-win",
       bg: "bg-status-win/10",
-      border: "rgba(0,230,118,0.15)",
+      border: "rgba(var(--status-win-rgb), 0.15)",
       trend: "up" as const,
     },
     {
@@ -27,7 +27,7 @@ export function QuickStats() {
       icon: Target,
       accent: "text-accent-gold",
       bg: "bg-accent-gold/10",
-      border: "rgba(240,180,41,0.15)",
+      border: "rgba(var(--accent-gold-rgb), 0.15)",
       trend: winRate >= 60 ? ("up" as const) : ("down" as const),
     },
     {
@@ -36,7 +36,7 @@ export function QuickStats() {
       icon: BarChart3,
       accent: "text-status-info",
       bg: "bg-status-info/10",
-      border: "rgba(68,138,255,0.15)",
+      border: "rgba(var(--status-info-rgb), 0.15)",
       trend: null,
     },
     {
@@ -45,7 +45,7 @@ export function QuickStats() {
       icon: Briefcase,
       accent: openPositions > 0 ? "text-accent-gold" : "text-text-muted",
       bg: openPositions > 0 ? "bg-accent-gold/10" : "bg-[var(--glass-bg)]",
-      border: openPositions > 0 ? "rgba(240,180,41,0.15)" : "var(--glass-border)",
+      border: openPositions > 0 ? "rgba(var(--accent-gold-rgb), 0.15)" : "var(--glass-border)",
       trend: null,
     },
   ];

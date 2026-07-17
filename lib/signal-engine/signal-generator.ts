@@ -212,17 +212,23 @@ export async function generateSignal(
       ? getRegimeOverrides(regimeCandles, trendCandles)
       : {};
 
+    let emaRejection = '';
+    let sessionRejection = '';
+
     if (CONFIG.ENABLE_EMA_BOUNCE) {
       const result = await tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, overrides, indicatorSummary);
       if (result[0]) return result;
+      emaRejection = result[1];
     }
 
     if (CONFIG.ENABLE_SESSION_BREAKOUT) {
       const result = await trySessionBreakout(regimeCandles, entryCandles, macro, overrides, indicatorSummary);
       if (result[0]) return result;
+      sessionRejection = result[1];
     }
 
-    return [null, 'No signal conditions met.'];
+    const details = [emaRejection, sessionRejection].filter(Boolean).join('; ');
+    return [null, `No signal conditions met.${details ? ` Reasons: ${details}` : ''}`];
   } catch (err) {
     return [null, `Error: ${err instanceof Error ? err.message : String(err)}`];
   }

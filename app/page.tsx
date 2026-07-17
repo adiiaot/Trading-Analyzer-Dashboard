@@ -28,12 +28,21 @@ export default function LandingPage() {
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center text-center max-w-2xl">
-          {/* Logo */}
-          <div className="mb-8">
+          {/* Logo with glow */}
+          <div className="mb-8 relative">
+            <div className="absolute inset-0 rounded-full"
+              style={{
+                background: "radial-gradient(circle, rgba(240,180,41,0.15) 0%, transparent 70%)",
+                transform: "scale(1.5)",
+              }}
+            />
             <img
               src="/images/aot-analyzer-logo-icon.png"
               alt="AOT Analyzer"
-              className="w-24 h-24 md:w-28 md:h-28 drop-shadow-lg"
+              className="w-24 h-24 md:w-28 md:h-28 relative z-10"
+              style={{
+                filter: "drop-shadow(0 0 20px rgba(240,180,41,0.3))",
+              }}
             />
           </div>
 

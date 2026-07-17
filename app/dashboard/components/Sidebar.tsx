@@ -61,14 +61,17 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
       >
         <div className={`flex items-center border-b h-14 shrink-0 ${collapsed ? "justify-center px-0" : "px-5 gap-3"}`}
           style={{ borderColor: "var(--glass-border)" }}>
-          <div className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center"
-            style={{ background: "rgba(240, 180, 41, 0.12)" }}>
-            <span className="text-accent-gold font-bold text-sm">TCC</span>
+          <div className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center overflow-hidden">
+            <img
+              src="/images/aot-analyzer-logo-icon.png"
+              alt="AOT Analyzer"
+              className="w-8 h-8 object-contain"
+            />
           </div>
           {!collapsed && (
             <div className="overflow-hidden">
-              <h1 className="text-sm font-bold text-text-primary truncate">TCC</h1>
-              <p className="text-[10px] text-text-muted uppercase tracking-widest truncate">Command Center</p>
+              <h1 className="text-sm font-bold text-accent-gold truncate">AOT Analyzer</h1>
+              <p className="text-[10px] text-text-muted uppercase tracking-widest truncate">Intraday Trading</p>
             </div>
           )}
         </div>

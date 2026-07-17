@@ -128,7 +128,7 @@ export function PricePanel() {
           </div>
         </div>
 
-        <div className="flex gap-5 text-sm">
+        <div className="flex flex-wrap gap-2 sm:gap-5 text-sm">
           <div>
             <p className="text-xs text-text-muted">24H High</p>
             <p className="font-mono text-text-primary font-medium">${priceData.high24h.toFixed(2)}</p>

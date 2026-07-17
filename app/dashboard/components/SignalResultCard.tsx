@@ -209,7 +209,7 @@ export function SignalResultCard({
           : 'linear-gradient(90deg, #ff5252, #d32f2f)',
       }} />
 
-      <div className="p-5 space-y-4">
+      <div className="p-4 md:p-5 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -315,8 +315,8 @@ export function SignalResultCard({
         </div>
 
         {/* Lot Size & Margin */}
-        <div className="rounded-xl p-3 space-y-2" style={{ background: 'rgba(240, 180, 41, 0.04)', border: '1px solid rgba(240, 180, 41, 0.1)' }}>
-          <div className="flex items-center justify-between">
+        <div className="rounded-xl p-3 md:p-4 space-y-2" style={{ background: 'rgba(240, 180, 41, 0.04)', border: '1px solid rgba(240, 180, 41, 0.1)' }}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <DollarSign className="w-3.5 h-3.5 text-accent-gold" />
               <span className="text-[10px] font-semibold text-text-muted">Lot Size</span>
@@ -357,7 +357,7 @@ export function SignalResultCard({
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)', color: 'var(--accent-gold)' }}
             />
             <span className="text-[10px] text-text-muted">lots</span>
-            <div className="ml-auto flex items-center gap-3 text-[10px]">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px]">
               <span className="text-text-muted">
                 Margin: <span className={`font-mono font-bold ${marginOk ? 'text-accent-gold' : 'text-status-loss'}`}>
                   ${marginRequired.toFixed(2)}
@@ -430,7 +430,7 @@ export function SignalResultCard({
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-2 pt-1">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 pt-1">
           <button
             onClick={handleCopy}
             className="flex-1 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all hover:opacity-90"

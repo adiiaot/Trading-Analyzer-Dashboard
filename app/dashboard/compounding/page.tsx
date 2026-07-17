@@ -126,7 +126,7 @@ export default function CompoundingPage() {
         className="rounded-xl overflow-hidden transition-all"
         style={{ background: "var(--glass-bg)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid var(--glass-border)", boxShadow: "var(--shadow-card)" }}
       >
-        <div className="p-5 space-y-4">
+          <div className="p-4 md:p-5 space-y-4">
           {editMode ? (
             <div className="flex gap-2">
               <input
@@ -244,7 +244,7 @@ export default function CompoundingPage() {
         className="rounded-xl overflow-hidden transition-all"
         style={{ background: "var(--glass-bg)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid var(--glass-border)", boxShadow: "var(--shadow-card)" }}
       >
-        <div className="p-5 space-y-4">
+        <div className="p-4 md:p-5 space-y-4">
           <div className="flex items-center gap-2">
             <Sliders className="w-4 h-4 text-accent-gold" />
             <h2 className="text-sm font-bold text-text-primary">Position Size Calculator</h2>
@@ -272,7 +272,7 @@ export default function CompoundingPage() {
             />
           </div>
 
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="rounded-xl p-3 text-center" style={{ background: "rgba(240, 180, 41, 0.06)", border: "1px solid rgba(240,180,41,0.12)" }}>
               <p className="text-[10px] text-text-muted uppercase">Risk $</p>
               <p className="text-lg font-bold font-mono text-accent-gold">{formatUSD(riskAmount)}</p>
@@ -299,7 +299,7 @@ export default function CompoundingPage() {
         className="rounded-xl overflow-hidden transition-all"
         style={{ background: "var(--glass-bg)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid var(--glass-border)", boxShadow: "var(--shadow-card)" }}
       >
-        <div className="p-5 space-y-4">
+        <div className="p-4 md:p-5 space-y-4">
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-accent-gold" />
             <h2 className="text-sm font-bold text-text-primary">Cycle Roadmap</h2>

@@ -136,7 +136,10 @@ export default function DashboardPage() {
       {/* Header */}
       <motion.div variants={section} className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg md:text-xl font-bold text-text-primary">Command Center</h1>
+          <h1 className="text-lg md:text-xl font-bold">
+            <span className="text-accent-gold">AOT</span>
+            <span className="text-text-primary"> Analyzer</span>
+          </h1>
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium text-status-win"
             style={{ background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.15)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-status-win animate-pulse-soft" />

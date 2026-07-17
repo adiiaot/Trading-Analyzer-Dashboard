@@ -189,21 +189,21 @@ export default function CommandsPage() {
                   onChange={e => setTradeForm(p => ({ ...p, exitPrice: e.target.value }))}
                   className="input text-xs px-3 py-2 rounded-lg" />
               </div>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 sm:flex gap-2">
                 <button onClick={() => setTradeForm(p => ({ ...p, direction: 'LONG' }))}
-                  className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'LONG' ? 'bg-[rgba(0,230,118,0.15)] text-status-win' : 'glass'}`}>
+                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'LONG' ? 'bg-[rgba(0,230,118,0.15)] text-status-win' : 'glass'}`}>
                   LONG ↗
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, direction: 'SHORT' }))}
-                  className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'SHORT' ? 'bg-[rgba(255,82,82,0.15)] text-status-loss' : 'glass'}`}>
+                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'SHORT' ? 'bg-[rgba(255,82,82,0.15)] text-status-loss' : 'glass'}`}>
                   SHORT ↘
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, result: 'win' }))}
-                  className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.result === 'win' ? 'bg-[rgba(0,230,118,0.15)] text-status-win' : 'glass'}`}>
+                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.result === 'win' ? 'bg-[rgba(0,230,118,0.15)] text-status-win' : 'glass'}`}>
                   WIN
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, result: 'loss' }))}
-                  className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.result === 'loss' ? 'bg-[rgba(255,82,82,0.15)] text-status-loss' : 'glass'}`}>
+                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.result === 'loss' ? 'bg-[rgba(255,82,82,0.15)] text-status-loss' : 'glass'}`}>
                   LOSS
                 </button>
               </div>

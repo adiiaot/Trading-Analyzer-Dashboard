@@ -1,10 +1,9 @@
 import { CandleData, TrendEnum, SignalResult, SignalEntry, MacroTrend, RegimeOverrides } from './types';
-import { calculateATR, calculateEMA, calculateADX } from './indicators';
+import { calculateATR, calculateEMA, calculateADX, calculateRSI, calculateBollingerBands } from './indicators';
 import { findSwingHighs, findSwingLows } from './swings';
 import { getRegimeOverrides } from './market-cycle';
 import { getMacroTrend } from './macro-trend';
 import { sessionTracker } from './session-tracker';
-import { checkDxyCorrelation } from './dxy-correlation';
 import { CONFIG } from './config';
 
 function roundPrice(p: number): number {
@@ -76,7 +75,7 @@ function buildSignal(
   validityHours: number,
   macroTrend: string,
   trendCandles: CandleData[],
-  dxySummary: string = '',
+  indicatorSummary: string = '',
 ): SignalResult {
   const now = new Date();
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -132,8 +131,8 @@ function buildSignal(
   const entriesDesc = entries.map(e =>
     `E${e.entry_number}@${e.price.toFixed(2)} TP${e.tp.toFixed(2)}(R:${(Math.abs(e.tp - e.price) / Math.abs(e.price - stopLoss)).toFixed(1)})`
   ).join('; ');
-  const dxyLine = dxySummary ? `DXY: ${dxySummary} | ` : '';
-  const description = `${dxyLine}${typeLabel}: ${trend.toLowerCase()} trend, ${numEntries} entries: ${entriesDesc} (ADX ${adxValue.toFixed(1)}, daily macro ${macroTrend})`;
+  const indLine = indicatorSummary ? `IND: ${indicatorSummary} | ` : '';
+  const description = `${indLine}${typeLabel}: ${trend.toLowerCase()} trend, ${numEntries} entries: ${entriesDesc} (ADX ${adxValue.toFixed(1)}, daily macro ${macroTrend})`;
 
   return {
     id: signalId,
@@ -156,27 +155,30 @@ function buildSignal(
   };
 }
 
+function checkIndicators(trendCandles: CandleData[]): [boolean, string] {
+  const rsi = calculateRSI(trendCandles, 14);
+  if (rsi !== null) {
+    if (rsi > 72) return [false, `RSI overbought (${rsi.toFixed(1)}) — no LONG`];
+    if (rsi < 30) return [false, `RSI oversold (${rsi.toFixed(1)}) — no LONG`];
+  }
+  const bb = calculateBollingerBands(trendCandles, 20, 2);
+  if (bb) {
+    const currentPrice = trendCandles[trendCandles.length - 1].close;
+    if (currentPrice > bb.upper) return [false, `Price above upper BB ($${currentPrice.toFixed(2)} > $${bb.upper.toFixed(2)})`];
+  }
+  const parts: string[] = [];
+  if (rsi !== null) parts.push(`RSI=${rsi.toFixed(1)}`);
+  if (bb) parts.push(`BB=$${bb.middle.toFixed(1)}-$${bb.upper.toFixed(1)}`);
+  return [true, parts.join('; ') || 'Indicators neutral'];
+}
+
 export async function generateSignal(
   fetchFn: () => Promise<Record<string, CandleData[] | null>>,
   useAdaptiveParams: boolean = false,
-  dxyCandles?: CandleData[],
 ): Promise<[SignalResult | null, string]> {
   try {
     const dfs = await fetchFn();
     if (!dfs) return [null, 'Failed to fetch market data for all timeframes.'];
-
-    // Stage 0: DXY Correlation Check
-    let dxySummary = '';
-    if (dxyCandles && dxyCandles.length >= 20) {
-      const gold1hCandles = dfs[CONFIG.TREND_TIMEFRAME];
-      if (gold1hCandles && gold1hCandles.length >= 20) {
-        const dxyResult = await checkDxyCorrelation(dxyCandles, gold1hCandles);
-        if (!dxyResult.correlationConfirmed) {
-          return [null, `DXY filter: ${dxyResult.summary}`];
-        }
-        dxySummary = dxyResult.summary;
-      }
-    }
 
     const macro = getMacroTrend(dfs[CONFIG.MACRO_TIMEFRAME] || []);
     const regimeCandles = dfs[CONFIG.REGIME_TIMEFRAME] || [];
@@ -187,17 +189,25 @@ export async function generateSignal(
       return [null, 'Insufficient market data for analysis.'];
     }
 
+    // Stage 0: Multi-Indicator Confirmation (RSI + BB)
+    let indicatorSummary = '';
+    if (trendCandles.length >= 30) {
+      const [passes, summary] = checkIndicators(trendCandles);
+      if (!passes) return [null, `Indicator filter: ${summary}`];
+      indicatorSummary = summary;
+    }
+
     const overrides: RegimeOverrides = useAdaptiveParams
       ? getRegimeOverrides(regimeCandles, trendCandles)
       : {};
 
     if (CONFIG.ENABLE_EMA_BOUNCE) {
-      const result = await tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, overrides, dxySummary);
+      const result = await tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, overrides, indicatorSummary);
       if (result[0]) return result;
     }
 
     if (CONFIG.ENABLE_SESSION_BREAKOUT) {
-      const result = await trySessionBreakout(regimeCandles, entryCandles, macro, overrides, dxySummary);
+      const result = await trySessionBreakout(regimeCandles, entryCandles, macro, overrides, indicatorSummary);
       if (result[0]) return result;
     }
 
@@ -213,7 +223,7 @@ async function tryEMABounce(
   entryCandles: CandleData[],
   macro: MacroTrend,
   overrides: RegimeOverrides,
-  dxySummary: string = '',
+  indicatorSummary: string = '',
 ): Promise<[SignalResult | null, string]> {
   const currentPrice = entryCandles[entryCandles.length - 1].close;
   const regimeAdxThreshold = overrides.regime_adx_threshold ?? CONFIG.REGIME_ADX_THRESHOLD;
@@ -287,7 +297,7 @@ async function tryEMABounce(
   const signal = buildSignal(
     'ema_bounce', trend, currentPrice, roundPrice(stopLoss),
     roundPrice(takeProfit), rr, confidence, adxValue, atr,
-    CONFIG.EMA_BOUNCE_VALIDITY_HOURS, macro.trend, trendCandles, dxySummary
+    CONFIG.EMA_BOUNCE_VALIDITY_HOURS, macro.trend, trendCandles, indicatorSummary
   );
   return [signal, 'EMA bounce signal ready'];
 }
@@ -297,7 +307,7 @@ async function trySessionBreakout(
   entryCandles: CandleData[],
   macro: MacroTrend,
   overrides: RegimeOverrides,
-  dxySummary: string = '',
+  indicatorSummary: string = '',
 ): Promise<[SignalResult | null, string]> {
   const currentPrice = entryCandles[entryCandles.length - 1].close;
 
@@ -348,7 +358,7 @@ async function trySessionBreakout(
   const signal = buildSignal(
     'session_breakout', trend, currentPrice, roundPrice(stopLoss),
     roundPrice(takeProfit), rr, confidence, adxForConfidence, atr,
-    CONFIG.BREAKOUT_VALIDITY_HOURS, macro.trend, regimeCandles, dxySummary
+    CONFIG.BREAKOUT_VALIDITY_HOURS, macro.trend, regimeCandles, indicatorSummary
   );
   return [signal, 'Session breakout signal ready'];
 }

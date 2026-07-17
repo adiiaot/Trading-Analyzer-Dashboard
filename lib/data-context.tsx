@@ -7,6 +7,32 @@ import {
 import type { Trade, Signal, TradingStats, JournalEntry } from "@/types";
 import { PRICE } from "@/lib/constants";
 
+export interface Withdrawal {
+  amount: number;
+  date: string;
+  cycle: number;
+}
+
+export interface CompoundingState {
+  initialCapital: number;
+  cycleNumber: number;
+  cycleStartBalance: number;
+  riskPercent: number;
+  targetReturn: number;
+  withdrawPercent: number;
+  withdrawals: Withdrawal[];
+}
+
+const DEFAULT_COMPOUNDING: CompoundingState = {
+  initialCapital: 100,
+  cycleNumber: 1,
+  cycleStartBalance: 100,
+  riskPercent: 10,
+  targetReturn: 14,
+  withdrawPercent: 20,
+  withdrawals: [],
+};
+
 interface Position {
   direction: "BUY" | "SELL";
   entry: number;
@@ -24,6 +50,10 @@ interface DashboardData {
   price: typeof PRICE & { high24h: number; low24h: number; volume: number; bid: number; ask: number; spread: number };
   balance: number;
   setBalance: (val: number) => void;
+  compounding: CompoundingState;
+  updateCompounding: (patch: Partial<CompoundingState>) => void;
+  recordWithdrawal: (amount: number) => void;
+  completeCycle: () => { profit: number; suggestedWithdrawal: number };
   positions: Position[];
   signalsFeed: {
     id: number;
@@ -43,6 +73,10 @@ const defaultPrice = { ...PRICE, high24h: PRICE.price + 12, low24h: PRICE.price 
 const defaultData: DashboardData = {
   trades: [], signals: [], stats: null, price: defaultPrice,
   balance: 0, setBalance: () => {},
+  compounding: DEFAULT_COMPOUNDING,
+  updateCompounding: () => {},
+  recordWithdrawal: () => {},
+  completeCycle: () => ({ profit: 0, suggestedWithdrawal: 0 }),
   positions: [],
   signalsFeed: [], quickStats: { todayPnl: 0, winRate: 0, totalTrades: 0, openPositions: 0 },
   loading: true,

@@ -79,9 +79,9 @@ export function calculateADX(candles: CandleData[], period: number = 14): number
     plusSmooth = plusSmooth + alpha * (plusDM[i] - plusSmooth);
     minusSmooth = minusSmooth + alpha * (minusDM[i] - minusSmooth);
 
-    const denom = plusSmooth + minusSmooth;
     const pdi = 100 * plusSmooth / trSmooth;
     const ndi = 100 * minusSmooth / trSmooth;
+    const denom = pdi + ndi;
     const dx = denom > 0 ? 100 * Math.abs(pdi - ndi) / denom : 0;
     dxValues.push(dx);
   }
@@ -126,9 +126,9 @@ export function calculateADXSeries(candles: CandleData[], period: number = 14): 
     plusSmooth = plusSmooth + alpha * (plusDM[i] - plusSmooth);
     minusSmooth = minusSmooth + alpha * (minusDM[i] - minusSmooth);
 
-    const denom = plusSmooth + minusSmooth;
     const pdi = 100 * plusSmooth / trSmooth;
     const ndi = 100 * minusSmooth / trSmooth;
+    const denom = pdi + ndi;
     const dx = denom > 0 ? 100 * Math.abs(pdi - ndi) / denom : 0;
     dxValues.push(dx);
   }
@@ -143,6 +143,44 @@ export function calculateADXSeries(candles: CandleData[], period: number = 14): 
     adxSeries.push(adx);
   }
   return adxSeries;
+}
+
+export function calculateRSI(candles: CandleData[], period: number = 14): number | null {
+  if (candles.length < period + 1) return null;
+  const closes = candles.map(c => c.close);
+  const gains: number[] = [];
+  const losses: number[] = [];
+  for (let i = 1; i < closes.length; i++) {
+    const diff = closes[i] - closes[i - 1];
+    gains.push(diff > 0 ? diff : 0);
+    losses.push(diff < 0 ? -diff : 0);
+  }
+  let avgGain = gains.slice(0, period).reduce((a, b) => a + b, 0) / period;
+  let avgLoss = losses.slice(0, period).reduce((a, b) => a + b, 0) / period;
+  const alpha = 1 / period;
+  for (let i = period; i < gains.length; i++) {
+    avgGain = avgGain + alpha * (gains[i] - avgGain);
+    avgLoss = avgLoss + alpha * (losses[i] - avgLoss);
+  }
+  if (avgLoss === 0) return 100;
+  const rs = avgGain / avgLoss;
+  return 100 - (100 / (1 + rs));
+}
+
+export interface BollingerBands {
+  middle: number;
+  upper: number;
+  lower: number;
+}
+
+export function calculateBollingerBands(candles: CandleData[], period: number = 20, stdMult: number = 2): BollingerBands | null {
+  if (candles.length < period) return null;
+  const closes = candles.map(c => c.close);
+  const slice = closes.slice(closes.length - period);
+  const sma = slice.reduce((a, b) => a + b, 0) / period;
+  const variance = slice.reduce((sum, v) => sum + (v - sma) ** 2, 0) / period;
+  const std = Math.sqrt(variance);
+  return { middle: sma, upper: sma + stdMult * std, lower: sma - stdMult * std };
 }
 
 export function calculateATRSeries(candles: CandleData[], period: number = 14): number[] {

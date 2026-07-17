@@ -254,33 +254,6 @@ export async function runBacktest(
     return { success: false, error: `Only ${candlesEntry.length} ${CONFIG.ENTRY_TIMEFRAME} candles available (need ≥${ENTRY_CANDLES_MIN}). Try fewer months or a smaller lookback.` };
   }
 
-  // Fetch DXY data for correlation check
-  let dxyCandlesRaw: CandleData[] = [];
-  try {
-    const res = await fetch(
-      'https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?interval=1h&range=5d',
-      { signal: AbortSignal.timeout(8_000) },
-    );
-    const json = await res.json();
-    const result = json?.chart?.result?.[0];
-    if (result) {
-      const timestamps: number[] = result.timestamp || [];
-      const quote = result.indicators?.quote?.[0];
-      if (quote && timestamps.length) {
-        dxyCandlesRaw = timestamps.map((t: number, i: number) => ({
-          time: t,
-          open: quote.open[i] ?? 0,
-          high: quote.high[i] ?? 0,
-          low: quote.low[i] ?? 0,
-          close: quote.close[i] ?? 0,
-          volume: quote.volume[i] ?? 0,
-        })).filter((c: any) => c.close > 0);
-      }
-    }
-  } catch (e) {
-    console.warn('[Backtest] DXY fetch failed — proceeding without correlation check:', e);
-  }
-
   let totalSignals = 0;
   const outcomes: Record<string, number> = { full_win: 0, partial_win: 0, loss: 0, expired: 0 };
   const trendBreakdown: Record<string, TrendBreak> = {};
@@ -335,8 +308,7 @@ export async function runBacktest(
     let signal: SignalResult | null = null;
     let message: string;
     try {
-      const dxyForBar = dxyCandlesRaw.filter(c => c.time <= nowTs);
-      [signal, message] = await generateSignal(mockFetch, useAdaptiveParams, dxyForBar.length >= 20 ? dxyForBar : undefined);
+      [signal, message] = await generateSignal(mockFetch, useAdaptiveParams);
     } catch (e) {
       rejectionLog['exception'] = (rejectionLog['exception'] || 0) + 1;
       console.warn(`[Backtest] Signal exception at bar ${i}/${candlesEntry.length}:`, e);

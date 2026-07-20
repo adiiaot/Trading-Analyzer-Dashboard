@@ -413,9 +413,6 @@ async function tryConsolidationBreakout(
   }
 
   const adxValue = calculateADX(regimeCandles, CONFIG.REGIME_ADX_PERIOD);
-  if (adxValue !== null && adxValue < CONFIG.REGIME_ADX_THRESHOLD - 5) {
-    return [null, `Consolidation breakout: 4H ADX too low (${adxValue.toFixed(1)})`];
-  }
 
   const [indicatorOk, indicatorSummary] = checkIndicators(
     regimeCandles.length > 0 ? regimeCandles : entryCandles,

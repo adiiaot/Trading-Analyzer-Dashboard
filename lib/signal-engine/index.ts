@@ -12,3 +12,6 @@ export { generateSignal } from './signal-generator';
 export { runBacktest } from './backtester';
 export { checkDxyCorrelation } from './dxy-correlation';
 export type { DxyState } from './dxy-correlation';
+export { l2Client } from './l2-client';
+export type { L2Metrics, L2Level, PerSecondCounts, L2Signal } from './l2-client';
+export { evaluateMicrostructure } from './microstructure';

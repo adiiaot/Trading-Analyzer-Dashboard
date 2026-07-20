@@ -8,6 +8,7 @@ import { TradingChart } from "./components/TradingChart";
 import { OpenPositionsTable } from "./components/OpenPositionsTable";
 import { SignalFeed } from "./components/SignalFeed";
 import BriefPanel from "./components/BriefPanel";
+import { L2MetricsWidget } from "./components/L2Metrics";
 import { useDashboardData } from "@/lib/data-context";
 
 const container = {
@@ -169,6 +170,11 @@ export default function DashboardPage() {
       {/* Session Card */}
       <motion.div variants={section}>
         <SessionCard />
+      </motion.div>
+
+      {/* L2 Order Book Microstructure */}
+      <motion.div variants={section}>
+        <L2MetricsWidget />
       </motion.div>
 
       {/* Hero: Full-width chart */}

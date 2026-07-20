@@ -3,8 +3,10 @@ import { calculateATR, calculateEMA, calculateADX, calculateRSI, calculateBollin
 import { findSwingHighs, findSwingLows } from './swings';
 import { getRegimeOverrides } from './market-cycle';
 import { getMacroTrend } from './macro-trend';
-import { sessionTracker } from './session-tracker';
 import { CONFIG } from './config';
+export { sessionTracker } from './session-tracker';
+import { l2Client } from './l2-client';
+import { evaluateMicrostructure } from './microstructure';
 
 const RSI_PERIOD = 14;
 const RSI_OVERBOUGHT = 72;
@@ -13,6 +15,8 @@ const BB_PERIOD = 20;
 let BB_STD = 2.0;
 
 export const sweepConfig: { BB_STD?: number; RSI_OVERBOUGHT?: number; RSI_OVERSOLD?: number } = {};
+let l2ConfidenceBoost = 0;
+export let lastL2Signal: string = '';
 
 function roundPrice(p: number): number {
   return Math.round(p * 100) / 100;
@@ -163,24 +167,54 @@ function buildSignal(
   };
 }
 
-function checkIndicators(trendCandles: CandleData[]): [boolean, string] {
-  const rsi = calculateRSI(trendCandles, RSI_PERIOD);
-  if (rsi !== null) {
-    const rsiOb = sweepConfig.RSI_OVERBOUGHT ?? RSI_OVERBOUGHT;
-    const rsiOs = sweepConfig.RSI_OVERSOLD ?? RSI_OVERSOLD;
-    if (rsi > rsiOb) return [false, `RSI overbought (${rsi.toFixed(1)}) — no LONG`];
-    if (rsi < rsiOs) return [false, `RSI oversold (${rsi.toFixed(1)}) — no LONG`];
-  }
+function checkIndicators(candles: CandleData[], direction: 'UP' | 'DOWN'): [boolean, string] {
+  const rsi = calculateRSI(candles, RSI_PERIOD);
+  const rsiOb = sweepConfig.RSI_OVERBOUGHT ?? RSI_OVERBOUGHT;
+  const rsiOs = sweepConfig.RSI_OVERSOLD ?? RSI_OVERSOLD;
   const bbStd = sweepConfig.BB_STD ?? BB_STD;
-  const bb = calculateBollingerBands(trendCandles, BB_PERIOD, bbStd);
-  if (bb) {
-    const currentPrice = trendCandles[trendCandles.length - 1].close;
-    if (currentPrice > bb.upper) return [false, `Price above upper BB ($${currentPrice.toFixed(2)} > $${bb.upper.toFixed(2)})`];
-  }
+  const bb = calculateBollingerBands(candles, BB_PERIOD, bbStd);
+  const currentPrice = candles[candles.length - 1].close;
+
   const parts: string[] = [];
   if (rsi !== null) parts.push(`RSI=${rsi.toFixed(1)}`);
   if (bb) parts.push(`BB=$${bb.middle.toFixed(1)}-$${bb.upper.toFixed(1)}`);
+
+  if (direction === 'UP') {
+    if (rsi !== null && rsi > rsiOb) return [false, `RSI overbought (${rsi.toFixed(1)}) — no LONG`];
+    if (bb && currentPrice > bb.upper) return [false, `Price above upper BB ($${currentPrice.toFixed(2)} > $${bb.upper.toFixed(2)})`];
+  } else {
+    if (rsi !== null && rsi < rsiOs) return [false, `RSI oversold (${rsi.toFixed(1)}) — no SHORT`];
+    if (bb && currentPrice < bb.lower) return [false, `Price below lower BB ($${currentPrice.toFixed(2)} < $${bb.lower.toFixed(2)})`];
+  }
+
   return [true, parts.join('; ') || 'Indicators neutral'];
+}
+
+function checkMomentum(candles: CandleData[], direction: 'UP' | 'DOWN', required: number = 2): boolean {
+  if (candles.length < 4) {
+    if (candles.length < 2) return true;
+    const last = candles[candles.length - 1].close;
+    const prev = candles[candles.length - 2].close;
+    return direction === 'UP' ? last > prev : last < prev;
+  }
+  const last4 = candles.slice(-4);
+  let aligned = 0;
+  for (let i = 1; i < last4.length; i++) {
+    const rising = last4[i].close > last4[i - 1].close;
+    if (direction === 'UP' && rising) aligned++;
+    if (direction === 'DOWN' && !rising) aligned++;
+  }
+  return aligned >= required;
+}
+
+function applyConfidenceBoost(signal: SignalResult): void {
+  if (l2ConfidenceBoost > 0) {
+    signal.confidence = Math.min(1, signal.confidence + l2ConfidenceBoost);
+    signal.description = signal.description
+      ? `L2: continuation ✓ | ${signal.description}`
+      : 'L2: continuation ✓';
+    l2ConfidenceBoost = 0;
+  }
 }
 
 export async function generateSignal(
@@ -200,39 +234,63 @@ export async function generateSignal(
       return [null, 'Insufficient market data for analysis.'];
     }
 
-    // Stage 0: Multi-Indicator Confirmation (RSI + BB)
-    let indicatorSummary = '';
-    if (trendCandles.length >= 30) {
-      const [passes, summary] = checkIndicators(trendCandles);
-      if (!passes) return [null, `Indicator filter: ${summary}`];
-      indicatorSummary = summary;
+    // Stage -1: L2 Microstructure Pre-Filter
+    l2ConfidenceBoost = 0;
+    if (CONFIG.ENABLE_L2_FILTER) {
+      const l2Metrics = l2Client.getMetrics();
+      if (l2Metrics) {
+        const l2Signal = evaluateMicrostructure(l2Metrics);
+        lastL2Signal = `${l2Signal.signal} (${l2Signal.probability}%): ${l2Signal.evidence.join(', ')}`;
+        if (l2Signal.signal === 'reversal' && l2Signal.probability > CONFIG.L2_REVERSAL_THRESHOLD) {
+          return [null, `L2 microstructure: liquidity withdrawing — reversal pattern (${l2Signal.evidence.join(', ')})`];
+        }
+        if (l2Signal.signal === 'continuation' && l2Signal.probability > CONFIG.L2_CONTINUATION_THRESHOLD) {
+          l2ConfidenceBoost = CONFIG.L2_CONTINUATION_BOOST;
+        }
+      } else {
+        lastL2Signal = 'L2: waiting for data...';
+      }
     }
 
     const overrides: RegimeOverrides = useAdaptiveParams
       ? getRegimeOverrides(regimeCandles, trendCandles)
       : {};
 
-    let emaRejection = '';
-    let sessionRejection = '';
-
+    // Try strategies in priority order (most restrictive first)
     if (CONFIG.ENABLE_EMA_BOUNCE) {
-      const result = await tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, overrides, indicatorSummary);
-      if (result[0]) return result;
-      emaRejection = result[1];
+      const result = await tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, overrides);
+      if (result[0]) {
+        applyConfidenceBoost(result[0]);
+        return result;
+      }
     }
 
     if (CONFIG.ENABLE_SESSION_BREAKOUT) {
-      const result = await trySessionBreakout(regimeCandles, entryCandles, macro, overrides, indicatorSummary);
-      if (result[0]) return result;
-      sessionRejection = result[1];
+      const result = await tryConsolidationBreakout(regimeCandles, entryCandles, macro, overrides);
+      if (result[0]) {
+        applyConfidenceBoost(result[0]);
+        return result;
+      }
     }
 
-    const details = [emaRejection, sessionRejection].filter(Boolean).join('; ');
-    return [null, `No signal conditions met.${details ? ` Reasons: ${details}` : ''}`];
+    if (CONFIG.ENABLE_TREND_CONTINUATION) {
+      const result = await tryTrendContinuation(regimeCandles, trendCandles, entryCandles, macro, overrides);
+      if (result[0]) {
+        applyConfidenceBoost(result[0]);
+        return result;
+      }
+    }
+
+    l2ConfidenceBoost = 0;
+    return [null, 'No signal conditions met across all strategies.'];
   } catch (err) {
     return [null, `Error: ${err instanceof Error ? err.message : String(err)}`];
   }
 }
+
+// ── Strategy 1: EMA Bounce ──────────────────────────────────────────
+// ADX >= 25, price within 0.1-2.0x ATR of EMA20, momentum aligned
+// Works: BOTH directions, softened momentum
 
 async function tryEMABounce(
   regimeCandles: CandleData[],
@@ -240,63 +298,59 @@ async function tryEMABounce(
   entryCandles: CandleData[],
   macro: MacroTrend,
   overrides: RegimeOverrides,
-  indicatorSummary: string = '',
 ): Promise<[SignalResult | null, string]> {
   const currentPrice = entryCandles[entryCandles.length - 1].close;
   const regimeAdxThreshold = overrides.regime_adx_threshold ?? CONFIG.REGIME_ADX_THRESHOLD;
 
   const adxValue = calculateADX(regimeCandles, CONFIG.REGIME_ADX_PERIOD);
   if (adxValue === null || adxValue < regimeAdxThreshold) {
-    return [null, `Regime filter: ADX ${adxValue?.toFixed(1) ?? 'N/A'} < ${regimeAdxThreshold}`];
+    return [null, `EMA bounce: ADX ${adxValue?.toFixed(1) ?? 'N/A'} < ${regimeAdxThreshold}`];
   }
 
   const trendCloses = trendCandles.map(c => c.close);
   const ema20Arr = calculateEMA(trendCloses, CONFIG.EMA_BOUNCE_PERIOD);
-  if (ema20Arr.length === 0) return [null, 'EMA(20) not available'];
+  if (ema20Arr.length === 0) return [null, 'EMA bounce: EMA(20) not available'];
   const ema20 = ema20Arr[ema20Arr.length - 1];
-  if (ema20 <= 0) return [null, 'EMA(20) not available'];
+  if (ema20 <= 0) return [null, 'EMA bounce: EMA(20) not valid'];
 
   const atr = calculateATR(trendCandles, CONFIG.ATR_PERIOD);
-  if (atr === null || atr <= 0) return [null, 'ATR not available'];
+  if (atr === null || atr <= 0) return [null, 'EMA bounce: ATR not available'];
 
   const priceDist = Math.abs(currentPrice - ema20);
   const minDist = overrides.min_dist_atr ?? CONFIG.EMA_BOUNCE_MIN_DIST_ATR;
   const maxDist = overrides.max_dist_atr ?? CONFIG.EMA_BOUNCE_MAX_DIST_ATR;
 
   if (priceDist < minDist * atr) {
-    return [null, `Price too close to EMA (${priceDist.toFixed(2)} < ${minDist}×ATR)`];
+    return [null, `EMA bounce: price too close to EMA (${priceDist.toFixed(2)} < ${minDist}×ATR)`];
   }
   if (priceDist > maxDist * atr) {
-    return [null, `Price too far from EMA (${priceDist.toFixed(2)} > ${maxDist}×ATR)`];
+    return [null, `EMA bounce: price too far from EMA (${priceDist.toFixed(2)} > ${maxDist}×ATR)`];
   }
 
-  if (currentPrice < ema20) {
-    return [null, 'DOWN signals disabled — UP-only mode'];
-  }
-  if (currentPrice === ema20) {
-    return [null, 'Price at EMA level — no clear direction'];
-  }
+  const trend = currentPrice >= ema20 ? TrendEnum.UP : TrendEnum.DOWN;
 
-  const trend = TrendEnum.UP;
-
-  if (macro.trend !== 'NEUTRAL' && macro.trend !== trend) {
-    if (adxValue < regimeAdxThreshold) {
-      return [null, `Fighting daily macro trend (${macro.trend}) with weak ADX (${adxValue.toFixed(1)})`];
+  if (macro.trend !== 'NEUTRAL') {
+    const macroMatch =
+      (trend === TrendEnum.UP && macro.trend === 'UP') ||
+      (trend === TrendEnum.DOWN && macro.trend === 'DOWN');
+    if (!macroMatch && adxValue < regimeAdxThreshold) {
+      return [null, `EMA bounce: fighting daily macro trend (${macro.trend}) with weak ADX (${adxValue.toFixed(1)})`];
     }
   }
 
-  const momentumMin = overrides.momentum_min_rising ?? 1;
-  if (entryCandles.length >= 2 && momentumMin > 0) {
-    const lastClose = entryCandles[entryCandles.length - 1].close;
-    const prevClose = entryCandles[entryCandles.length - 2].close;
-    if (lastClose <= prevClose) {
-      return [null, 'No 15M buy momentum (last close not rising)'];
-    }
+  const momentumOk = checkMomentum(entryCandles, trend === TrendEnum.UP ? 'UP' : 'DOWN');
+  if (!momentumOk) {
+    return [null, `EMA bounce: no ${trend === TrendEnum.UP ? 'buy' : 'sell'} momentum (last 4 candles)`];
+  }
+
+  const [indicatorOk, indicatorSummary] = checkIndicators(trendCandles, trend === TrendEnum.UP ? 'UP' : 'DOWN');
+  if (!indicatorOk) {
+    return [null, `EMA bounce: ${indicatorSummary}`];
   }
 
   const slAtr = overrides.sl_atr_multiple ?? CONFIG.SL_ATR_MULTIPLE;
   const risk = atr * slAtr;
-  const stopLoss = ema20 - risk;
+  const stopLoss = trend === TrendEnum.UP ? ema20 - risk : ema20 + risk;
 
   const sh = findSwingHighs(trendCandles, CONFIG.SWING_LOOKBACK_N);
   const sl = findSwingLows(trendCandles, CONFIG.SWING_LOOKBACK_N);
@@ -305,7 +359,7 @@ async function tryEMABounce(
   const rr = Math.abs(takeProfit - currentPrice) / Math.abs(currentPrice - stopLoss);
   const minRRR = overrides.min_rrr ?? CONFIG.MIN_RRR;
   if (rr < minRRR) {
-    return [null, `R:R ${rr.toFixed(2)} below min ${minRRR.toFixed(2)}`];
+    return [null, `EMA bounce: R:R ${rr.toFixed(2)} below min ${minRRR.toFixed(2)}`];
   }
 
   const trendClarity = Math.min(adxValue / 50, 0.8);
@@ -316,48 +370,65 @@ async function tryEMABounce(
     roundPrice(takeProfit), rr, confidence, adxValue, atr,
     CONFIG.EMA_BOUNCE_VALIDITY_HOURS, macro.trend, trendCandles, indicatorSummary
   );
-  return [signal, 'EMA bounce signal ready'];
+  return [signal, `EMA bounce ${trend} signal ready`];
 }
 
-async function trySessionBreakout(
+// ── Strategy 2: Consolidation Breakout ──────────────────────────────
+// Detects recent price range from last N candles, fires on breakout
+// Works 24/5, BOTH directions, no Asian session dependency
+
+async function tryConsolidationBreakout(
   regimeCandles: CandleData[],
   entryCandles: CandleData[],
   macro: MacroTrend,
   overrides: RegimeOverrides,
-  indicatorSummary: string = '',
 ): Promise<[SignalResult | null, string]> {
   const currentPrice = entryCandles[entryCandles.length - 1].close;
 
-  sessionTracker.update(currentPrice);
-  const [asianLow, asianHigh, rangeWidth] = sessionTracker.getAsianRange();
-  if (rangeWidth < CONFIG.BREAKOUT_MIN_RANGE) {
-    return [null, `Asian range too narrow ($${rangeWidth.toFixed(2)} < $${CONFIG.BREAKOUT_MIN_RANGE.toFixed(2)})`];
-  }
+  const lookback = CONFIG.CONSOLIDATION_LOOKBACK;
+  const recent = entryCandles.slice(-lookback);
+  if (recent.length < 10) return [null, 'Consolidation breakout: insufficient data'];
+
+  const rangeHigh = Math.max(...recent.map(c => c.high));
+  const rangeLow = Math.min(...recent.map(c => c.low));
+  const rangeWidth = rangeHigh - rangeLow;
+
+  if (rangeWidth <= 0) return [null, 'Consolidation breakout: invalid range'];
 
   const atr = calculateATR(entryCandles, CONFIG.ATR_PERIOD);
-  if (atr === null || atr <= 0) return [null, 'ATR not available'];
+  if (atr === null || atr <= 0) return [null, 'Consolidation breakout: ATR not available'];
+
   const breakoutThreshold = atr * CONFIG.BREAKOUT_ATR_MULTIPLE;
 
   let trend: TrendEnum;
   let stopLoss: number;
-  if (currentPrice > asianHigh + breakoutThreshold) {
+  if (currentPrice > rangeHigh + breakoutThreshold) {
     trend = TrendEnum.UP;
-    stopLoss = asianLow - atr * 0.5;
-  } else if (currentPrice < asianLow - breakoutThreshold) {
-    return [null, 'DOWN signals disabled'];
+    stopLoss = rangeLow - atr * 0.5;
+  } else if (currentPrice < rangeLow - breakoutThreshold) {
+    trend = TrendEnum.DOWN;
+    stopLoss = rangeHigh + atr * 0.5;
   } else {
-    return [null, `No breakout: price within Asian range (${asianLow.toFixed(2)}-${asianHigh.toFixed(2)})`];
+    return [null, `Consolidation breakout: price within range (${rangeLow.toFixed(2)}-${rangeHigh.toFixed(2)})`];
   }
 
   const adxValue = calculateADX(regimeCandles, CONFIG.REGIME_ADX_PERIOD);
   if (adxValue !== null && adxValue < CONFIG.REGIME_ADX_THRESHOLD - 5) {
-    return [null, `4H ADX too low (${adxValue.toFixed(1)}) for breakout`];
+    return [null, `Consolidation breakout: 4H ADX too low (${adxValue.toFixed(1)})`];
+  }
+
+  const [indicatorOk, indicatorSummary] = checkIndicators(
+    regimeCandles.length > 0 ? regimeCandles : entryCandles,
+    trend === TrendEnum.UP ? 'UP' : 'DOWN'
+  );
+  if (!indicatorOk) {
+    return [null, `Consolidation breakout: ${indicatorSummary}`];
   }
 
   const risk = Math.abs(currentPrice - stopLoss);
-  if (risk <= 0) return [null, 'Invalid SL distance'];
+  if (risk <= 0) return [null, 'Consolidation breakout: invalid SL distance'];
 
-  const tpExtension = Math.max(rangeWidth, atr * 2);
+  const tpExtension = Math.max(rangeWidth * 1.5, atr * 2);
   const takeProfit = trend === TrendEnum.UP
     ? currentPrice + tpExtension
     : currentPrice - tpExtension;
@@ -365,7 +436,7 @@ async function trySessionBreakout(
   const minRRR = overrides.min_rrr ?? CONFIG.MIN_RRR;
   const rr = Math.abs(takeProfit - currentPrice) / risk;
   if (rr < minRRR) {
-    return [null, `R:R ${rr.toFixed(2)} below min ${minRRR.toFixed(2)}`];
+    return [null, `Consolidation breakout: R:R ${rr.toFixed(2)} below min ${minRRR.toFixed(2)}`];
   }
 
   const adxForConfidence = adxValue ?? 25;
@@ -373,9 +444,77 @@ async function trySessionBreakout(
   const confidence = calcConfidence(trendClarity + 0.1, rr, adxForConfidence, macro);
 
   const signal = buildSignal(
-    'session_breakout', trend, currentPrice, roundPrice(stopLoss),
+    'consolidation_breakout', trend, currentPrice, roundPrice(stopLoss),
     roundPrice(takeProfit), rr, confidence, adxForConfidence, atr,
-    CONFIG.BREAKOUT_VALIDITY_HOURS, macro.trend, regimeCandles, indicatorSummary
+    CONFIG.BREAKOUT_VALIDITY_HOURS, macro.trend, entryCandles, indicatorSummary
   );
-  return [signal, 'Session breakout signal ready'];
+  return [signal, `Consolidation breakout ${trend} signal ready`];
+}
+
+// ── Strategy 3: Trend Continuation ──────────────────────────────────
+// Fallback for trending markets that don't meet EMA bounce or breakout
+// Lower ADX threshold, wider EMA proximity, no momentum requirement
+
+async function tryTrendContinuation(
+  regimeCandles: CandleData[],
+  trendCandles: CandleData[],
+  entryCandles: CandleData[],
+  macro: MacroTrend,
+  overrides: RegimeOverrides,
+): Promise<[SignalResult | null, string]> {
+  const currentPrice = entryCandles[entryCandles.length - 1].close;
+
+  const adxValue = calculateADX(regimeCandles, CONFIG.REGIME_ADX_PERIOD);
+  const trendContAdx = CONFIG.TREND_CONT_ADX_THRESHOLD;
+  if (adxValue === null || adxValue < trendContAdx) {
+    return [null, `Trend continuation: ADX ${adxValue?.toFixed(1) ?? 'N/A'} < ${trendContAdx}`];
+  }
+
+  const trendCloses = trendCandles.map(c => c.close);
+  const ema20Arr = calculateEMA(trendCloses, CONFIG.EMA_BOUNCE_PERIOD);
+  if (ema20Arr.length === 0) return [null, 'Trend continuation: EMA(20) not available'];
+  const ema20 = ema20Arr[ema20Arr.length - 1];
+  if (ema20 <= 0) return [null, 'Trend continuation: EMA(20) not valid'];
+
+  const trend = currentPrice >= ema20 ? TrendEnum.UP : TrendEnum.DOWN;
+
+  const atr = calculateATR(trendCandles, CONFIG.ATR_PERIOD);
+  if (atr === null || atr <= 0) return [null, 'Trend continuation: ATR not available'];
+
+  // Wider proximity allowance than EMA bounce (up to 4x ATR)
+  const priceDist = Math.abs(currentPrice - ema20);
+  if (priceDist > 4 * atr) {
+    return [null, `Trend continuation: price too far from EMA (${priceDist.toFixed(2)} > 4×ATR)`];
+  }
+
+  const [indicatorOk, indicatorSummary] = checkIndicators(trendCandles, trend === TrendEnum.UP ? 'UP' : 'DOWN');
+  if (!indicatorOk) {
+    return [null, `Trend continuation: ${indicatorSummary}`];
+  }
+
+  const slAtr = overrides.sl_atr_multiple ?? CONFIG.SL_ATR_MULTIPLE;
+  const risk = atr * slAtr;
+  const stopLoss = trend === TrendEnum.UP
+    ? Math.min(ema20 - risk * 0.5, currentPrice - risk)
+    : Math.max(ema20 + risk * 0.5, currentPrice + risk);
+
+  const sh = findSwingHighs(trendCandles, CONFIG.SWING_LOOKBACK_N);
+  const sl = findSwingLows(trendCandles, CONFIG.SWING_LOOKBACK_N);
+  const takeProfit = findTP(currentPrice, trend, trendCandles, sh, sl, risk);
+
+  const rr = Math.abs(takeProfit - currentPrice) / Math.abs(currentPrice - stopLoss);
+  const minRRR = overrides.min_rrr ?? CONFIG.TREND_CONT_MIN_RRR;
+  if (rr < minRRR) {
+    return [null, `Trend continuation: R:R ${rr.toFixed(2)} below min ${minRRR.toFixed(2)}`];
+  }
+
+  const trendClarity = Math.min(adxValue / 50, 0.7);
+  const confidence = calcConfidence(trendClarity, rr, adxValue, macro);
+
+  const signal = buildSignal(
+    'trend_continuation', trend, currentPrice, roundPrice(stopLoss),
+    roundPrice(takeProfit), rr, confidence, adxValue, atr,
+    CONFIG.EMA_BOUNCE_VALIDITY_HOURS, macro.trend, trendCandles, indicatorSummary
+  );
+  return [signal, `Trend continuation ${trend} signal ready`];
 }

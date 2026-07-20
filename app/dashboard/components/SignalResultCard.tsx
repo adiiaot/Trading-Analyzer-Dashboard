@@ -7,6 +7,8 @@ import {
   CheckCircle, XCircle, Loader2, Check, DollarSign, RefreshCw,
 } from "lucide-react";
 import { useDashboardData } from "@/lib/data-context";
+import { l2Client, type L2Metrics } from "@/lib/signal-engine";
+import { evaluateMicrostructure } from "@/lib/signal-engine/microstructure";
 
 interface SignalResultEntry {
   entry_number: number;
@@ -123,6 +125,15 @@ export function SignalResultCard({
   const isUp = signal.trend === 'UP';
   const confidencePct = Math.round((signal.confidence ?? 0) * 100);
   const [outcomeSet, setOutcomeSet] = useState(false);
+  const [l2Metrics, setL2Metrics] = useState<L2Metrics | null>(null);
+
+  useEffect(() => {
+    l2Client.connect();
+    const unsub = l2Client.subscribe((m) => setL2Metrics(m));
+    return () => unsub();
+  }, []);
+
+  const l2Result = l2Metrics ? evaluateMicrostructure(l2Metrics) : null;
 
   const [lotSize, setLotSize] = useState(() => {
     if (typeof window !== "undefined") {
@@ -309,10 +320,48 @@ export function SignalResultCard({
               </div>
             )}
           </div>
-          <div className="text-[10px] text-text-muted">
-            {signal.entries?.length || 1} entry ladder
+          <div className="flex items-center gap-2">
+            <div className="text-[10px] text-text-muted">
+              {signal.entries?.length || 1} entry ladder
+            </div>
           </div>
         </div>
+
+        {/* L2 Microstructure */}
+        {l2Result && (
+          <div className={`rounded-lg px-3 py-1.5 text-[10px] flex items-center gap-2 ${
+            l2Result.signal === 'reversal' ? 'border' : l2Result.signal === 'continuation' ? 'border' : ''
+          }`} style={{
+            background: l2Result.signal === 'reversal'
+              ? 'rgba(var(--status-loss-rgb), 0.06)'
+              : l2Result.signal === 'continuation'
+              ? 'rgba(var(--status-win-rgb), 0.06)'
+              : 'rgba(255,255,255,0.02)',
+            borderColor: l2Result.signal === 'reversal'
+              ? 'rgba(var(--status-loss-rgb), 0.15)'
+              : l2Result.signal === 'continuation'
+              ? 'rgba(var(--status-win-rgb), 0.15)'
+              : 'transparent',
+          }}>
+            <span className="font-semibold text-text-muted">L2:</span>
+            {l2Result.signal === 'reversal' ? (
+              <span className="font-bold flex items-center gap-1" style={{ color: 'var(--status-loss)' }}>
+                <XCircle className="w-3 h-3" /> Reversal ({l2Result.probability}%)
+              </span>
+            ) : l2Result.signal === 'continuation' ? (
+              <span className="font-bold flex items-center gap-1" style={{ color: 'var(--status-win)' }}>
+                <TrendingUp className="w-3 h-3" /> Continuation ({l2Result.probability}%)
+              </span>
+            ) : (
+              <span className="text-text-muted">Neutral ({l2Result.probability}%)</span>
+            )}
+            {l2Result.evidence.length > 0 && (
+              <span className="text-text-muted truncate max-w-[200px] sm:max-w-[300px]">
+                — {l2Result.evidence[0]}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Lot Size & Margin */}
         <div className="rounded-xl p-3 md:p-4 space-y-2" style={{ background: 'rgba(var(--accent-gold-rgb), 0.04)', border: '1px solid rgba(var(--accent-gold-rgb), 0.1)' }}>

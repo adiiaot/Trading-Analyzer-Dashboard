@@ -190,7 +190,7 @@ function checkIndicators(candles: CandleData[], direction: 'UP' | 'DOWN'): [bool
   return [true, parts.join('; ') || 'Indicators neutral'];
 }
 
-function checkMomentum(candles: CandleData[], direction: 'UP' | 'DOWN', required: number = 2): boolean {
+function checkMomentum(candles: CandleData[], direction: 'UP' | 'DOWN', required: number = 1): boolean {
   if (candles.length < 4) {
     if (candles.length < 2) return true;
     const last = candles[candles.length - 1].close;
@@ -256,13 +256,15 @@ export async function generateSignal(
       ? getRegimeOverrides(regimeCandles, trendCandles)
       : {};
 
-    // Try strategies in priority order (most restrictive first)
+    const rejectionReasons: string[] = [];
+
     if (CONFIG.ENABLE_EMA_BOUNCE) {
       const result = await tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, overrides);
       if (result[0]) {
         applyConfidenceBoost(result[0]);
         return result;
       }
+      rejectionReasons.push(result[1]);
     }
 
     if (CONFIG.ENABLE_SESSION_BREAKOUT) {
@@ -271,6 +273,7 @@ export async function generateSignal(
         applyConfidenceBoost(result[0]);
         return result;
       }
+      rejectionReasons.push(result[1]);
     }
 
     if (CONFIG.ENABLE_TREND_CONTINUATION) {
@@ -279,10 +282,11 @@ export async function generateSignal(
         applyConfidenceBoost(result[0]);
         return result;
       }
+      rejectionReasons.push(result[1]);
     }
 
     l2ConfidenceBoost = 0;
-    return [null, 'No signal conditions met across all strategies.'];
+    return [null, `No signal conditions met. ${rejectionReasons.join(' | ')}`];
   } catch (err) {
     return [null, `Error: ${err instanceof Error ? err.message : String(err)}`];
   }
@@ -329,24 +333,9 @@ async function tryEMABounce(
 
   const trend = currentPrice >= ema20 ? TrendEnum.UP : TrendEnum.DOWN;
 
-  if (macro.trend !== 'NEUTRAL') {
-    const macroMatch =
-      (trend === TrendEnum.UP && macro.trend === 'UP') ||
-      (trend === TrendEnum.DOWN && macro.trend === 'DOWN');
-    if (!macroMatch && adxValue < regimeAdxThreshold) {
-      return [null, `EMA bounce: fighting daily macro trend (${macro.trend}) with weak ADX (${adxValue.toFixed(1)})`];
-    }
-  }
-
   const momentumOk = checkMomentum(entryCandles, trend === TrendEnum.UP ? 'UP' : 'DOWN');
-  if (!momentumOk) {
-    return [null, `EMA bounce: no ${trend === TrendEnum.UP ? 'buy' : 'sell'} momentum (last 4 candles)`];
-  }
 
   const [indicatorOk, indicatorSummary] = checkIndicators(trendCandles, trend === TrendEnum.UP ? 'UP' : 'DOWN');
-  if (!indicatorOk) {
-    return [null, `EMA bounce: ${indicatorSummary}`];
-  }
 
   const slAtr = overrides.sl_atr_multiple ?? CONFIG.SL_ATR_MULTIPLE;
   const risk = atr * slAtr;
@@ -363,7 +352,9 @@ async function tryEMABounce(
   }
 
   const trendClarity = Math.min(adxValue / 50, 0.8);
-  const confidence = calcConfidence(trendClarity, rr, adxValue, macro);
+  let confidence = calcConfidence(trendClarity, rr, adxValue, macro);
+  if (!indicatorOk) confidence *= 0.5;
+  if (!momentumOk) confidence *= 0.7;
 
   const signal = buildSignal(
     'ema_bounce', trend, currentPrice, roundPrice(stopLoss),
@@ -418,9 +409,6 @@ async function tryConsolidationBreakout(
     regimeCandles.length > 0 ? regimeCandles : entryCandles,
     trend === TrendEnum.UP ? 'UP' : 'DOWN'
   );
-  if (!indicatorOk) {
-    return [null, `Consolidation breakout: ${indicatorSummary}`];
-  }
 
   const risk = Math.abs(currentPrice - stopLoss);
   if (risk <= 0) return [null, 'Consolidation breakout: invalid SL distance'];
@@ -438,7 +426,8 @@ async function tryConsolidationBreakout(
 
   const adxForConfidence = adxValue ?? 25;
   const trendClarity = Math.min(adxForConfidence / 50, 0.7);
-  const confidence = calcConfidence(trendClarity + 0.1, rr, adxForConfidence, macro);
+  let confidence = calcConfidence(trendClarity + 0.1, rr, adxForConfidence, macro);
+  if (!indicatorOk) confidence *= 0.5;
 
   const signal = buildSignal(
     'consolidation_breakout', trend, currentPrice, roundPrice(stopLoss),
@@ -485,9 +474,6 @@ async function tryTrendContinuation(
   }
 
   const [indicatorOk, indicatorSummary] = checkIndicators(trendCandles, trend === TrendEnum.UP ? 'UP' : 'DOWN');
-  if (!indicatorOk) {
-    return [null, `Trend continuation: ${indicatorSummary}`];
-  }
 
   const slAtr = overrides.sl_atr_multiple ?? CONFIG.SL_ATR_MULTIPLE;
   const risk = atr * slAtr;
@@ -506,7 +492,8 @@ async function tryTrendContinuation(
   }
 
   const trendClarity = Math.min(adxValue / 50, 0.7);
-  const confidence = calcConfidence(trendClarity, rr, adxValue, macro);
+  let confidence = calcConfidence(trendClarity, rr, adxValue, macro);
+  if (!indicatorOk) confidence *= 0.5;
 
   const signal = buildSignal(
     'trend_continuation', trend, currentPrice, roundPrice(stopLoss),

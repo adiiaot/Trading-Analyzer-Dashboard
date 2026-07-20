@@ -175,7 +175,7 @@ export default function SignalsPage() {
               className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                 style={{
                   background: signalLoading ? 'rgba(var(--accent-gold-rgb), 0.12)' : 'linear-gradient(135deg, var(--accent-gold), rgba(var(--accent-gold-rgb), 0.7))',
-                  color: signalLoading ? 'var(--accent-gold)' : '#080c24',
+                  color: signalLoading ? 'var(--accent-gold)' : '#ffffff',
                   boxShadow: signalLoading ? 'none' : '0 0 20px rgba(var(--accent-gold-rgb), 0.25)',
                 }}>
               {signalLoading ? (

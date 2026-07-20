@@ -106,9 +106,9 @@ export default function LandingPage() {
             href="/dashboard"
             className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 hover:scale-[1.02]"
             style={{
-              background: "linear-gradient(135deg, #f0b429, #d4a52a)",
-              color: "#080c24",
-              boxShadow: "0 4px 24px rgba(240, 180, 41, 0.25)",
+              background: "linear-gradient(135deg, var(--accent-gold), rgba(var(--accent-gold-rgb), 0.7))",
+              color: "#ffffff",
+              boxShadow: "0 4px 20px rgba(var(--accent-gold-rgb), 0.25)",
             }}
           >
             Enter Dashboard

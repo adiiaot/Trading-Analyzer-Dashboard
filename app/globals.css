@@ -9,9 +9,9 @@
   --text-primary-rgb: 209 212 220;
   --text-secondary-rgb: 120 123 134;
   --text-muted-rgb: 93 96 107;
-  --accent-gold: #f0b429;
-  --accent-gold-rgb: 240 180 41;
-  --accent-gold-hover-rgb: 212 149 42;
+  --accent-gold: #f5c542;
+  --accent-gold-rgb: 245 197 66;
+  --accent-gold-hover-rgb: 216 173 58;
   --accent-green-rgb: 0 230 118;
   --status-win: #00e676;
   --status-win-rgb: 0 230 118;
@@ -31,7 +31,7 @@
   --glass-shine: rgba(255, 255, 255, 0.02);
   --profit: #00e676;
   --loss: #ff5252;
-  --gold: #f0b429;
+  --gold: #f5c542;
   --card: #1e222d;
   --bg-gradient: linear-gradient(180deg, #131722 0%, #1a1e2a 50%, #131722 100%);
   --bg-radial: radial-gradient(ellipse at 50% 0%, rgba(240,180,41,0.02) 0%, transparent 60%);
@@ -144,13 +144,13 @@ body {
 }
 .btn-primary {
   @apply btn;
-  background: linear-gradient(135deg, rgba(240,180,41,0.9), rgba(212,149,42,0.85));
-  color: #080c24;
-  border: 1px solid rgba(240,180,41,0.2);
+  background: linear-gradient(135deg, rgba(var(--accent-gold-rgb), 0.9), rgba(var(--accent-gold-hover-rgb), 0.85));
+  color: #ffffff;
+  border: 1px solid rgba(var(--accent-gold-rgb), 0.2);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, rgba(240,180,41,1), rgba(212,149,42,0.95));
-  box-shadow: 0 4px 20px rgba(240,180,41,0.2);
+  background: linear-gradient(135deg, rgba(var(--accent-gold-rgb), 1), rgba(var(--accent-gold-hover-rgb), 0.95));
+  box-shadow: 0 4px 20px rgba(var(--accent-gold-rgb), 0.2);
 }
 .btn-secondary {
   @apply btn;

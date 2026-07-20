@@ -173,11 +173,11 @@ export default function SignalsPage() {
               onClick={generateSignal}
               disabled={signalLoading}
               className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-              style={{
-                background: signalLoading ? 'rgba(var(--accent-gold-rgb), 0.1)' : 'linear-gradient(135deg, var(--accent-gold), rgba(var(--accent-gold-rgb), 0.7))',
-                color: signalLoading ? 'var(--accent-gold)' : 'rgb(var(--surface-rgb))',
-                boxShadow: signalLoading ? 'none' : '0 0 20px rgba(var(--accent-gold-rgb), 0.25)',
-              }}>
+                style={{
+                  background: signalLoading ? 'rgba(var(--accent-gold-rgb), 0.12)' : 'linear-gradient(135deg, var(--accent-gold), rgba(var(--accent-gold-rgb), 0.7))',
+                  color: signalLoading ? 'var(--accent-gold)' : '#080c24',
+                  boxShadow: signalLoading ? 'none' : '0 0 20px rgba(var(--accent-gold-rgb), 0.25)',
+                }}>
               {signalLoading ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing XAU/USD...</>
               ) : (

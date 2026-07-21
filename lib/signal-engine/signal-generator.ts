@@ -97,6 +97,8 @@ function buildSignal(
   macroTrend: string,
   trendCandles: CandleData[],
   indicatorSummary: string = '',
+  orderType: 'market' | 'buy_limit' | 'sell_limit' | 'buy_stop' | 'sell_stop' = 'market',
+  entryTrigger?: number,
 ): SignalResult {
   const now = new Date();
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -173,6 +175,8 @@ function buildSignal(
     tp1: roundPrice(takeProfit),
     tp2,
     macro_trend: macroTrend,
+    order_type: orderType,
+    entry_trigger: entryTrigger ?? entryPrice,
   };
 }
 
@@ -502,11 +506,17 @@ async function tryEMABounce(
   const risk = atr * slAtr;
   const stopLoss = trend === TrendEnum.UP ? ema20 - risk : ema20 + risk;
 
+  const entryPrice = CONFIG.ENABLE_PENDING_ORDERS ? roundPrice(ema20) : currentPrice;
+  const orderType: 'market' | 'buy_limit' | 'sell_limit' | 'buy_stop' | 'sell_stop' =
+    CONFIG.ENABLE_PENDING_ORDERS
+      ? (trend === TrendEnum.UP ? 'buy_limit' : 'sell_limit')
+      : 'market';
+
   const sh = findSwingHighs(trendCandles, CONFIG.SWING_LOOKBACK_N);
   const sl = findSwingLows(trendCandles, CONFIG.SWING_LOOKBACK_N);
-  const takeProfit = findTP(currentPrice, trend, trendCandles, sh, sl, risk);
+  const takeProfit = findTP(entryPrice, trend, trendCandles, sh, sl, risk);
 
-  const rr = Math.abs(takeProfit - currentPrice) / Math.abs(currentPrice - stopLoss);
+  const rr = Math.abs(takeProfit - entryPrice) / Math.abs(entryPrice - stopLoss);
   const minRRR = overrides.min_rrr ?? CONFIG.MIN_RRR;
   if (rr < minRRR) {
     return [null, `EMA bounce: R:R ${rr.toFixed(2)} below min ${minRRR.toFixed(2)}`];
@@ -530,9 +540,10 @@ async function tryEMABounce(
   if (!momentumOk) confidence *= 0.7;
 
   const signal = buildSignal(
-    'ema_bounce', trend, currentPrice, roundPrice(stopLoss),
+    'ema_bounce', trend, entryPrice, roundPrice(stopLoss),
     roundPrice(takeProfit), rr, confidence, adxValue, atr,
-    CONFIG.EMA_BOUNCE_VALIDITY_HOURS, macro.trend, trendCandles, indicatorSummary
+    CONFIG.EMA_BOUNCE_VALIDITY_HOURS, macro.trend, trendCandles, indicatorSummary,
+    orderType, roundPrice(ema20)
   );
   return [signal, `EMA bounce ${trend} signal ready`];
 }
@@ -583,16 +594,24 @@ async function tryConsolidationBreakout(
     trend === TrendEnum.UP ? 'UP' : 'DOWN'
   );
 
-  const risk = Math.abs(currentPrice - stopLoss);
+  const entryPrice = CONFIG.ENABLE_PENDING_ORDERS
+    ? roundPrice(trend === TrendEnum.UP ? rangeHigh : rangeLow)
+    : currentPrice;
+  const orderType: 'market' | 'buy_limit' | 'sell_limit' | 'buy_stop' | 'sell_stop' =
+    CONFIG.ENABLE_PENDING_ORDERS
+      ? (trend === TrendEnum.UP ? 'buy_stop' : 'sell_stop')
+      : 'market';
+
+  const risk = Math.abs(entryPrice - stopLoss);
   if (risk <= 0) return [null, 'Consolidation breakout: invalid SL distance'];
 
   const tpExtension = Math.max(rangeWidth * 1.5, atr * 2);
   const takeProfit = trend === TrendEnum.UP
-    ? currentPrice + tpExtension
-    : currentPrice - tpExtension;
+    ? entryPrice + tpExtension
+    : entryPrice - tpExtension;
 
   const minRRR = overrides.min_rrr ?? CONFIG.MIN_RRR;
-  const rr = Math.abs(takeProfit - currentPrice) / risk;
+  const rr = Math.abs(takeProfit - entryPrice) / risk;
   if (rr < minRRR) {
     return [null, `Consolidation breakout: R:R ${rr.toFixed(2)} below min ${minRRR.toFixed(2)}`];
   }
@@ -602,10 +621,12 @@ async function tryConsolidationBreakout(
   let confidence = calcConfidence(trendClarity + 0.1, rr, adxForConfidence, macro);
   if (!indicatorOk) confidence *= 0.5;
 
+  const triggerLevel = roundPrice(trend === TrendEnum.UP ? rangeHigh : rangeLow);
   const signal = buildSignal(
-    'consolidation_breakout', trend, currentPrice, roundPrice(stopLoss),
+    'consolidation_breakout', trend, entryPrice, roundPrice(stopLoss),
     roundPrice(takeProfit), rr, confidence, adxForConfidence, atr,
-    CONFIG.BREAKOUT_VALIDITY_HOURS, macro.trend, entryCandles, indicatorSummary
+    CONFIG.BREAKOUT_VALIDITY_HOURS, macro.trend, entryCandles, indicatorSummary,
+    orderType, triggerLevel
   );
   return [signal, `Consolidation breakout ${trend} signal ready`];
 }
@@ -654,11 +675,17 @@ async function tryTrendContinuation(
     ? Math.min(ema20 - risk * 0.5, currentPrice - risk)
     : Math.max(ema20 + risk * 0.5, currentPrice + risk);
 
+  const entryPrice = CONFIG.ENABLE_PENDING_ORDERS ? roundPrice(ema20) : currentPrice;
+  const orderType: 'market' | 'buy_limit' | 'sell_limit' | 'buy_stop' | 'sell_stop' =
+    CONFIG.ENABLE_PENDING_ORDERS
+      ? (trend === TrendEnum.UP ? 'buy_limit' : 'sell_limit')
+      : 'market';
+
   const sh = findSwingHighs(trendCandles, CONFIG.SWING_LOOKBACK_N);
   const sl = findSwingLows(trendCandles, CONFIG.SWING_LOOKBACK_N);
-  const takeProfit = findTP(currentPrice, trend, trendCandles, sh, sl, risk);
+  const takeProfit = findTP(entryPrice, trend, trendCandles, sh, sl, risk);
 
-  const rr = Math.abs(takeProfit - currentPrice) / Math.abs(currentPrice - stopLoss);
+  const rr = Math.abs(takeProfit - entryPrice) / Math.abs(entryPrice - stopLoss);
   const minRRR = overrides.min_rrr ?? CONFIG.TREND_CONT_MIN_RRR;
   if (rr < minRRR) {
     return [null, `Trend continuation: R:R ${rr.toFixed(2)} below min ${minRRR.toFixed(2)}`];
@@ -669,9 +696,10 @@ async function tryTrendContinuation(
   if (!indicatorOk) confidence *= 0.5;
 
   const signal = buildSignal(
-    'trend_continuation', trend, currentPrice, roundPrice(stopLoss),
+    'trend_continuation', trend, entryPrice, roundPrice(stopLoss),
     roundPrice(takeProfit), rr, confidence, adxValue, atr,
-    CONFIG.EMA_BOUNCE_VALIDITY_HOURS, macro.trend, trendCandles, indicatorSummary
+    CONFIG.EMA_BOUNCE_VALIDITY_HOURS, macro.trend, trendCandles, indicatorSummary,
+    orderType, roundPrice(ema20)
   );
   return [signal, `Trend continuation ${trend} signal ready`];
 }

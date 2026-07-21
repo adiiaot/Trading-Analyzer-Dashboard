@@ -39,6 +39,8 @@ export interface SignalResult {
   tp1: number | null;
   tp2: number | null;
   macro_trend: string | null;
+  order_type?: 'market' | 'buy_limit' | 'sell_limit' | 'buy_stop' | 'sell_stop';
+  entry_trigger?: number;
 }
 
 export interface MacroTrend {

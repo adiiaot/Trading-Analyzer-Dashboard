@@ -32,6 +32,8 @@ interface SignalResultData {
   macro_trend: string | null;
   timestamp: string;
   valid_until: string;
+  order_type?: string;
+  entry_trigger?: number;
 }
 
 interface SignalResultCardProps {
@@ -58,13 +60,24 @@ function formatTimestamp(ts: string): string {
   }
 }
 
+function orderTypeLabel(ot: string | undefined): string {
+  if (!ot || ot === 'market') return '';
+  const labels: Record<string, string> = {
+    buy_limit: 'Buy Limit', sell_limit: 'Sell Limit',
+    buy_stop: 'Buy Stop', sell_stop: 'Sell Stop',
+  };
+  return labels[ot] || '';
+}
+
 function buildTweetText(signal: SignalResultData): string {
   const trendEmoji = signal.trend === 'UP' ? '📈' : '📉';
   const typeLabel = signal.signal_type?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Signal';
   const entry1 = signal.entries?.[0];
+  const otl = orderTypeLabel(signal.order_type);
+  const otPrefix = otl ? ` [${otl}]` : '';
   const lines = [
     `🎯 XAU/USD SIGNAL`,
-    `${trendEmoji} ${signal.trend} | ${typeLabel}`,
+    `${trendEmoji} ${signal.trend}${otPrefix} | ${typeLabel}`,
     '',
     `Entry: $${entry1?.price?.toFixed(2) || '—'}`,
     `Stop Loss: $${signal.stop_loss?.toFixed(2) || '—'}`,
@@ -72,6 +85,10 @@ function buildTweetText(signal: SignalResultData): string {
     '',
     `Confidence: ${Math.round(signal.confidence * 100)}% | R:R ${signal.rr_ratio?.toFixed(2) || '—'}`,
   ];
+  if (otl && signal.entry_trigger) {
+    lines.push('');
+    lines.push(`Order: ${otl} @ $${signal.entry_trigger.toFixed(2)}`);
+  }
   lines.push('');
   lines.push('#XAUUSD #GoldTrading #ForexSignals');
   return lines.join('\n');
@@ -80,11 +97,17 @@ function buildTweetText(signal: SignalResultData): string {
 function buildCopyText(signal: SignalResultData): string {
   const trendEmoji = signal.trend === 'UP' ? '📈' : '📉';
   const typeLabel = signal.signal_type?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Signal';
+  const otl = orderTypeLabel(signal.order_type);
+  const otPrefix = otl ? ` [${otl}]` : '';
   const lines = [
     `🎯 XAU/USD SIGNAL`,
-    `${trendEmoji} ${signal.trend} | ${typeLabel}`,
+    `${trendEmoji} ${signal.trend}${otPrefix} | ${typeLabel}`,
     '',
   ];
+  if (otl && signal.entry_trigger) {
+    lines.push(`Order: ${otl} @ $${signal.entry_trigger.toFixed(2)}`);
+    lines.push('');
+  }
   if (signal.entries && signal.entries.length > 0) {
     signal.entries.forEach((e, i) => {
       const r = Math.abs(e.tp - e.price) / Math.abs(e.price - signal.stop_loss);
@@ -274,6 +297,30 @@ export function SignalResultCard({
             <span className="text-xs font-bold font-mono text-text-primary">{confidencePct}%</span>
           </div>
         </div>
+
+        {/* Order Type Banner */}
+        {signal.order_type && signal.order_type !== 'market' && (
+          <div className="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
+            style={{
+              background: 'rgba(var(--accent-gold-rgb), 0.08)',
+              border: '1px solid rgba(var(--accent-gold-rgb), 0.15)',
+            }}
+          >
+            <span className="font-semibold text-accent-gold">Pending Order</span>
+            <span className="text-text-muted">—</span>
+            <span className="font-mono font-bold text-text-primary">
+              {signal.order_type === 'buy_limit' ? 'Buy Limit' :
+               signal.order_type === 'sell_limit' ? 'Sell Limit' :
+               signal.order_type === 'buy_stop' ? 'Buy Stop' :
+               signal.order_type === 'sell_stop' ? 'Sell Stop' : signal.order_type}
+            </span>
+            {signal.entry_trigger && (
+              <span className="text-text-muted">
+                @ ${signal.entry_trigger.toFixed(2)}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Entry / SL / TP Columns */}
         <div className="grid grid-cols-3 gap-3">

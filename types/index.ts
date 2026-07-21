@@ -56,6 +56,8 @@ export interface Signal {
   acknowledged?: boolean;
   confirmed?: boolean;
   outcome?: 'won' | 'lost' | null;
+  orderType?: 'market' | 'buy_limit' | 'sell_limit' | 'buy_stop' | 'sell_stop';
+  entryTrigger?: number;
   dxyState?: {
     trend: string;
     expectedGoldDirection: string;

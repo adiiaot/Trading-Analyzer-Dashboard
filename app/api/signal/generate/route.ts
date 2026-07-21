@@ -39,6 +39,8 @@ export async function POST(request: Request) {
       ...signal,
       timestamp: signal.timestamp.toISOString(),
       valid_until: shortenedValidUntil.toISOString(),
+      order_type: signal.order_type || 'market',
+      entry_trigger: signal.entry_trigger || signal.entries[0]?.price || 0,
     };
 
     try {
@@ -69,6 +71,8 @@ export async function POST(request: Request) {
         tp1: signal.tp1,
         tp2: signal.tp2,
         macroTrend: signal.macro_trend,
+        orderType: signal.order_type || 'market',
+        entryTrigger: signal.entry_trigger || signal.entries[0]?.price || null,
         status: 'active',
         outcome: null,
         deliveredVia: 'dashboard',

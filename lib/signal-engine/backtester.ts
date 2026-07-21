@@ -264,6 +264,10 @@ export async function runBacktest(
   let lastBarTime = 0;
   const rejectionLog: Record<string, number> = {};
 
+  // Backtest uses market entries regardless of live pending-order setting
+  const savedPendingOrders = CONFIG.ENABLE_PENDING_ORDERS;
+  CONFIG.ENABLE_PENDING_ORDERS = false;
+
   const startTime = Date.now();
 
   for (let i = minHistory; i < candlesEntry.length; i++) {
@@ -352,6 +356,8 @@ export async function runBacktest(
     rrrValues.push(signal.rr_ratio);
     tradeRValues.push(realizedR);
   }
+
+  CONFIG.ENABLE_PENDING_ORDERS = savedPendingOrders;
 
   const confidenceCalibration = calibrateConfidence(
     tradeRValues.map((r, idx) => ({

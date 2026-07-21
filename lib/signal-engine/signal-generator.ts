@@ -1,5 +1,5 @@
 import { CandleData, TrendEnum, SignalResult, SignalEntry, MacroTrend, RegimeOverrides } from './types';
-import { calculateATR, calculateEMA, calculateADX, calculateRSI, calculateBollingerBands } from './indicators';
+import { calculateATR, calculateEMA, calculateADX, calculateRSI, calculateBollingerBands, calculateSMA } from './indicators';
 import { findSwingHighs, findSwingLows } from './swings';
 import { getRegimeOverrides } from './market-cycle';
 import { getMacroTrend } from './macro-trend';
@@ -7,6 +7,8 @@ import { CONFIG } from './config';
 export { sessionTracker } from './session-tracker';
 import { l2Client } from './l2-client';
 import { evaluateMicrostructure } from './microstructure';
+import { loadModel, predictDirection, isModelLoaded, getModelThreshold } from '../ml/inference';
+import { MLModel } from '../ml/types';
 
 const RSI_PERIOD = 14;
 const RSI_OVERBOUGHT = 72;
@@ -14,7 +16,14 @@ const RSI_OVERSOLD = 30;
 const BB_PERIOD = 20;
 let BB_STD = 2.0;
 
-export const sweepConfig: { BB_STD?: number; RSI_OVERBOUGHT?: number; RSI_OVERSOLD?: number } = {};
+export const sweepConfig: {
+  BB_STD?: number;
+  RSI_OVERBOUGHT?: number;
+  RSI_OVERSOLD?: number;
+  STRICT_MODE?: boolean;
+  STRICT_KEEP_BREAKOUT?: boolean;
+  STRICT_KEEP_TREND_CONT?: boolean;
+} = {};
 let l2ConfidenceBoost = 0;
 export let lastL2Signal: string = '';
 
@@ -217,6 +226,111 @@ function applyConfidenceBoost(signal: SignalResult): void {
   }
 }
 
+let mlInitAttempted = false;
+
+async function initML(): Promise<void> {
+  if (mlInitAttempted || isModelLoaded()) return;
+  mlInitAttempted = true;
+  try {
+    const res = await fetch('/ml/model_weights.json');
+    if (res.ok) {
+      const model: MLModel = await res.json();
+      loadModel(model);
+      console.log('[ML] Model loaded:', model.metadata);
+    }
+  } catch {
+    // Model file not found — inference silently skipped
+  }
+}
+
+function extractMLFeatures(
+  entryCandles: CandleData[],
+  trendCandles: CandleData[],
+  regimeCandles: CandleData[],
+  macroCandles: CandleData[],
+): Record<string, number> {
+  const currentPrice = entryCandles[entryCandles.length - 1].close;
+
+  const atr = calculateATR(entryCandles, CONFIG.ATR_PERIOD) ?? 0;
+  const rsi = calculateRSI(entryCandles, 14) ?? 50;
+  const bb = calculateBollingerBands(entryCandles, 20, 2.0);
+  const adx = calculateADX(regimeCandles.length > 30 ? regimeCandles : entryCandles, 14) ?? 25;
+
+  const trendCloses = trendCandles.map(c => c.close);
+  const ema20Arr = calculateEMA(trendCloses, 20);
+  const ema20 = ema20Arr.length > 0 ? ema20Arr[ema20Arr.length - 1] : currentPrice;
+
+  const entryCloses = entryCandles.map(c => c.close);
+  const ema50Arr = calculateEMA(entryCloses, 50);
+  const ema50 = ema50Arr.length > 0 ? ema50Arr[ema50Arr.length - 1] : ema20;
+  const ema200Arr = calculateEMA(entryCloses, 200);
+  const ema200 = ema200Arr.length > 0 ? ema200Arr[ema200Arr.length - 1] : ema50;
+
+  const macroCloses = macroCandles.map(c => c.close);
+  const sma50 = calculateSMA(macroCloses.length > 50 ? macroCloses : entryCloses, 50) ?? ema50;
+
+  const priceDistEma20 = atr > 0 ? (currentPrice - ema20) / atr : 0;
+  const priceDistEma50 = atr > 0 ? (currentPrice - ema50) / atr : 0;
+  const ema20DistEma50 = atr > 0 ? (ema20 - ema50) / atr : 0;
+
+  const prev20 = entryCandles.slice(-21, -1);
+  const range20 = prev20.length > 0
+    ? Math.max(...prev20.map(c => c.high)) - Math.min(...prev20.map(c => c.low))
+    : 0;
+  const prev5 = entryCandles.slice(-6, -1);
+  const range5 = prev5.length > 0
+    ? Math.max(...prev5.map(c => c.high)) - Math.min(...prev5.map(c => c.low))
+    : 0;
+
+  const body = Math.abs(currentPrice - (entryCandles[entryCandles.length - 1]?.open ?? currentPrice));
+  const high = entryCandles[entryCandles.length - 1]?.high ?? currentPrice;
+  const low = entryCandles[entryCandles.length - 1]?.low ?? currentPrice;
+  const hlRange = high - low;
+  const bodyPct = hlRange > 0 ? body / hlRange : 0.5;
+  const upperWickPct = hlRange > 0 ? (high - Math.max(currentPrice, entryCandles[entryCandles.length - 1]?.open ?? currentPrice)) / hlRange : 0;
+  const lowerWickPct = hlRange > 0 ? (Math.min(currentPrice, entryCandles[entryCandles.length - 1]?.open ?? currentPrice) - low) / hlRange : 0;
+
+  const vol3 = entryCandles.slice(-4);
+  const vol3Change = vol3.length >= 2
+    ? (vol3[vol3.length - 1].close - vol3[0].close) / (vol3[0].close || 1)
+    : 0;
+
+  const dt = new Date();
+  const hour = dt.getUTCHours();
+  const dayOfWeek = dt.getUTCDay();
+
+  return {
+    atr: atr || 0,
+    ema20: ema20 || 0,
+    ema50: ema50 || 0,
+    ema200: ema200 || 0,
+    sma50: sma50 || 0,
+    rsi: rsi || 50,
+    bb_upper: bb?.upper ?? 0,
+    bb_middle: bb?.middle ?? 0,
+    bb_lower: bb?.lower ?? 0,
+    bb_width: bb && bb.middle > 0 ? (bb.upper - bb.lower) / bb.middle : 0,
+    bb_pct: bb && bb.upper > bb.lower ? (currentPrice - bb.lower) / (bb.upper - bb.lower) : 0.5,
+    adx: adx || 25,
+    price_dist_ema20_atr: priceDistEma20,
+    price_dist_ema50_atr: priceDistEma50,
+    ema20_dist_ema50_atr: ema20DistEma50,
+    range_5: range5,
+    range_20: range20,
+    range_5_atr: atr > 0 ? range5 / atr : 0,
+    range_20_atr: atr > 0 ? range20 / atr : 0,
+    body_pct: bodyPct,
+    upper_wick_pct: upperWickPct,
+    lower_wick_pct: lowerWickPct,
+    vol3_change: vol3Change,
+    hour,
+    day_of_week: dayOfWeek,
+    london_session: hour >= 8 && hour < 17 ? 1 : 0,
+    ny_session: hour >= 13 && hour < 21 ? 1 : 0,
+    asian_session: hour >= 0 && hour < 9 ? 1 : 0,
+  };
+}
+
 export async function generateSignal(
   fetchFn: () => Promise<Record<string, CandleData[] | null>>,
   useAdaptiveParams: boolean = false,
@@ -224,6 +338,9 @@ export async function generateSignal(
   try {
     const dfs = await fetchFn();
     if (!dfs) return [null, 'Failed to fetch market data for all timeframes.'];
+
+    // Lazy-init ML model (loads once from public/ml/model_weights.json)
+    if (!mlInitAttempted) initML().catch(() => {});
 
     const macro = getMacroTrend(dfs[CONFIG.MACRO_TIMEFRAME] || []);
     const regimeCandles = dfs[CONFIG.REGIME_TIMEFRAME] || [];
@@ -252,22 +369,56 @@ export async function generateSignal(
       }
     }
 
+    // Stage 0: ML Direction Prediction
+    let mlDirection: 'LONG' | 'SHORT' | 'NEUTRAL' = 'NEUTRAL';
+    let mlProbability = 0;
+    if (isModelLoaded() && entryCandles.length >= 100) {
+      const features = extractMLFeatures(entryCandles, trendCandles, regimeCandles, dfs[CONFIG.MACRO_TIMEFRAME] || []);
+      const mlResult = predictDirection(features);
+      mlDirection = mlResult.direction;
+      mlProbability = mlResult.probability;
+    }
+
     const overrides: RegimeOverrides = useAdaptiveParams
       ? getRegimeOverrides(regimeCandles, trendCandles)
       : {};
 
     const rejectionReasons: string[] = [];
 
+    // Try EMA bounce. If ML predicts a direction with positive confidence,
+    // restrict to ML direction first. Otherwise try default direction then opposite.
     if (CONFIG.ENABLE_EMA_BOUNCE) {
-      const result = await tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, overrides);
-      if (result[0]) {
-        applyConfidenceBoost(result[0]);
-        return result;
+      const mlOverride = mlDirection !== 'NEUTRAL'
+        ? (mlDirection === 'LONG' ? TrendEnum.UP : TrendEnum.DOWN)
+        : null;
+
+      if (mlOverride !== null) {
+        const result = await tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, overrides, mlOverride);
+        if (result[0]) {
+          applyConfidenceBoost(result[0]);
+          return [result[0], `ML ${mlDirection} ${result[1]}`];
+        }
+        rejectionReasons.push(`ML ${mlDirection}: ${result[1]}`);
+      } else {
+        const result = await tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, overrides);
+        if (result[0]) {
+          applyConfidenceBoost(result[0]);
+          return result;
+        }
+        rejectionReasons.push(result[1]);
+
+        // Try opposite direction if neutral and first attempt failed
+        if (mlDirection === 'NEUTRAL') {
+          const opposite = await tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, overrides, null, true);
+          if (opposite[0]) {
+            applyConfidenceBoost(opposite[0]);
+            return opposite;
+          }
+        }
       }
-      rejectionReasons.push(result[1]);
     }
 
-    if (CONFIG.ENABLE_SESSION_BREAKOUT) {
+    if (CONFIG.ENABLE_SESSION_BREAKOUT && (!sweepConfig.STRICT_MODE || sweepConfig.STRICT_KEEP_BREAKOUT)) {
       const result = await tryConsolidationBreakout(regimeCandles, entryCandles, macro, overrides);
       if (result[0]) {
         applyConfidenceBoost(result[0]);
@@ -276,7 +427,7 @@ export async function generateSignal(
       rejectionReasons.push(result[1]);
     }
 
-    if (CONFIG.ENABLE_TREND_CONTINUATION) {
+    if (CONFIG.ENABLE_TREND_CONTINUATION && (!sweepConfig.STRICT_MODE || sweepConfig.STRICT_KEEP_TREND_CONT)) {
       const result = await tryTrendContinuation(regimeCandles, trendCandles, entryCandles, macro, overrides);
       if (result[0]) {
         applyConfidenceBoost(result[0]);
@@ -302,6 +453,8 @@ async function tryEMABounce(
   entryCandles: CandleData[],
   macro: MacroTrend,
   overrides: RegimeOverrides,
+  mlOverride: TrendEnum | null = null,
+  forceOpposite: boolean = false,
 ): Promise<[SignalResult | null, string]> {
   const currentPrice = entryCandles[entryCandles.length - 1].close;
   const regimeAdxThreshold = overrides.regime_adx_threshold ?? CONFIG.REGIME_ADX_THRESHOLD;
@@ -331,7 +484,15 @@ async function tryEMABounce(
     return [null, `EMA bounce: price too far from EMA (${priceDist.toFixed(2)} > ${maxDist}×ATR)`];
   }
 
-  const trend = currentPrice >= ema20 ? TrendEnum.UP : TrendEnum.DOWN;
+  // Determine trend: ML override takes priority, then force opposite, then default
+  let trend: TrendEnum;
+  if (mlOverride !== null) {
+    trend = mlOverride;
+  } else if (forceOpposite) {
+    trend = currentPrice >= ema20 ? TrendEnum.DOWN : TrendEnum.UP;
+  } else {
+    trend = currentPrice >= ema20 ? TrendEnum.UP : TrendEnum.DOWN;
+  }
 
   const momentumOk = checkMomentum(entryCandles, trend === TrendEnum.UP ? 'UP' : 'DOWN');
 
@@ -349,6 +510,18 @@ async function tryEMABounce(
   const minRRR = overrides.min_rrr ?? CONFIG.MIN_RRR;
   if (rr < minRRR) {
     return [null, `EMA bounce: R:R ${rr.toFixed(2)} below min ${minRRR.toFixed(2)}`];
+  }
+
+  if (sweepConfig.STRICT_MODE) {
+    if (!indicatorOk) {
+      return [null, `EMA bounce strict: indicators block (${indicatorSummary})`];
+    }
+    if (macro.trend !== 'NEUTRAL') {
+      const macroDirection = macro.trend === 'UP' ? TrendEnum.UP : TrendEnum.DOWN;
+      if (trend !== macroDirection) {
+        return [null, `EMA bounce strict: macro trend ${macro.trend} opposes ${trend}`];
+      }
+    }
   }
 
   const trendClarity = Math.min(adxValue / 50, 0.8);

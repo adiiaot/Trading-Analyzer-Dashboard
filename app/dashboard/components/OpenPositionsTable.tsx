@@ -77,17 +77,17 @@ export function OpenPositionsTable() {
                     <td className="py-3 px-4 last:pr-5 text-right">
                       <div className="flex items-center justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                         <button className="p-1.5 rounded-md transition-all text-xs"
-                          style={{ background: "rgba(var(--status-loss-rgb), 0.2)", color: "rgb(var(--status-loss-rgb))" }}
+                          style={{ background: "rgb(var(--surface-overlay-rgb))", color: "rgb(var(--status-loss-rgb))", border: "1px solid rgb(var(--status-loss-rgb))" }}
                           title="Close position">
                           <X className="w-3.5 h-3.5" />
                         </button>
                         <button className="p-1.5 rounded-md transition-all text-xs"
-                          style={{ background: "rgba(var(--accent-gold-rgb), 0.15)", color: "var(--accent-gold)" }}
+                          style={{ background: "rgb(var(--surface-overlay-rgb))", color: "var(--accent-gold)", border: "1px solid rgb(var(--accent-gold-rgb))" }}
                           title="Set stop loss">
                           <StopCircle className="w-3.5 h-3.5" />
                         </button>
                         <button className="p-1.5 rounded-md transition-all text-xs"
-                          style={{ background: "rgba(var(--accent-gold-rgb), 0.15)", color: "var(--accent-gold)" }}
+                          style={{ background: "rgb(var(--surface-overlay-rgb))", color: "var(--accent-gold)", border: "1px solid rgb(var(--accent-gold-rgb))" }}
                           title="Set take profit">
                           <Target className="w-3.5 h-3.5" />
                         </button>

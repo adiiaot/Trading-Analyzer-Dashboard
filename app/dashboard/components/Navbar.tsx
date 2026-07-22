@@ -35,9 +35,9 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
           rel="noopener noreferrer"
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
           style={{
-            background: "rgba(var(--accent-gold-rgb), 0.25)",
-            color: "rgb(var(--accent-gold-rgb))",
-            border: "1px solid rgba(var(--accent-gold-rgb), 0.4)",
+            background: "rgb(var(--surface-overlay-rgb))",
+            color: "var(--accent-gold)",
+            border: "1px solid rgb(var(--accent-gold-rgb))",
           }}
         >
           <Send className="w-3.5 h-3.5" />
@@ -48,9 +48,9 @@ export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="p-2 rounded-lg transition-all"
           style={{
-            background: "rgba(var(--accent-gold-rgb), 0.15)",
+            background: "rgb(var(--surface-overlay-rgb))",
             color: "var(--accent-gold)",
-            border: "1px solid rgba(var(--accent-gold-rgb), 0.25)",
+            border: "1px solid rgb(var(--accent-gold-rgb))",
           }}
         >
           {mounted && theme === "dark" ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}

@@ -191,39 +191,39 @@ export default function CommandsPage() {
               </div>
               <div className="grid grid-cols-2 sm:flex gap-2">
                 <button onClick={() => setTradeForm(p => ({ ...p, direction: 'LONG' }))}
-                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition border ${
-                    tradeForm.direction === 'LONG'
-                      ? 'bg-[rgba(var(--status-win-rgb),0.15)] text-status-win border-status-win/20'
-                      : 'text-text-secondary border-[var(--glass-border)]'
-                  }`}
-                  style={tradeForm.direction !== 'LONG' ? { background: 'var(--glass-bg)' } : undefined}>
+                  className="py-1.5 px-2 rounded-lg text-xs font-medium transition border"
+                  style={{
+                    background: tradeForm.direction === 'LONG' ? 'rgb(var(--status-win-rgb))' : 'rgb(var(--surface-overlay-rgb))',
+                    color: tradeForm.direction === 'LONG' ? '#ffffff' : 'rgb(var(--text-secondary-rgb))',
+                    borderColor: tradeForm.direction === 'LONG' ? 'rgb(var(--status-win-rgb))' : 'rgb(var(--text-primary-rgb))',
+                  }}>
                   LONG ↗
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, direction: 'SHORT' }))}
-                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition border ${
-                    tradeForm.direction === 'SHORT'
-                      ? 'bg-[rgba(var(--status-loss-rgb),0.15)] text-status-loss border-status-loss/20'
-                      : 'text-text-secondary border-[var(--glass-border)]'
-                  }`}
-                  style={tradeForm.direction !== 'SHORT' ? { background: 'var(--glass-bg)' } : undefined}>
+                  className="py-1.5 px-2 rounded-lg text-xs font-medium transition border"
+                  style={{
+                    background: tradeForm.direction === 'SHORT' ? 'rgb(var(--status-loss-rgb))' : 'rgb(var(--surface-overlay-rgb))',
+                    color: tradeForm.direction === 'SHORT' ? '#ffffff' : 'rgb(var(--text-secondary-rgb))',
+                    borderColor: tradeForm.direction === 'SHORT' ? 'rgb(var(--status-loss-rgb))' : 'rgb(var(--text-primary-rgb))',
+                  }}>
                   SHORT ↘
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, result: 'win' }))}
-                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition border ${
-                    tradeForm.result === 'win'
-                      ? 'bg-[rgba(var(--status-win-rgb),0.15)] text-status-win border-status-win/20'
-                      : 'text-text-secondary border-[var(--glass-border)]'
-                  }`}
-                  style={tradeForm.result !== 'win' ? { background: 'var(--glass-bg)' } : undefined}>
+                  className="py-1.5 px-2 rounded-lg text-xs font-medium transition border"
+                  style={{
+                    background: tradeForm.result === 'win' ? 'rgb(var(--status-win-rgb))' : 'rgb(var(--surface-overlay-rgb))',
+                    color: tradeForm.result === 'win' ? '#ffffff' : 'rgb(var(--text-secondary-rgb))',
+                    borderColor: tradeForm.result === 'win' ? 'rgb(var(--status-win-rgb))' : 'rgb(var(--text-primary-rgb))',
+                  }}>
                   WIN
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, result: 'loss' }))}
-                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition border ${
-                    tradeForm.result === 'loss'
-                      ? 'bg-[rgba(var(--status-loss-rgb),0.15)] text-status-loss border-status-loss/20'
-                      : 'text-text-secondary border-[var(--glass-border)]'
-                  }`}
-                  style={tradeForm.result !== 'loss' ? { background: 'var(--glass-bg)' } : undefined}>
+                  className="py-1.5 px-2 rounded-lg text-xs font-medium transition border"
+                  style={{
+                    background: tradeForm.result === 'loss' ? 'rgb(var(--status-loss-rgb))' : 'rgb(var(--surface-overlay-rgb))',
+                    color: tradeForm.result === 'loss' ? '#ffffff' : 'rgb(var(--text-secondary-rgb))',
+                    borderColor: tradeForm.result === 'loss' ? 'rgb(var(--status-loss-rgb))' : 'rgb(var(--text-primary-rgb))',
+                  }}>
                   LOSS
                 </button>
               </div>

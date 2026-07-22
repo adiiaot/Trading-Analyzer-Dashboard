@@ -197,7 +197,7 @@ export default function CompoundingPage() {
               animate={{ opacity: 1, y: 0 }}
               onClick={handleCompleteCycle}
               className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, rgba(var(--status-win-rgb),0.85), rgba(var(--accent-gold-rgb),0.8))", color: "#ffffff", border: "none" }}
+              style={{ background: "linear-gradient(135deg, rgb(var(--status-win-rgb)), rgb(var(--accent-gold-rgb)))", color: "#ffffff", border: "none" }}
             >
               <RotateCcw className="w-4 h-4" />
               Complete Cycle {compounding.cycleNumber} — Advance to Cycle {compounding.cycleNumber + 1}
@@ -543,7 +543,7 @@ export default function CompoundingPage() {
                   }
                 }}
                 className="px-4 py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90"
-                style={{ background: "rgba(var(--status-loss-rgb),0.2)", color: "var(--status-loss)", border: "1px solid rgba(var(--status-loss-rgb),0.3)" }}
+                style={{ background: "rgb(var(--surface-overlay-rgb))", color: "var(--status-loss)", border: "1px solid rgb(var(--status-loss-rgb))" }}
               >
                 Withdraw
               </button>

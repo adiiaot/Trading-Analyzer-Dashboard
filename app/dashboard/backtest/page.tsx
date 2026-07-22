@@ -151,17 +151,17 @@ export default function BacktestPage() {
         <div className="flex flex-wrap items-end gap-3 sm:gap-4">
           <div className="w-full sm:w-auto">
             <label className="block text-[10px] sm:text-xs text-text-muted mb-1.5 font-medium">Lookback</label>
-            <div className="flex gap-1 rounded-lg p-0.5 w-fit" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
+            <div className="flex gap-1 rounded-lg p-0.5 w-fit" style={{ background: "rgb(var(--surface-overlay-rgb))", border: "1px solid rgb(var(--text-primary-rgb))" }}>
               {[3, 6, 12, 18, 24].map((m) => (
                 <button
                   key={m}
                   onClick={() => setMonths(m)}
-                  className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all ${
-                    months === m
-                      ? "text-accent-gold shadow-sm"
-                      : "text-text-muted hover:text-text-primary"
-                  }`}
-                  style={months === m ? { background: "var(--glass-bg)", border: "1px solid var(--glass-border)" } : {}}
+                  className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all"
+                  style={{
+                    background: months === m ? 'rgb(var(--accent-gold-rgb))' : 'transparent',
+                    color: months === m ? '#ffffff' : 'rgb(var(--text-muted-rgb))',
+                    border: months === m ? '1px solid rgb(var(--accent-gold-rgb))' : '1px solid transparent',
+                  }}
                 >
                   {m}m
                 </button>
@@ -172,23 +172,23 @@ export default function BacktestPage() {
           <div className="flex flex-wrap items-center gap-2 pb-0.5">
             <button
               onClick={() => setSessionFilter(!sessionFilter)}
-              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all border ${
-                sessionFilter
-                  ? "bg-accent-gold/10 text-accent-gold border-accent-gold/30"
-                  : "text-text-muted border-transparent"
-              }`}
-              style={!sessionFilter ? { background: "var(--glass-bg)", border: "1px solid var(--glass-border)" } : {}}
+              className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all border"
+              style={{
+                background: sessionFilter ? 'rgb(var(--accent-gold-rgb))' : 'rgb(var(--surface-overlay-rgb))',
+                color: sessionFilter ? '#ffffff' : 'rgb(var(--text-muted-rgb))',
+                borderColor: sessionFilter ? 'rgb(var(--accent-gold-rgb))' : 'rgb(var(--text-primary-rgb))',
+              }}
             >
               WAT Only
             </button>
             <button
               onClick={() => setEnableMc(!enableMc)}
-              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all border ${
-                enableMc
-                  ? "bg-status-info/10 text-status-info border-status-info/30"
-                  : "text-text-muted border-transparent"
-              }`}
-              style={!enableMc ? { background: "var(--glass-bg)", border: "1px solid var(--glass-border)" } : {}}
+              className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all border"
+              style={{
+                background: enableMc ? 'rgb(var(--status-info-rgb))' : 'rgb(var(--surface-overlay-rgb))',
+                color: enableMc ? '#ffffff' : 'rgb(var(--text-muted-rgb))',
+                borderColor: enableMc ? 'rgb(var(--status-info-rgb))' : 'rgb(var(--text-primary-rgb))',
+              }}
             >
               <Sigma className="w-2.5 sm:w-3 h-2.5 sm:h-3 inline mr-0.5 sm:mr-1" />
               MC
@@ -201,9 +201,9 @@ export default function BacktestPage() {
               disabled={loading}
               className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all disabled:opacity-50 whitespace-nowrap"
               style={{
-                background: "linear-gradient(135deg, rgba(var(--accent-gold-rgb), 0.85), rgba(var(--accent-gold-hover-rgb), 0.8))",
-                border: "1px solid rgba(var(--accent-gold-rgb), 0.3)",
-                color: "rgb(var(--text-primary-rgb))",
+                background: "linear-gradient(135deg, rgb(var(--accent-gold-rgb)), rgb(var(--accent-gold-hover-rgb)))",
+                border: "1px solid rgb(var(--accent-gold-rgb))",
+                color: "#ffffff",
               }}
             >
               {loading ? (
@@ -252,8 +252,8 @@ export default function BacktestPage() {
                   </div>
                   <button
                     onClick={cancelRetry}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                    style={{ background: "rgba(var(--status-loss-rgb), 0.2)", color: "var(--status-loss)", border: "1px solid rgba(var(--status-loss-rgb), 0.3)" }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                    style={{ background: "rgb(var(--surface-overlay-rgb))", color: "var(--status-loss)", border: "1px solid rgb(var(--status-loss-rgb))" }}
                   >
                     Cancel
                   </button>
@@ -264,9 +264,9 @@ export default function BacktestPage() {
                     onClick={() => runBacktest()}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
                     style={{
-                      background: "linear-gradient(135deg, rgba(var(--accent-gold-rgb), 0.85), rgba(var(--accent-gold-hover-rgb), 0.8))",
-                      border: "1px solid rgba(var(--accent-gold-rgb), 0.3)",
-                      color: "rgb(var(--text-primary-rgb))",
+                      background: "linear-gradient(135deg, rgb(var(--accent-gold-rgb)), rgb(var(--accent-gold-hover-rgb)))",
+                      border: "1px solid rgb(var(--accent-gold-rgb))",
+                      color: "#ffffff",
                     }}
                   >
                     <RefreshCw className="w-3 h-3" />
@@ -275,7 +275,7 @@ export default function BacktestPage() {
                   <button
                     onClick={wakeBot}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                    style={{ background: "rgba(var(--accent-gold-rgb), 0.2)", color: "var(--accent-gold)", border: "1px solid rgba(var(--accent-gold-rgb), 0.35)" }}
+                    style={{ background: "rgb(var(--surface-overlay-rgb))", color: "var(--accent-gold)", border: "1px solid rgb(var(--accent-gold-rgb))" }}
                   >
                     Wake Bot + Auto-Retry
                   </button>

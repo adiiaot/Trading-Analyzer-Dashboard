@@ -139,28 +139,26 @@ body {
 
 .btn {
   @apply inline-flex items-center justify-center gap-2 font-semibold rounded-btn px-5 py-2.5 text-sm transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 .btn-primary {
   @apply btn;
-  background: linear-gradient(135deg, var(--accent-gold), rgba(var(--accent-gold-hover-rgb), 0.95));
-  color: rgb(var(--text-primary-rgb));
-  border: 1px solid rgba(var(--accent-gold-rgb), 0.3);
+  background: linear-gradient(135deg, var(--accent-gold), rgb(var(--accent-gold-hover-rgb)));
+  color: #ffffff;
+  border: 1px solid rgb(var(--accent-gold-rgb));
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--accent-gold), rgba(var(--accent-gold-hover-rgb), 1));
-  box-shadow: 0 4px 20px rgba(var(--accent-gold-rgb), 0.25);
+  background: var(--accent-gold);
+  box-shadow: 0 4px 20px rgba(var(--accent-gold-rgb), 0.3);
 }
 .btn-secondary {
   @apply btn;
-  background: rgba(var(--surface-overlay-rgb), 0.85);
+  background: rgb(var(--surface-overlay-rgb));
   color: rgb(var(--text-primary-rgb));
-  border: 1px solid rgba(var(--text-primary-rgb), 0.12);
+  border: 1px solid rgb(var(--text-primary-rgb));
 }
 .btn-secondary:hover {
-  background: rgba(var(--surface-overlay-rgb), 1);
-  border-color: rgba(var(--accent-gold-rgb), 0.25);
+  background: rgb(var(--surface-overlay-rgb));
+  border-color: rgb(var(--accent-gold-rgb));
 }
 .btn-ghost {
   @apply btn bg-transparent text-text-secondary hover:text-text-primary;

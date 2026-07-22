@@ -150,19 +150,39 @@ export default function JournalPage() {
               </div>
               <div className="flex gap-2">
                 <button onClick={() => setTradeForm(p => ({ ...p, direction: 'LONG' }))}
-                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'LONG' ? 'bg-[rgba(var(--status-win-rgb),0.15)] text-status-win' : 'glass'}`}>
+                  className="flex-1 py-2 rounded-lg text-xs font-medium transition border"
+                  style={{
+                    background: tradeForm.direction === 'LONG' ? 'rgb(var(--status-win-rgb))' : 'rgb(var(--surface-overlay-rgb))',
+                    color: tradeForm.direction === 'LONG' ? '#ffffff' : 'rgb(var(--text-secondary-rgb))',
+                    borderColor: tradeForm.direction === 'LONG' ? 'rgb(var(--status-win-rgb))' : 'rgb(var(--text-primary-rgb))',
+                  }}>
                   LONG ↗
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, direction: 'SHORT' }))}
-                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'SHORT' ? 'bg-[rgba(var(--status-loss-rgb),0.15)] text-status-loss' : 'glass'}`}>
+                  className="flex-1 py-2 rounded-lg text-xs font-medium transition border"
+                  style={{
+                    background: tradeForm.direction === 'SHORT' ? 'rgb(var(--status-loss-rgb))' : 'rgb(var(--surface-overlay-rgb))',
+                    color: tradeForm.direction === 'SHORT' ? '#ffffff' : 'rgb(var(--text-secondary-rgb))',
+                    borderColor: tradeForm.direction === 'SHORT' ? 'rgb(var(--status-loss-rgb))' : 'rgb(var(--text-primary-rgb))',
+                  }}>
                   SHORT ↘
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, result: 'win' }))}
-                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.result === 'win' ? 'bg-[rgba(var(--status-win-rgb),0.15)] text-status-win' : 'glass'}`}>
+                  className="flex-1 py-2 rounded-lg text-xs font-medium transition border"
+                  style={{
+                    background: tradeForm.result === 'win' ? 'rgb(var(--status-win-rgb))' : 'rgb(var(--surface-overlay-rgb))',
+                    color: tradeForm.result === 'win' ? '#ffffff' : 'rgb(var(--text-secondary-rgb))',
+                    borderColor: tradeForm.result === 'win' ? 'rgb(var(--status-win-rgb))' : 'rgb(var(--text-primary-rgb))',
+                  }}>
                   WIN
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, result: 'loss' }))}
-                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${tradeForm.result === 'loss' ? 'bg-[rgba(var(--status-loss-rgb),0.15)] text-status-loss' : 'glass'}`}>
+                  className="flex-1 py-2 rounded-lg text-xs font-medium transition border"
+                  style={{
+                    background: tradeForm.result === 'loss' ? 'rgb(var(--status-loss-rgb))' : 'rgb(var(--surface-overlay-rgb))',
+                    color: tradeForm.result === 'loss' ? '#ffffff' : 'rgb(var(--text-secondary-rgb))',
+                    borderColor: tradeForm.result === 'loss' ? 'rgb(var(--status-loss-rgb))' : 'rgb(var(--text-primary-rgb))',
+                  }}>
                   LOSS
                 </button>
               </div>
@@ -207,17 +227,17 @@ export default function JournalPage() {
           {closed.length > 0 ? (
             <>
               <div className="flex flex-wrap items-center gap-2 mb-4">
-                <div className="flex gap-1 rounded-lg p-0.5" style={{ background: "rgba(var(--surface-overlay-rgb), 0.85)", border: "1px solid rgba(var(--text-primary-rgb), 0.12)" }}>
+                <div className="flex gap-1 rounded-lg p-0.5" style={{ background: "rgb(var(--surface-overlay-rgb))", border: "1px solid rgb(var(--text-primary-rgb))" }}>
                   {(["all", "win", "loss"] as const).map((f) => (
                     <button
                       key={f}
                       onClick={() => setFilter(f)}
                       className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                         filter === f
-                          ? "text-accent-gold shadow-sm"
+                          ? "text-accent-gold"
                           : "text-text-muted hover:text-text-primary"
                       }`}
-                      style={filter === f ? { background: "rgba(var(--accent-gold-rgb), 0.2)", border: "1px solid rgba(var(--accent-gold-rgb), 0.3)" } : {}}
+                      style={filter === f ? { background: "rgb(var(--surface-overlay-rgb))", border: "1px solid rgb(var(--accent-gold-rgb))" } : {}}
                     >
                       {f === "all" ? "All" : f === "win" ? "Wins" : "Losses"}
                     </button>
@@ -226,7 +246,7 @@ export default function JournalPage() {
                 <button
                   onClick={() => setSortNewest(!sortNewest)}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
-                  style={{ background: "rgba(var(--accent-gold-rgb), 0.2)", color: "var(--accent-gold)", border: "1px solid rgba(var(--accent-gold-rgb), 0.35)" }}
+                  style={{ background: "rgb(var(--surface-overlay-rgb))", color: "var(--accent-gold)", border: "1px solid rgb(var(--accent-gold-rgb))" }}
                 >
                   <ChevronDown className={`w-3 h-3 transition-transform ${sortNewest ? "" : "rotate-180"}`} />
                   {sortNewest ? "Newest" : "Oldest"}

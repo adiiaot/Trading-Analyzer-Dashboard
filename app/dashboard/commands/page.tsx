@@ -143,8 +143,7 @@ export default function CommandsPage() {
               <button
                 onClick={generateSignal}
                 disabled={signalLoading}
-                className="btn-primary w-full py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50"
-                style={{ background: signalLoading ? undefined : 'linear-gradient(135deg, var(--accent-gold), rgba(var(--accent-gold-rgb), 0.7))' }}>
+                className="btn-primary w-full py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50">
                 {signalLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -192,19 +191,39 @@ export default function CommandsPage() {
               </div>
               <div className="grid grid-cols-2 sm:flex gap-2">
                 <button onClick={() => setTradeForm(p => ({ ...p, direction: 'LONG' }))}
-                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'LONG' ? 'bg-[rgba(var(--status-win-rgb),0.15)] text-status-win' : 'glass'}`}>
+                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition border ${
+                    tradeForm.direction === 'LONG'
+                      ? 'bg-[rgba(var(--status-win-rgb),0.15)] text-status-win border-status-win/20'
+                      : 'text-text-secondary border-[var(--glass-border)]'
+                  }`}
+                  style={tradeForm.direction !== 'LONG' ? { background: 'var(--glass-bg)' } : undefined}>
                   LONG ↗
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, direction: 'SHORT' }))}
-                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.direction === 'SHORT' ? 'bg-[rgba(var(--status-loss-rgb),0.15)] text-status-loss' : 'glass'}`}>
+                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition border ${
+                    tradeForm.direction === 'SHORT'
+                      ? 'bg-[rgba(var(--status-loss-rgb),0.15)] text-status-loss border-status-loss/20'
+                      : 'text-text-secondary border-[var(--glass-border)]'
+                  }`}
+                  style={tradeForm.direction !== 'SHORT' ? { background: 'var(--glass-bg)' } : undefined}>
                   SHORT ↘
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, result: 'win' }))}
-                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.result === 'win' ? 'bg-[rgba(var(--status-win-rgb),0.15)] text-status-win' : 'glass'}`}>
+                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition border ${
+                    tradeForm.result === 'win'
+                      ? 'bg-[rgba(var(--status-win-rgb),0.15)] text-status-win border-status-win/20'
+                      : 'text-text-secondary border-[var(--glass-border)]'
+                  }`}
+                  style={tradeForm.result !== 'win' ? { background: 'var(--glass-bg)' } : undefined}>
                   WIN
                 </button>
                 <button onClick={() => setTradeForm(p => ({ ...p, result: 'loss' }))}
-                  className={`py-1.5 rounded-lg text-xs font-medium transition ${tradeForm.result === 'loss' ? 'bg-[rgba(var(--status-loss-rgb),0.15)] text-status-loss' : 'glass'}`}>
+                  className={`py-1.5 px-2 rounded-lg text-xs font-medium transition border ${
+                    tradeForm.result === 'loss'
+                      ? 'bg-[rgba(var(--status-loss-rgb),0.15)] text-status-loss border-status-loss/20'
+                      : 'text-text-secondary border-[var(--glass-border)]'
+                  }`}
+                  style={tradeForm.result !== 'loss' ? { background: 'var(--glass-bg)' } : undefined}>
                   LOSS
                 </button>
               </div>
@@ -243,8 +262,7 @@ export default function CommandsPage() {
           description="Run the signal engine against historical XAU/USD data"
           action={
             <Link href="/dashboard/backtest"
-              className="btn-primary w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2"
-              style={{ background: 'linear-gradient(135deg, var(--accent-gold), rgba(var(--accent-gold-rgb), 0.7))' }}>
+              className="btn-primary w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2">
               <BarChart4 className="w-4 h-4" />
               Open Backtest
             </Link>

@@ -162,10 +162,10 @@ function LearningContent() {
       <motion.div variants={item}>
         <Card>
           <div className="flex items-center gap-2 mb-4">
-            <button onClick={() => setMode("chat")} className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${mode === "chat" ? "bg-accent-gold text-white" : "glass-card text-text-secondary hover:text-text-primary"}`}>
+            <button onClick={() => setMode("chat")} className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${mode === "chat" ? "bg-accent-gold text-text-primary" : "glass-card text-text-secondary hover:text-text-primary"}`}>
               <BookOpen className="w-3.5 h-3.5" /> Learn
             </button>
-            <button onClick={() => setMode("analyze")} className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${mode === "analyze" ? "bg-accent-gold text-white" : "glass-card text-text-secondary hover:text-text-primary"}`}>
+            <button onClick={() => setMode("analyze")} className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${mode === "analyze" ? "bg-accent-gold text-text-primary" : "glass-card text-text-secondary hover:text-text-primary"}`}>
               <BarChart3 className="w-3.5 h-3.5" /> Analyze Chart
             </button>
           </div>
@@ -174,9 +174,9 @@ function LearningContent() {
             {messages.map((msg, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : ""}`}>
                 {msg.role === "assistant" && <div className="w-8 h-8 rounded-lg bg-accent-gold/10 flex items-center justify-center shrink-0"><Bot className="w-4 h-4 text-accent-gold" /></div>}
-                <div className={`max-w-[80%] ${msg.role === "user" ? "bg-accent-gold text-white rounded-2xl rounded-tr-md px-4 py-2.5" : "glass-card rounded-2xl rounded-tl-md px-4 py-2.5"}`}>
+                <div className={`max-w-[80%] ${msg.role === "user" ? "bg-accent-gold text-text-primary rounded-2xl rounded-tr-md px-4 py-2.5" : "glass-card rounded-2xl rounded-tl-md px-4 py-2.5"}`}>
                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                  <p className={`text-[10px] mt-1 ${msg.role === "user" ? "text-white/60" : "text-text-muted"}`}>{new Date(msg.timestamp).toLocaleTimeString()}</p>
+                  <p className={`text-[10px] mt-1 ${msg.role === "user" ? "text-text-primary/60" : "text-text-muted"}`}>{new Date(msg.timestamp).toLocaleTimeString()}</p>
                 </div>
                 {msg.role === "user" && <div className="w-8 h-8 rounded-lg bg-accent-gold/20 flex items-center justify-center shrink-0"><User className="w-4 h-4 text-accent-gold" /></div>}
               </motion.div>

@@ -49,7 +49,7 @@ export function SignalCard({
 
   const borderColor = status === 'won' ? 'rgb(var(--status-win-rgb))'
     : status === 'lost' ? 'rgb(var(--status-loss-rgb))'
-    : '#f0b429';
+    : 'var(--accent-gold)';
 
   return (
     <Card className="mb-4" style={{ borderLeft: `4px solid ${borderColor}` }}>

@@ -310,7 +310,7 @@ export function SignalResultCard({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex-1 w-20 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            <div className="flex-1 w-20 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(var(--text-primary-rgb), 0.06)' }}>
               <div className="h-full rounded-full transition-all duration-500" style={{
                 width: `${confidencePct}%`,
                 background: confidencePct >= 70
@@ -409,7 +409,7 @@ export function SignalResultCard({
               ? 'rgba(var(--status-loss-rgb), 0.06)'
               : l2Result.signal === 'continuation'
               ? 'rgba(var(--status-win-rgb), 0.06)'
-              : 'rgba(255,255,255,0.02)',
+              : 'rgba(var(--text-primary-rgb), 0.02)',
             borderColor: l2Result.signal === 'reversal'
               ? 'rgba(var(--status-loss-rgb), 0.15)'
               : l2Result.signal === 'continuation'
@@ -450,13 +450,13 @@ export function SignalResultCard({
                   onClick={() => setLotSize(p)}
                   className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold transition-all ${
                     Math.abs(lotSize - p) < 0.001
-                      ? 'text-white'
+                      ? 'text-text-primary'
                       : 'text-text-muted hover:text-text-primary'
                   }`}
                   style={{
                     background: Math.abs(lotSize - p) < 0.001
                       ? 'rgba(var(--accent-gold-rgb), 0.25)'
-                      : 'rgba(255,255,255,0.04)',
+                      : 'rgba(var(--text-primary-rgb), 0.04)',
                     border: Math.abs(lotSize - p) < 0.001
                       ? '1px solid rgba(var(--accent-gold-rgb), 0.3)'
                       : '1px solid transparent',
@@ -476,7 +476,7 @@ export function SignalResultCard({
               value={lotSize}
               onChange={e => setLotSize(parseFloat(e.target.value) || 0.01)}
               className="w-20 px-2 py-1 rounded-lg text-xs font-mono font-bold outline-none text-center"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)', color: 'var(--accent-gold)' }}
+              style={{ background: 'rgba(var(--text-primary-rgb), 0.06)', border: '1px solid var(--glass-border)', color: 'var(--accent-gold)' }}
             />
             <span className="text-[10px] text-text-muted">lots</span>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px]">
@@ -516,7 +516,7 @@ export function SignalResultCard({
         {/* Multi-Entry Ladder */}
         {signal.entries && signal.entries.length > 1 && (
           <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--glass-border)' }}>
-            <div className="text-[10px] font-semibold text-text-muted px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--glass-border)' }}>
+            <div className="text-[10px] font-semibold text-text-muted px-3 py-1.5" style={{ background: 'rgba(var(--text-primary-rgb), 0.03)', borderBottom: '1px solid var(--glass-border)' }}>
               Entry Ladder
             </div>
             <div className="divide-y" style={{ borderColor: 'var(--glass-border)' }}>
@@ -528,7 +528,7 @@ export function SignalResultCard({
                       <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${
                         i === 0 ? 'text-accent-gold' : 'text-text-muted'
                       }`} style={{
-                        background: i === 0 ? 'rgba(var(--accent-gold-rgb), 0.12)' : 'rgba(255,255,255,0.05)',
+                        background: i === 0 ? 'rgba(var(--accent-gold-rgb), 0.12)' : 'rgba(var(--text-primary-rgb), 0.05)',
                       }}>
                         E{e.entry_number}
                       </span>
@@ -564,7 +564,7 @@ export function SignalResultCard({
           <button
             onClick={handlePostX}
             className="flex-1 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all hover:opacity-90"
-            style={{ background: 'rgba(29, 161, 242, 0.1)', color: '#1da1f2', border: '1px solid rgba(29, 161, 242, 0.15)' }}
+            style={{ background: 'rgba(var(--accent-gold-rgb), 0.1)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.2)' }}
           >
             <ExternalLink className="w-3.5 h-3.5" />
             Post on X

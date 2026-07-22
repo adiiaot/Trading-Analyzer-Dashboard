@@ -75,7 +75,7 @@ export function L2MetricsWidget() {
               </span>
             )}
             {!isReversal && !isContinuation && (
-              <span className="text-[9px] text-text-muted px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.04)' }}>
+              <span className="text-[9px] text-text-muted px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(var(--text-primary-rgb), 0.04)' }}>
                 Neutral
               </span>
             )}

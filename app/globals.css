@@ -144,13 +144,13 @@ body {
 }
 .btn-primary {
   @apply btn;
-  background: linear-gradient(135deg, rgba(var(--accent-gold-rgb), 0.9), rgba(var(--accent-gold-hover-rgb), 0.85));
-  color: #ffffff;
-  border: 1px solid rgba(var(--accent-gold-rgb), 0.2);
+  background: linear-gradient(135deg, var(--accent-gold), rgba(var(--accent-gold-hover-rgb), 0.95));
+  color: rgb(var(--text-primary-rgb));
+  border: 1px solid rgba(var(--accent-gold-rgb), 0.3);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, rgba(var(--accent-gold-rgb), 1), rgba(var(--accent-gold-hover-rgb), 0.95));
-  box-shadow: 0 4px 20px rgba(var(--accent-gold-rgb), 0.2);
+  background: linear-gradient(135deg, var(--accent-gold), rgba(var(--accent-gold-hover-rgb), 1));
+  box-shadow: 0 4px 20px rgba(var(--accent-gold-rgb), 0.25);
 }
 .btn-secondary {
   @apply btn;

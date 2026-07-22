@@ -48,7 +48,7 @@ export function OpenPositionsTable() {
                     transition={{ delay: i * 0.04 }}
                     className="group transition-colors"
                     style={{ borderBottom: "1px solid var(--glass-border)" }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.02)"}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "rgba(var(--text-primary-rgb), 0.02)"}
                     onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                   >
                     <td className="py-3 px-4 first:pl-5">

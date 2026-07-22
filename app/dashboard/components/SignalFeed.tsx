@@ -68,7 +68,7 @@ export function SignalFeed() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] text-text-muted">Confidence:</span>
-                    <div className="w-16 h-[5px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+                    <div className="w-16 h-[5px] rounded-full overflow-hidden" style={{ background: "rgba(var(--text-primary-rgb), 0.06)" }}>
                       <div
                         className="h-full rounded-full transition-all"
                         style={{
@@ -94,7 +94,7 @@ export function SignalFeed() {
                   <Zap className="w-2.5 h-2.5 text-text-muted" />
                   {signal.entries.map((entry, j) => (
                     <span key={j} className="text-[11px] font-mono text-text-primary px-2 py-0.5 rounded-md"
-                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--glass-border)" }}>
+                      style={{ background: "rgba(var(--text-primary-rgb), 0.04)", border: "1px solid var(--glass-border)" }}>
                       {entry}
                     </span>
                   ))}

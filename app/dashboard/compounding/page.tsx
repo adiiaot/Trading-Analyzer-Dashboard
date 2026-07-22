@@ -134,7 +134,7 @@ export default function CompoundingPage() {
                 value={balanceInput}
                 onChange={e => setBalanceInput(e.target.value)}
                 className="flex-1 px-3 py-2 rounded-lg text-sm font-mono font-bold outline-none"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
+                style={{ background: "rgba(var(--text-primary-rgb), 0.06)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
                 autoFocus
                 onKeyDown={e => e.key === "Enter" && handleSaveBalance()}
               />
@@ -173,7 +173,7 @@ export default function CompoundingPage() {
                 <span className="font-semibold text-accent-gold">{formatUSD(nextTarget)}</span>
               </div>
             </div>
-            <div className="w-full h-2.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+            <div className="w-full h-2.5 rounded-full overflow-hidden" style={{ background: "rgba(var(--text-primary-rgb), 0.06)" }}>
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${cycleProgress}%` }}
@@ -268,7 +268,7 @@ export default function CompoundingPage() {
                 localStorage.setItem("last_lot_size", v.toString());
               }}
               className="w-full accent-[var(--accent-gold)]"
-              style={{ height: "6px", borderRadius: "3px", background: "rgba(255,255,255,0.08)" }}
+              style={{ height: "6px", borderRadius: "3px", background: "rgba(var(--text-primary-rgb), 0.08)" }}
             />
           </div>
 
@@ -378,7 +378,7 @@ export default function CompoundingPage() {
                 value={targetGoal}
                 onChange={e => setTargetGoal(e.target.value)}
                 className="flex-1 px-3 py-2 rounded-lg text-sm font-mono outline-none"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
+                style={{ background: "rgba(var(--text-primary-rgb), 0.06)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
               />
               {targetProjection && (
                 <div className="flex items-center gap-2 text-xs text-text-muted">
@@ -483,7 +483,7 @@ export default function CompoundingPage() {
                   value={compounding.targetReturn}
                   onChange={e => updateCompounding({ targetReturn: parseFloat(e.target.value) || 14 })}
                   className="w-full px-3 py-2 rounded-lg text-sm font-mono outline-none"
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
+                  style={{ background: "rgba(var(--text-primary-rgb), 0.06)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
                 />
               </div>
               <div>
@@ -493,7 +493,7 @@ export default function CompoundingPage() {
                   value={compounding.withdrawPercent}
                   onChange={e => updateCompounding({ withdrawPercent: parseFloat(e.target.value) || 20 })}
                   className="w-full px-3 py-2 rounded-lg text-sm font-mono outline-none"
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
+                  style={{ background: "rgba(var(--text-primary-rgb), 0.06)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
                 />
               </div>
               <div>
@@ -503,7 +503,7 @@ export default function CompoundingPage() {
                   value={compounding.leverage}
                   onChange={e => updateCompounding({ leverage: parseFloat(e.target.value) || 2000 })}
                   className="w-full px-3 py-2 rounded-lg text-sm font-mono outline-none"
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
+                  style={{ background: "rgba(var(--text-primary-rgb), 0.06)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
                 />
               </div>
               <div>
@@ -513,7 +513,7 @@ export default function CompoundingPage() {
                   value={compounding.initialCapital}
                   onChange={e => updateCompounding({ initialCapital: parseFloat(e.target.value) || 100, cycleStartBalance: parseFloat(e.target.value) || 100 })}
                   className="w-full px-3 py-2 rounded-lg text-sm font-mono outline-none"
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
+                  style={{ background: "rgba(var(--text-primary-rgb), 0.06)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
                 />
               </div>
             </div>
@@ -538,7 +538,7 @@ export default function CompoundingPage() {
                 value={withdrawAmount}
                 onChange={e => setWithdrawAmount(e.target.value)}
                 className="flex-1 px-3 py-2 rounded-lg text-sm font-mono outline-none"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
+                style={{ background: "rgba(var(--text-primary-rgb), 0.06)", border: "1px solid var(--glass-border)", color: "var(--text-primary)" }}
               />
               <button
                 onClick={() => {

@@ -57,7 +57,7 @@ function CompoundingSummary() {
               <ChevronRight className="w-3 h-3 text-text-muted" />
             </div>
           </div>
-          <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+          <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(var(--text-primary-rgb), 0.06)" }}>
             <div className="h-full rounded-full transition-all" style={{
               width: `${progress}%`,
               background: "linear-gradient(90deg, var(--accent-gold), rgba(var(--accent-gold-rgb), 0.5))",

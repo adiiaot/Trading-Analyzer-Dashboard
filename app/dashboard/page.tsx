@@ -26,6 +26,7 @@ const quickLinks = [
   { href: "/dashboard/signals", label: "Generate Signal", icon: Radio, desc: "Run 4-timeframe XAU/USD analysis" },
   { href: "/dashboard/backtest", label: "Backtest", icon: BarChart4, desc: "Run historical signal engine backtest" },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3, desc: "Win rate, P&L, strategy breakdown" },
+  { href: "/api/export?format=csv", label: "Export CSV", icon: BarChart4, desc: "Download signal performance data", external: true },
 ];
 
 function CompoundingSummary() {
@@ -203,19 +204,25 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="space-y-2">
-            {quickLinks.map((c) => (
-              <Link key={c.href} href={c.href}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-xs"
-                style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(var(--accent-gold-rgb), 0.1)" }}>
-                  <c.icon className="w-3.5 h-3.5 text-accent-gold" />
-                </div>
-                <div>
-                  <p className="text-text-primary font-semibold">{c.label}</p>
-                  <p className="text-text-muted">{c.desc}</p>
-                </div>
-              </Link>
-            ))}
+            {quickLinks.map((c) => {
+              const Wrapper = c.external ? 'a' : Link;
+              const wrapperProps = c.external
+                ? { href: c.href, target: '_blank', rel: 'noopener noreferrer' }
+                : { href: c.href };
+              return (
+                <Wrapper key={c.href} {...wrapperProps}
+                  className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-xs"
+                  style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(var(--accent-gold-rgb), 0.1)" }}>
+                    <c.icon className="w-3.5 h-3.5 text-accent-gold" />
+                  </div>
+                  <div>
+                    <p className="text-text-primary font-semibold">{c.label}</p>
+                    <p className="text-text-muted">{c.desc}</p>
+                  </div>
+                </Wrapper>
+              );
+            })}
           </div>
         </div>
       </motion.div>

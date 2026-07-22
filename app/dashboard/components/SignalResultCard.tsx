@@ -149,6 +149,8 @@ export function SignalResultCard({
   const confidencePct = Math.round((signal.confidence ?? 0) * 100);
   const [outcomeSet, setOutcomeSet] = useState(false);
   const [l2Metrics, setL2Metrics] = useState<L2Metrics | null>(null);
+  const [mt5Entry, setMt5Entry] = useState('');
+  const [mt5Exit, setMt5Exit] = useState('');
 
   useEffect(() => {
     l2Client.connect();
@@ -209,11 +211,35 @@ export function SignalResultCard({
   };
 
   const handleWon = () => {
+    if (mt5Entry || mt5Exit) {
+      fetch('/api/signal/outcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          signalId: signal.id,
+          outcome: 'won',
+          mt5EntryPrice: mt5Entry ? parseFloat(mt5Entry) : null,
+          mt5ExitPrice: mt5Exit ? parseFloat(mt5Exit) : null,
+        }),
+      }).catch(() => {});
+    }
     onWon?.(signal.id);
     setOutcomeSet(true);
   };
 
   const handleLost = () => {
+    if (mt5Entry || mt5Exit) {
+      fetch('/api/signal/outcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          signalId: signal.id,
+          outcome: 'lost',
+          mt5EntryPrice: mt5Entry ? parseFloat(mt5Entry) : null,
+          mt5ExitPrice: mt5Exit ? parseFloat(mt5Exit) : null,
+        }),
+      }).catch(() => {});
+    }
     onLost?.(signal.id);
     setOutcomeSet(true);
   };
@@ -557,6 +583,27 @@ export function SignalResultCard({
               )}
               Generate Next
             </button>
+          )}
+          {/* MT5 Execution Prices */}
+          {confirmed && !showGenerateNext && (
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] text-text-muted block mb-1">MT5 Entry Price</label>
+                <input type="number" step="0.01" placeholder={signal.entries?.[0]?.price?.toFixed(2)}
+                  className="w-full px-2 py-1.5 rounded-lg text-xs bg-input-bg border border-glass-border text-text-primary"
+                  value={mt5Entry}
+                  onChange={(e) => setMt5Entry(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-text-muted block mb-1">MT5 Exit Price</label>
+                <input type="number" step="0.01" placeholder="Exit price"
+                  className="w-full px-2 py-1.5 rounded-lg text-xs bg-input-bg border border-glass-border text-text-primary"
+                  value={mt5Exit}
+                  onChange={(e) => setMt5Exit(e.target.value)}
+                />
+              </div>
+            </div>
           )}
           {!showGenerateNext && !confirmed && onConfirm && (
             <button

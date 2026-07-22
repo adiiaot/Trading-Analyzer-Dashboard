@@ -41,6 +41,9 @@ export interface SignalResult {
   macro_trend: string | null;
   order_type?: 'market' | 'buy_limit' | 'sell_limit' | 'buy_stop' | 'sell_stop';
   entry_trigger?: number;
+  mt5_entry_price?: number | null;
+  mt5_exit_price?: number | null;
+  mt5_slippage?: number | null;
 }
 
 export interface MacroTrend {

@@ -130,11 +130,29 @@ export default function SignalsPage() {
     { label: "Lost", value: lostCount.toString(), color: "text-status-loss" },
   ];
 
+  const handleExport = (format: string) => {
+    window.open(`/api/export?format=${format}`, '_blank');
+  };
+
   return (
     <motion.div initial="hidden" animate="visible" variants={container} className="space-y-5">
-      <motion.div variants={item}>
-        <h1 className="text-lg md:text-xl font-bold text-text-primary">Signals</h1>
-        <p className="text-sm text-text-muted">Generate, track, and share XAU/USD signals</p>
+      <motion.div variants={item} className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg md:text-xl font-bold text-text-primary">Signals</h1>
+          <p className="text-sm text-text-muted">Generate, track, and share XAU/USD signals</p>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={() => handleExport('csv')}
+            className="px-3 py-1.5 text-xs font-bold rounded-lg transition-all"
+            style={{ background: 'rgba(var(--accent-gold-rgb), 0.1)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.2)' }}>
+            CSV
+          </button>
+          <button onClick={() => handleExport('html')}
+            className="px-3 py-1.5 text-xs font-bold rounded-lg transition-all"
+            style={{ background: 'rgba(var(--accent-gold-rgb), 0.1)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.2)' }}>
+            HTML
+          </button>
+        </div>
       </motion.div>
 
       <motion.div variants={item} className="grid grid-cols-2 sm:grid-cols-4 gap-4">

@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { signalId, outcome } = body;
+    const { signalId, outcome, mt5EntryPrice, mt5ExitPrice } = body;
 
     if (!signalId || !outcome || !['won', 'lost'].includes(outcome)) {
       return NextResponse.json(
@@ -26,7 +26,10 @@ export async function POST(request: Request) {
       );
     }
 
-    await ref.update({ outcome, status: outcome === 'won' ? 'closed' : 'closed' });
+    const updateData: Record<string, any> = { outcome, status: 'closed' };
+    if (mt5EntryPrice !== undefined) updateData.mt5EntryPrice = mt5EntryPrice;
+    if (mt5ExitPrice !== undefined) updateData.mt5ExitPrice = mt5ExitPrice;
+    await ref.update(updateData);
 
     return NextResponse.json({
       success: true,

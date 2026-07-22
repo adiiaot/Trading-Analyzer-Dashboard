@@ -143,13 +143,11 @@ export default function SignalsPage() {
         </div>
         <div className="flex gap-2">
           <button onClick={() => handleExport('csv')}
-            className="px-3 py-1.5 text-xs font-bold rounded-lg transition-all"
-            style={{ background: 'rgba(var(--accent-gold-rgb), 0.1)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.2)' }}>
+            className="btn-secondary px-3 py-1.5 text-xs font-bold rounded-lg">
             CSV
           </button>
           <button onClick={() => handleExport('html')}
-            className="px-3 py-1.5 text-xs font-bold rounded-lg transition-all"
-            style={{ background: 'rgba(var(--accent-gold-rgb), 0.1)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.2)' }}>
+            className="btn-secondary px-3 py-1.5 text-xs font-bold rounded-lg">
             HTML
           </button>
         </div>

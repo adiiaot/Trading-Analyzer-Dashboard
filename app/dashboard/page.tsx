@@ -103,8 +103,8 @@ function SessionCard() {
               </span>
               <button
                 onClick={resetSession}
-                className="p-1 rounded-lg transition-all hover:opacity-70"
-                style={{ background: "rgba(var(--status-loss-rgb), 0.1)", color: "var(--status-loss)" }}
+                className="p-1 rounded-lg transition-all hover:opacity-80"
+                style={{ background: "rgba(var(--status-loss-rgb), 0.2)", color: "var(--status-loss)" }}
                 title="End Session"
               >
                 <X className="w-3 h-3" />
@@ -198,8 +198,8 @@ export default function DashboardPage() {
               <h3 className="text-sm font-bold text-text-primary">Dashboard Commands</h3>
             </div>
             <Link href="/dashboard/commands"
-              className="text-xs px-3 py-1.5 rounded-lg font-semibold"
-              style={{ background: 'rgba(var(--accent-gold-rgb), 0.1)', color: 'var(--accent-gold)' }}>
+              className="text-xs px-3 py-1.5 rounded-lg font-semibold transition-all hover:opacity-90"
+              style={{ background: 'rgba(var(--accent-gold-rgb), 0.2)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.25)' }}>
               View All
             </Link>
           </div>

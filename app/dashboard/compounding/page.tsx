@@ -114,9 +114,7 @@ export default function CompoundingPage() {
         </div>
         <button
           onClick={() => { setEditMode(!editMode); if (!editMode) setBalanceInput(balance.toString()); }}
-          className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
-          style={{ background: "rgba(var(--accent-gold-rgb), 0.08)", color: "var(--accent-gold)", border: "1px solid rgba(var(--accent-gold-rgb), 0.12)" }}
-        >
+          className="btn-secondary text-xs font-medium px-3 py-1.5 rounded-lg">
           {editMode ? "Cancel" : "Edit Balance"}
         </button>
       </motion.div>
@@ -140,9 +138,7 @@ export default function CompoundingPage() {
               />
               <button
                 onClick={handleSaveBalance}
-                className="px-4 py-2 rounded-lg text-xs font-bold"
-                style={{ background: "rgba(var(--accent-gold-rgb), 0.12)", color: "var(--accent-gold)" }}
-              >
+                className="btn-primary px-4 py-2 rounded-lg text-xs font-bold">
                 Save
               </button>
             </div>
@@ -201,7 +197,7 @@ export default function CompoundingPage() {
               animate={{ opacity: 1, y: 0 }}
               onClick={handleCompleteCycle}
               className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90"
-               style={{ background: "linear-gradient(135deg, rgba(var(--status-win-rgb),0.12), rgba(var(--accent-gold-rgb),0.08))", color: "var(--status-win)", border: "1px solid rgba(var(--status-win-rgb),0.2)" }}
+              style={{ background: "linear-gradient(135deg, rgba(var(--status-win-rgb),0.85), rgba(var(--accent-gold-rgb),0.8))", color: "#ffffff", border: "none" }}
             >
               <RotateCcw className="w-4 h-4" />
               Complete Cycle {compounding.cycleNumber} — Advance to Cycle {compounding.cycleNumber + 1}
@@ -229,9 +225,7 @@ export default function CompoundingPage() {
               <p className="text-[10px] text-text-muted">Withdrawal auto-recorded. New balance: {formatUSD(balance)}</p>
               <button
                 onClick={() => setShowCycleResult(null)}
-                className="w-full py-2 rounded-lg text-xs font-semibold"
-                style={{ background: "rgba(var(--accent-gold-rgb), 0.1)", color: "var(--accent-gold)" }}
-              >
+                className="btn-primary w-full py-2 rounded-lg text-xs font-semibold">
                 Continue
               </button>
             </motion.div>
@@ -548,8 +542,8 @@ export default function CompoundingPage() {
                     setWithdrawAmount("");
                   }
                 }}
-                className="px-4 py-2 rounded-lg text-xs font-bold"
-                style={{ background: "rgba(var(--status-loss-rgb),0.1)", color: "var(--status-loss)", border: "1px solid rgba(var(--status-loss-rgb),0.15)" }}
+                className="px-4 py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90"
+                style={{ background: "rgba(var(--status-loss-rgb),0.2)", color: "var(--status-loss)", border: "1px solid rgba(var(--status-loss-rgb),0.3)" }}
               >
                 Withdraw
               </button>

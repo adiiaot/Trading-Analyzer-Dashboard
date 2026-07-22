@@ -556,7 +556,7 @@ export function SignalResultCard({
           <button
             onClick={handleCopy}
             className="flex-1 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all hover:opacity-90"
-            style={{ background: 'rgba(var(--accent-gold-rgb), 0.1)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.15)' }}
+            style={{ background: 'rgba(var(--accent-gold-rgb), 0.2)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.35)' }}
           >
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             {copied ? 'Copied!' : 'Copy'}
@@ -564,7 +564,7 @@ export function SignalResultCard({
           <button
             onClick={handlePostX}
             className="flex-1 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all hover:opacity-90"
-            style={{ background: 'rgba(var(--accent-gold-rgb), 0.1)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.2)' }}
+            style={{ background: 'rgba(var(--accent-gold-rgb), 0.2)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.35)' }}
           >
             <ExternalLink className="w-3.5 h-3.5" />
             Post on X
@@ -574,7 +574,7 @@ export function SignalResultCard({
               onClick={onGenerateNext}
               disabled={generatingNext}
               className="flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ background: 'rgba(var(--accent-gold-rgb), 0.15)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.25)' }}
+              style={{ background: 'rgba(var(--accent-gold-rgb), 0.25)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.4)' }}
             >
               {generatingNext ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -610,7 +610,7 @@ export function SignalResultCard({
               onClick={() => onConfirm(signal.id)}
               disabled={outcomeUpdating}
               className="flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ background: 'rgba(var(--accent-gold-rgb), 0.12)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.2)' }}
+              style={{ background: 'rgba(var(--accent-gold-rgb), 0.2)', color: 'var(--accent-gold)', border: '1px solid rgba(var(--accent-gold-rgb), 0.35)' }}
             >
               {outcomeUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
               Confirm
@@ -621,7 +621,7 @@ export function SignalResultCard({
               onClick={handleWon}
               disabled={outcomeUpdating}
               className="flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ background: 'rgba(var(--status-win-rgb), 0.1)', color: 'var(--status-win)', border: '1px solid rgba(var(--status-win-rgb), 0.15)' }}
+              style={{ background: 'rgba(var(--status-win-rgb), 0.2)', color: 'var(--status-win)', border: '1px solid rgba(var(--status-win-rgb), 0.35)' }}
             >
               {outcomeUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
               Won
@@ -632,7 +632,7 @@ export function SignalResultCard({
               onClick={handleLost}
               disabled={outcomeUpdating}
               className="flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ background: 'rgba(var(--status-loss-rgb), 0.1)', color: 'var(--status-loss)', border: '1px solid rgba(var(--status-loss-rgb), 0.15)' }}
+              style={{ background: 'rgba(var(--status-loss-rgb), 0.2)', color: 'var(--status-loss)', border: '1px solid rgba(var(--status-loss-rgb), 0.35)' }}
             >
               {outcomeUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
               Lost

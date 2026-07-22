@@ -201,9 +201,9 @@ export default function BacktestPage() {
               disabled={loading}
               className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all disabled:opacity-50 whitespace-nowrap"
               style={{
-                background: "linear-gradient(135deg, rgba(var(--accent-gold-rgb), 0.2), rgba(var(--accent-gold-rgb), 0.05))",
+                background: "linear-gradient(135deg, rgba(var(--accent-gold-rgb), 0.85), rgba(var(--accent-gold-hover-rgb), 0.8))",
                 border: "1px solid rgba(var(--accent-gold-rgb), 0.3)",
-                color: "rgb(var(--accent-gold-rgb))",
+                color: "rgb(var(--text-primary-rgb))",
               }}
             >
               {loading ? (
@@ -252,8 +252,8 @@ export default function BacktestPage() {
                   </div>
                   <button
                     onClick={cancelRetry}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-text-muted hover:text-text-primary transition-colors"
-                    style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                    style={{ background: "rgba(var(--status-loss-rgb), 0.2)", color: "var(--status-loss)", border: "1px solid rgba(var(--status-loss-rgb), 0.3)" }}
                   >
                     Cancel
                   </button>
@@ -264,9 +264,9 @@ export default function BacktestPage() {
                     onClick={() => runBacktest()}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
                     style={{
-                      background: "linear-gradient(135deg, rgba(var(--accent-gold-rgb), 0.2), rgba(var(--accent-gold-rgb), 0.05))",
+                      background: "linear-gradient(135deg, rgba(var(--accent-gold-rgb), 0.85), rgba(var(--accent-gold-hover-rgb), 0.8))",
                       border: "1px solid rgba(var(--accent-gold-rgb), 0.3)",
-                      color: "rgb(var(--accent-gold-rgb))",
+                      color: "rgb(var(--text-primary-rgb))",
                     }}
                   >
                     <RefreshCw className="w-3 h-3" />
@@ -274,8 +274,8 @@ export default function BacktestPage() {
                   </button>
                   <button
                     onClick={wakeBot}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-text-muted hover:text-text-primary"
-                    style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                    style={{ background: "rgba(var(--accent-gold-rgb), 0.2)", color: "var(--accent-gold)", border: "1px solid rgba(var(--accent-gold-rgb), 0.35)" }}
                   >
                     Wake Bot + Auto-Retry
                   </button>

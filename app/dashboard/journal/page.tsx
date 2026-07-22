@@ -207,7 +207,7 @@ export default function JournalPage() {
           {closed.length > 0 ? (
             <>
               <div className="flex flex-wrap items-center gap-2 mb-4">
-                <div className="flex gap-1 rounded-lg p-0.5" style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}>
+                <div className="flex gap-1 rounded-lg p-0.5" style={{ background: "rgba(var(--surface-overlay-rgb), 0.85)", border: "1px solid rgba(var(--text-primary-rgb), 0.12)" }}>
                   {(["all", "win", "loss"] as const).map((f) => (
                     <button
                       key={f}
@@ -217,7 +217,7 @@ export default function JournalPage() {
                           ? "text-accent-gold shadow-sm"
                           : "text-text-muted hover:text-text-primary"
                       }`}
-                      style={filter === f ? { background: "var(--glass-bg)", border: "1px solid var(--glass-border)" } : {}}
+                      style={filter === f ? { background: "rgba(var(--accent-gold-rgb), 0.2)", border: "1px solid rgba(var(--accent-gold-rgb), 0.3)" } : {}}
                     >
                       {f === "all" ? "All" : f === "win" ? "Wins" : "Losses"}
                     </button>
@@ -225,8 +225,8 @@ export default function JournalPage() {
                 </div>
                 <button
                   onClick={() => setSortNewest(!sortNewest)}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium text-text-muted hover:text-text-primary transition-all"
-                  style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+                  style={{ background: "rgba(var(--accent-gold-rgb), 0.2)", color: "var(--accent-gold)", border: "1px solid rgba(var(--accent-gold-rgb), 0.35)" }}
                 >
                   <ChevronDown className={`w-3 h-3 transition-transform ${sortNewest ? "" : "rotate-180"}`} />
                   {sortNewest ? "Newest" : "Oldest"}

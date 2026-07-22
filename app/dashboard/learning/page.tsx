@@ -162,10 +162,10 @@ function LearningContent() {
       <motion.div variants={item}>
         <Card>
           <div className="flex items-center gap-2 mb-4">
-            <button onClick={() => setMode("chat")} className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${mode === "chat" ? "bg-accent-gold text-text-primary" : "glass-card text-text-secondary hover:text-text-primary"}`}>
+            <button onClick={() => setMode("chat")} className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${mode === "chat" ? "bg-accent-gold text-text-primary" : "btn-secondary"}`}>
               <BookOpen className="w-3.5 h-3.5" /> Learn
             </button>
-            <button onClick={() => setMode("analyze")} className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${mode === "analyze" ? "bg-accent-gold text-text-primary" : "glass-card text-text-secondary hover:text-text-primary"}`}>
+            <button onClick={() => setMode("analyze")} className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${mode === "analyze" ? "bg-accent-gold text-text-primary" : "btn-secondary"}`}>
               <BarChart3 className="w-3.5 h-3.5" /> Analyze Chart
             </button>
           </div>

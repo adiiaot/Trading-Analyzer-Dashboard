@@ -99,8 +99,8 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
                       : "text-text-secondary hover:text-text-primary"
                   }`}
                   style={active ? {
-                    background: "rgba(var(--accent-gold-rgb), 0.08)",
-                    border: "1px solid rgba(var(--accent-gold-rgb), 0.12)",
+                    background: "rgba(var(--accent-gold-rgb), 0.15)",
+                    border: "1px solid rgba(var(--accent-gold-rgb), 0.25)",
                   } : {}}
                 >
                   <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
@@ -121,12 +121,12 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
             collapsed ? "justify-center" : ""
           }`}
           style={{
-            background: "rgba(var(--accent-gold-rgb), 0.08)",
+            background: "rgba(var(--accent-gold-rgb), 0.2)",
             color: "rgb(var(--accent-gold-rgb))",
-            border: "1px solid rgba(var(--accent-gold-rgb), 0.12)",
+            border: "1px solid rgba(var(--accent-gold-rgb), 0.35)",
           }}
-          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(var(--accent-gold-rgb), 0.15)"}
-          onMouseLeave={(e) => e.currentTarget.style.background = "rgba(var(--accent-gold-rgb), 0.08)"}
+          onMouseEnter={(e) => e.currentTarget.style.background = "rgba(var(--accent-gold-rgb), 0.3)"}
+          onMouseLeave={(e) => e.currentTarget.style.background = "rgba(var(--accent-gold-rgb), 0.2)"}
         >
           <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
             <svg className="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

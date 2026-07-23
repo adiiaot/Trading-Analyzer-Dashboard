@@ -590,7 +590,7 @@ export function SignalResultCard({
               <div>
                 <label className="text-[10px] text-text-muted block mb-1">MT5 Entry Price</label>
                 <input type="number" step="0.01" placeholder={signal.entries?.[0]?.price?.toFixed(2)}
-                  className="w-full px-2 py-1.5 rounded-lg text-xs bg-input-bg border border-glass-border text-text-primary"
+                  className="w-full px-2 py-1.5 rounded-lg text-xs bg-surface-overlay border border-glass-border text-text-primary"
                   value={mt5Entry}
                   onChange={(e) => setMt5Entry(e.target.value)}
                 />
@@ -598,7 +598,7 @@ export function SignalResultCard({
               <div>
                 <label className="text-[10px] text-text-muted block mb-1">MT5 Exit Price</label>
                 <input type="number" step="0.01" placeholder="Exit price"
-                  className="w-full px-2 py-1.5 rounded-lg text-xs bg-input-bg border border-glass-border text-text-primary"
+                  className="w-full px-2 py-1.5 rounded-lg text-xs bg-surface-overlay border border-glass-border text-text-primary"
                   value={mt5Exit}
                   onChange={(e) => setMt5Exit(e.target.value)}
                 />

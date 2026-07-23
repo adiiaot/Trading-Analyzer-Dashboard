@@ -304,6 +304,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setTrades(data);
         setTradesLoading(false);
         tradesSubscribed = true;
+        setUsingFallback(false);
       }, () => {
         if (!tradesSubscribed) {
           setUsingFallback(true);
@@ -318,6 +319,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setSignals(data);
         setSignalsLoading(false);
         signalsSubscribed = true;
+        setUsingFallback(false);
       }, () => {
         if (!signalsSubscribed) {
           setUsingFallback(true);

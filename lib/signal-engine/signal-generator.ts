@@ -299,11 +299,15 @@ function extractMLFeatures(
     ? (vol3[vol3.length - 1].close - vol3[0].close) / (vol3[0].close || 1)
     : 0;
 
+  const volumeEntry = entryCandles[entryCandles.length - 1];
+  const currentVolume = volumeEntry?.volume ?? 0;
+
   const dt = new Date();
   const hour = dt.getUTCHours();
   const dayOfWeek = dt.getUTCDay();
 
   return {
+    volume: currentVolume,
     atr: atr || 0,
     ema20: ema20 || 0,
     ema50: ema50 || 0,

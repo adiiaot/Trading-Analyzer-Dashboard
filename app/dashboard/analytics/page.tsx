@@ -32,11 +32,11 @@ export default function AnalyticsPage() {
   const { stats, trades, balance } = useDashboardData();
   const [strategies, setStrategies] = useState<StrategyRow[]>([]);
   const [stratLoading, setStratLoading] = useState(true);
-  const [showImport, setShowImport] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [importResult, setImportResult] = useState<string | null>(null);
   const [stratOverall, setStratOverall] = useState({ totalTrades: 0, overallWinRate: 0, overallProfitFactor: 0, totalProfit: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const handleImportClick = () => fileInputRef.current?.click();
 
   useEffect(() => {
     fetch('/api/analytics/strategy')
@@ -163,28 +163,24 @@ export default function AnalyticsPage() {
                   <span className="text-sm text-text-muted">No imported trades yet</span>
                 </div>
                 <button
-                  onClick={() => setShowImport(!showImport)}
-                  className="w-full flex items-center justify-center gap-2 glass-card rounded-card px-4 py-2.5 text-sm text-accent-gold hover:brightness-110 transition-all"
+                  onClick={handleImportClick}
+                  disabled={importLoading}
+                  className="w-full flex items-center justify-center gap-2 glass-card rounded-card px-4 py-2.5 text-sm text-accent-gold hover:brightness-110 transition-all disabled:opacity-50"
                 >
-                  <Upload size={14} /> Import MT5 CSV
+                  <Upload size={14} /> {importLoading ? 'Importing...' : 'Import MT5 CSV'}
                 </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.html,.json"
+                  onChange={handleImportCSV}
+                  className="hidden"
+                />
+                {importResult && <p className="text-xs text-status-info">{importResult}</p>}
               </div>
             ) : (
               <div className="space-y-2">
-                {showImport && (
-                  <div className="glass-card rounded-card p-3 mb-3 space-y-2">
-                    <p className="text-xs text-text-muted">Upload MT5 trade history CSV (export from MT5: File → Export → Trade History → CSV)</p>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".csv"
-                      onChange={handleImportCSV}
-                      className="w-full text-xs text-text-primary file:mr-3 file:py-1.5 file:px-3 file:rounded-pill file:border-0 file:text-xs file:font-medium file:bg-accent-gold/20 file:text-accent-gold hover:file:bg-accent-gold/30"
-                    />
-                    {importLoading && <p className="text-xs text-text-muted">Importing...</p>}
-                    {importResult && <p className="text-xs text-status-info">{importResult}</p>}
-                  </div>
-                )}
+                {importLoading && <p className="text-xs text-text-muted">Importing...</p>}
                 <div className="flex items-center justify-between glass-card rounded-card px-4 py-2.5">
                   <span className="text-xs text-text-muted">Overall (all strategies)</span>
                   <div className="flex items-center gap-3 text-xs font-mono">
@@ -215,14 +211,13 @@ export default function AnalyticsPage() {
                     {i < strategies.length - 1 && <div className="mt-2 border-b border-surface-border/30" />}
                   </motion.div>
                 ))}
-                {!showImport && (
-                  <button
-                    onClick={() => setShowImport(true)}
-                    className="w-full flex items-center justify-center gap-2 glass-card rounded-card px-4 py-2 text-xs text-text-muted hover:text-accent-gold transition-colors"
-                  >
-                    <Upload size={12} /> Import CSV
-                  </button>
-                )}
+                <button
+                  onClick={handleImportClick}
+                  disabled={importLoading}
+                  className="w-full flex items-center justify-center gap-2 glass-card rounded-card px-4 py-2 text-xs text-text-muted hover:text-accent-gold transition-colors disabled:opacity-50"
+                >
+                  <Upload size={12} /> {importLoading ? 'Importing...' : 'Import CSV'}
+                </button>
               </div>
             )}
           </Card>

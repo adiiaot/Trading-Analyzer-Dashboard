@@ -27,6 +27,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     document.documentElement.setAttribute('data-theme', 'dark');
                   }
                 } catch(e) {}
+                var observer = new IntersectionObserver(function(entries) {
+                  entries.forEach(function(e) {
+                    if (e.isIntersecting) e.target.classList.add('visible');
+                  });
+                }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+                document.addEventListener('DOMContentLoaded', function() {
+                  document.querySelectorAll('.scroll-reveal').forEach(function(el) { observer.observe(el); });
+                });
               })();
             `,
           }}

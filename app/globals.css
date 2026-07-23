@@ -139,6 +139,23 @@ body {
 
 .btn {
   @apply inline-flex items-center justify-center gap-2 font-semibold rounded-btn px-5 py-2.5 text-sm transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.12) 45%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.12) 55%, transparent 70%);
+  background-size: 200% 100%;
+  background-position: 150% 0;
+  transition: background-position 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  pointer-events: none;
+  z-index: 1;
+}
+.btn:hover::after {
+  background-position: -50% 0;
 }
 .btn-primary {
   @apply btn;
@@ -149,6 +166,11 @@ body {
 .btn-primary:hover {
   background: var(--accent-gold);
   box-shadow: 0 4px 20px rgba(var(--accent-gold-rgb), 0.3);
+}
+.btn-primary::after {
+  background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.18) 45%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0.18) 55%, transparent 70%);
+  background-size: 200% 100%;
+  background-position: 150% 0;
 }
 .btn-secondary {
   @apply btn;
@@ -275,6 +297,16 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.scroll-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 @media (max-width: 768px) {

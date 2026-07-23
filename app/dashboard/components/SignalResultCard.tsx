@@ -114,22 +114,56 @@ function buildCopyText(signal: SignalResultData): string {
       lines.push(`E${e.entry_number}: Entry $${e.price.toFixed(2)} → TP $${e.tp.toFixed(2)} (R:${r.toFixed(1)})`);
     });
   }
-  if (signal.entries && signal.entries.length === 1) {
-    lines.push(`Stop Loss: $${signal.stop_loss.toFixed(2)}`);
-    lines.push(`Take Profit: $${signal.tp1?.toFixed(2) || '—'}`);
-  }
+  lines.push(`Stop Loss: $${signal.stop_loss.toFixed(2)}`);
+  lines.push(`Take Profit: $${signal.tp1?.toFixed(2) || '—'}`);
   lines.push('');
   lines.push(`Confidence: ${Math.round(signal.confidence * 100)}% | R:R ${signal.rr_ratio?.toFixed(2)}`);
   if (signal.macro_trend) {
     lines.push(`Daily Trend: ${signal.macro_trend}`);
   }
+
+  if (signal.order_type && signal.order_type !== 'market' && signal.entry_trigger) {
+    const orderDesc = signal.order_type === 'buy_limit'
+      ? 'Buy Limit: price drops to entry, then bounces up'
+      : signal.order_type === 'buy_stop'
+      ? 'Buy Stop: price rises to entry, then continues up'
+      : signal.order_type === 'sell_limit'
+      ? 'Sell Limit: price rises to entry, then drops down'
+      : signal.order_type === 'sell_stop'
+      ? 'Sell Stop: price drops to entry, then continues down'
+      : '';
+    if (orderDesc) {
+      lines.push('');
+      lines.push(orderDesc);
+    }
+  }
+
   if (signal.description) {
     lines.push('');
     lines.push(signal.description);
   }
+
+  const slPips = signal.stop_loss && signal.entries?.[0]?.price
+    ? Math.abs(signal.entries[0].price - signal.stop_loss) * 10
+    : 0;
+  const riskPct = 2;
+  const accTiers = [100, 500, 1000, 5000, 10000];
+  const riskRecs = accTiers.map(b => {
+    const riskAmt = b * (riskPct / 100);
+    const lot = slPips > 0 ? parseFloat(((riskAmt / slPips) * 10).toFixed(2)) : 0;
+    return `$${b.toLocaleString()}: ${Math.max(0.01, lot).toFixed(2)} lot`;
+  }).join(' | ');
+
+  lines.push('');
+  lines.push(`Risk 2% — ${riskRecs}`);
+
   lines.push('');
   lines.push(`Generated: ${formatTimestamp(signal.timestamp)}`);
-  lines.push(`Valid until: ${formatTimestamp(signal.valid_until)}`);
+  if (signal.order_type && signal.order_type !== 'market') {
+    lines.push(`Signal monitoring: 3h after fill`);
+  } else {
+    lines.push(`Valid until: ${formatTimestamp(signal.valid_until)}`);
+  }
   return lines.join('\n');
 }
 
@@ -510,6 +544,23 @@ export function SignalResultCard({
               {' | '}1R: <span className="font-mono font-semibold text-status-win">${riskInDollars.toFixed(2)}</span>
               {' | '}2R: <span className="font-mono font-semibold text-status-win">${(riskInDollars * 2).toFixed(2)}</span>
             </p>
+          )}
+
+          {/* Lot size recommendations per account tier */}
+          {signal.stop_loss && signal.entries?.[0]?.price && (
+            <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[9px] text-text-muted pt-1">
+              {[100, 500, 1000, 5000, 10000].map(b => {
+                const slPips = Math.abs(signal.entries![0].price - signal.stop_loss) * 10;
+                const riskAmt = b * 0.02;
+                const recLot = slPips > 0 ? Math.max(0.01, parseFloat(((riskAmt / slPips) * 10).toFixed(2))) : 0.01;
+                return (
+                  <span key={b} className="whitespace-nowrap">
+                    <span className="font-semibold" style={{ color: 'var(--accent-gold)' }}>${b.toLocaleString()}</span>:
+                    <span className="font-mono font-bold text-text-primary ml-0.5">{recLot.toFixed(2)}</span> lot
+                  </span>
+                );
+              })}
+            </div>
           )}
         </div>
 

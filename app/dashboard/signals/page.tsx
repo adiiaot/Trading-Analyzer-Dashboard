@@ -263,7 +263,7 @@ export default function SignalsPage() {
                     status: "pending" as const,
                     pips: e.tpPips || 0,
                   }))}
-                  expiresAt={signal.validUntil ? new Date(signal.validUntil).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }) : "N/A"}
+                  expiresAt={signal.orderType && signal.orderType !== 'market' ? '3h after fill' : signal.validUntil ? new Date(signal.validUntil).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }) : "N/A"}
                 />
               ))}
             </div>

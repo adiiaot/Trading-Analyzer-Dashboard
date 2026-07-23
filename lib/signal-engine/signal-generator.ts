@@ -541,7 +541,11 @@ async function tryEMABounce(
   const entryPrice = CONFIG.ENABLE_PENDING_ORDERS ? roundPrice(ema20) : currentPrice;
   const orderType: 'market' | 'buy_limit' | 'sell_limit' | 'buy_stop' | 'sell_stop' =
     CONFIG.ENABLE_PENDING_ORDERS
-      ? (trend === TrendEnum.UP ? 'buy_limit' : 'sell_limit')
+      ? (trend === TrendEnum.UP
+        ? (entryPrice < currentPrice ? 'buy_limit' :
+           entryPrice > currentPrice ? 'buy_stop' : 'market')
+        : (entryPrice > currentPrice ? 'sell_limit' :
+           entryPrice < currentPrice ? 'sell_stop' : 'market'))
       : 'market';
 
   const sh = findSwingHighs(trendCandles, CONFIG.SWING_LOOKBACK_N);
@@ -632,7 +636,11 @@ async function tryConsolidationBreakout(
     : currentPrice;
   const orderType: 'market' | 'buy_limit' | 'sell_limit' | 'buy_stop' | 'sell_stop' =
     CONFIG.ENABLE_PENDING_ORDERS
-      ? (trend === TrendEnum.UP ? 'buy_stop' : 'sell_stop')
+      ? (trend === TrendEnum.UP
+        ? (entryPrice < currentPrice ? 'buy_limit' :
+           entryPrice > currentPrice ? 'buy_stop' : 'market')
+        : (entryPrice > currentPrice ? 'sell_limit' :
+           entryPrice < currentPrice ? 'sell_stop' : 'market'))
       : 'market';
 
   const risk = Math.abs(entryPrice - stopLoss);
@@ -711,7 +719,11 @@ async function tryTrendContinuation(
   const entryPrice = CONFIG.ENABLE_PENDING_ORDERS ? roundPrice(ema20) : currentPrice;
   const orderType: 'market' | 'buy_limit' | 'sell_limit' | 'buy_stop' | 'sell_stop' =
     CONFIG.ENABLE_PENDING_ORDERS
-      ? (trend === TrendEnum.UP ? 'buy_limit' : 'sell_limit')
+      ? (trend === TrendEnum.UP
+        ? (entryPrice < currentPrice ? 'buy_limit' :
+           entryPrice > currentPrice ? 'buy_stop' : 'market')
+        : (entryPrice > currentPrice ? 'sell_limit' :
+           entryPrice < currentPrice ? 'sell_stop' : 'market'))
       : 'market';
 
   const sh = findSwingHighs(trendCandles, CONFIG.SWING_LOOKBACK_N);

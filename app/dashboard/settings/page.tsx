@@ -246,36 +246,7 @@ export default function SettingsPage() {
         </motion.div>
       </div>
 
-      <motion.div variants={item}>
-        <Card header="Auto-Calculated Position Size">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="stat-card">
-              <p className="text-xs text-text-muted mb-1">Risk Amount</p>
-              <p className="text-xl font-bold font-mono text-status-loss">${riskAmt.toFixed(2)}</p>
-            </div>
-            <div className="stat-card">
-              <p className="text-xs text-text-muted mb-1">Position Size</p>
-              <p className="text-xl font-bold font-mono text-accent-gold">{posSize.toFixed(3)} lots</p>
-            </div>
-            <div className="stat-card">
-              <p className="text-xs text-text-muted mb-1">Max Daily Risk</p>
-              <p className="text-xl font-bold font-mono text-status-warn">${maxDailyLoss.toFixed(0)}</p>
-            </div>
-            <div className="stat-card">
-              <p className="text-xs text-text-muted mb-1">Daily Target</p>
-              <p className="text-xl font-bold font-mono text-status-win">${dailyTarget.toFixed(0)}</p>
-            </div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-glass-border">
-            <p className="text-xs text-text-muted">
-              Position size calculated using <span className="font-semibold text-text-primary">{riskPct}%</span> risk on
-              <span className="font-semibold text-text-primary"> ${balance.toFixed(0)}</span> balance with
-              <span className="font-semibold text-text-primary"> {stopLoss}</span> pip stop loss.
-              Max <span className="font-semibold text-text-primary">{maxTrades}</span> trades/day.
-            </p>
-          </div>
-        </Card>
-      </motion.div>
+
 
       <AnimatePresence>
         {saved && (

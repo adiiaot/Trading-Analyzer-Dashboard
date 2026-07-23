@@ -39,9 +39,8 @@ export default function AnalyticsPage() {
         <p className="text-sm text-text-muted">Performance & intelligence</p>
       </motion.div>
 
-      <motion.div variants={item} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <motion.div variants={item} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {[
-          ["Balance", `$${balance.toFixed(2)}`, "text-status-win"],
           ["Total P&L", `${totalPnl >= 0 ? "+" : ""}$${totalPnl.toFixed(2)}`, totalPnl >= 0 ? "text-status-win" : "text-status-loss"],
           ["Win Rate", `${winRate}%`, "text-accent-gold"],
           ["Profit Factor", `${profitFactor.toFixed(2)}x`, profitFactor >= 1 ? "text-status-win" : "text-status-loss"],

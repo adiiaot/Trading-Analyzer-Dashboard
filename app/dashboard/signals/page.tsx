@@ -7,7 +7,7 @@ import { Badge } from "../components/ui/Badge";
 import { SignalCard } from "../components/SignalCard";
 import { SignalResultCard } from "../components/SignalResultCard";
 import { useDashboardData } from "@/lib/data-context";
-import { TrendingUp, Loader2, Trophy, Target } from "lucide-react";
+import { TrendingUp, Loader2, Trophy, Target, X } from "lucide-react";
 
 const container = {
   hidden: { opacity: 0 },
@@ -129,6 +129,21 @@ export default function SignalsPage() {
     { label: "Won", value: wonCount.toString(), color: "text-status-win" },
     { label: "Lost", value: lostCount.toString(), color: "text-status-loss" },
   ];
+
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDeleteSignal = async (signalId: string) => {
+    if (!confirm('Delete this signal?')) return;
+    setDeletingId(signalId);
+    try {
+      await fetch('/api/signal/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signalId }),
+      });
+    } catch {}
+    setDeletingId(null);
+  };
 
   const handleExport = (format: string) => {
     window.open(`/api/export?format=${format}`, '_blank');
@@ -276,8 +291,8 @@ export default function SignalsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-surface-border">
-                    {["Signal", "Date/Time", "Trend", "Confidence", "Outcome", "Status"].map((h) => (
-                      <th key={h} className="text-left text-[10px] sm:text-xs text-text-muted font-medium pb-3 px-3 sm:px-5 first:pl-3 sm:first:pl-5 last:pr-3 sm:last:pr-5">{h}</th>
+                    {["Signal", "Date/Time", "Trend", "Confidence", "Outcome", "Status", ""].map((h) => (
+                      <th key={h} className={`text-left text-[10px] sm:text-xs text-text-muted font-medium pb-3 px-3 sm:px-5 first:pl-3 sm:first:pl-5 last:pr-3 sm:last:pr-5 ${h === '' ? 'w-10' : ''}`}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -314,6 +329,17 @@ export default function SignalsPage() {
                         <Badge variant={s.status === "active" ? "gold" : s.status === "expired" ? "loss" : s.outcome === 'won' ? 'win' : s.outcome === 'lost' ? 'loss' : "info"}>
                           {s.outcome || s.status || '—'}
                         </Badge>
+                      </td>
+                      <td className="py-2.5 sm:py-3 pr-3 sm:pr-5">
+                        <button
+                          onClick={() => handleDeleteSignal(s.id)}
+                          disabled={deletingId === s.id}
+                          className="p-1 rounded transition-colors hover:opacity-80"
+                          style={{ background: "rgb(var(--surface-overlay-rgb))", color: "var(--status-loss)", border: "1px solid rgb(var(--status-loss-rgb))" } as React.CSSProperties}
+                          title="Delete signal"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
                       </td>
                     </motion.tr>
                   ))}

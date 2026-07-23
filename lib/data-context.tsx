@@ -63,6 +63,7 @@ export interface SessionState {
 interface DashboardData {
   trades: Trade[];
   signals: Signal[];
+  refreshSignals: () => Promise<void>;
   stats: TradingStats | null;
   price: typeof PRICE & { high24h: number; low24h: number; volume: number; bid: number; ask: number; spread: number };
   balance: number;
@@ -91,7 +92,7 @@ interface DashboardData {
 const defaultPrice = { ...PRICE, high24h: PRICE.price + 12, low24h: PRICE.price - 12, volume: 189200, bid: PRICE.price - 0.05, ask: PRICE.price + 0.05, spread: 0.5 };
 
 const defaultData: DashboardData = {
-  trades: [], signals: [], stats: null, price: defaultPrice,
+  trades: [], signals: [], refreshSignals: async () => {}, stats: null, price: defaultPrice,
   balance: 0, setBalance: () => {},
   compounding: DEFAULT_COMPOUNDING,
   updateCompounding: () => {},
@@ -126,6 +127,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [tradesLoading, setTradesLoading] = useState(true);
   const [signalsLoading, setSignalsLoading] = useState(true);
+
+  const refreshSignals = useCallback(async () => {
+    const data = await fetchFromApi("/api/signals?limit=50");
+    if (data?.signals) setSignals(data.signals);
+  }, []);
   const [usingFallback, setUsingFallback] = useState(false);
   const [livePrice, setLivePrice] = useState(defaultPrice);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
@@ -382,7 +388,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const openTrades = userTrades.filter(t => t.status === 'open');
 
   const value: DashboardData = {
-    trades: userTrades, signals: userSignals, stats, price: livePrice,
+    trades: userTrades, signals: userSignals, refreshSignals, stats, price: livePrice,
     balance, setBalance,
     compounding, updateCompounding, recordWithdrawal, completeCycle,
     session, addSessionEntry, resetSession,

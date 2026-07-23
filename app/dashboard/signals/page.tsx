@@ -20,7 +20,7 @@ const item = {
 };
 
 export default function SignalsPage() {
-  const { signals, addSessionEntry } = useDashboardData();
+  const { signals, addSessionEntry, refreshSignals } = useDashboardData();
   const [signalLoading, setSignalLoading] = useState(false);
   const [generatingNext, setGeneratingNext] = useState(false);
   const [signalResult, setSignalResult] = useState<{
@@ -46,6 +46,7 @@ export default function SignalsPage() {
       const res = await fetch('/api/signal/generate', { method: 'POST' });
       const data = await res.json();
       setSignalResult(data);
+      if (data?.success) refreshSignals();
     } catch {
       setSignalResult({ success: false, message: 'Network error — try again' });
     }
@@ -73,11 +74,12 @@ export default function SignalsPage() {
         addSessionEntry({ signalId, outcome: 'won', riskAmount: riskAmt, profit, lotSize, timestamp: new Date().toISOString() });
         setSignalResult(prev => prev ? { ...prev, signal: { ...prev.signal, outcome: 'won' } } : prev);
       }
+      refreshSignals();
     } catch {
       setOutcomeMessage('Failed to update outcome');
     }
     setOutcomeUpdating(false);
-  }, [signalResult, addSessionEntry]);
+  }, [signalResult, addSessionEntry, refreshSignals]);
 
   const handleConfirm = useCallback(async (signalId: string) => {
     setOutcomeUpdating(true);
@@ -93,6 +95,7 @@ export default function SignalsPage() {
       if (signalResult?.signal?.id === signalId) {
         setSignalResult(prev => prev ? { ...prev, signal: { ...prev.signal, confirmed: true } } : prev);
       }
+      refreshSignals();
     } catch {
       setOutcomeMessage('Failed to confirm signal');
     }
@@ -117,11 +120,12 @@ export default function SignalsPage() {
         addSessionEntry({ signalId, outcome: 'lost', riskAmount: riskAmt, profit: -riskAmt, lotSize, timestamp: new Date().toISOString() });
         setSignalResult(prev => prev ? { ...prev, signal: { ...prev.signal, outcome: 'lost' } } : prev);
       }
+      refreshSignals();
     } catch {
       setOutcomeMessage('Failed to update outcome');
     }
     setOutcomeUpdating(false);
-  }, [signalResult, addSessionEntry]);
+  }, [signalResult, addSessionEntry, refreshSignals]);
 
   const signalStats = [
     { label: "Signals Today", value: today.length.toString(), color: "text-text-primary" },
@@ -141,6 +145,7 @@ export default function SignalsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ signalId }),
       });
+      refreshSignals();
     } catch {}
     setDeletingId(null);
   };

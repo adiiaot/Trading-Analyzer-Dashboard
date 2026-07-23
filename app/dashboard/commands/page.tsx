@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Terminal, Radio, BookOpen, BarChart3, BarChart4, TrendingUp, LineChart, Brain, Activity, Upload, Database } from "lucide-react";
+import { Terminal, Radio, BookOpen, BarChart3, TrendingUp, Brain, Activity, Upload, Database } from "lucide-react";
 import Link from "next/link";
 import { useDashboardData } from "@/lib/data-context";
 
@@ -253,19 +253,6 @@ export default function CommandsPage() {
               </button>
               {journalResult && <p className="text-xs text-[var(--accent-gold)]">{journalResult}</p>}
             </div>
-          }
-        />
-
-        <CommandCard
-          icon={<LineChart className="w-5 h-5 text-accent-gold" />}
-          title="Backtest"
-          description="Run the signal engine against historical XAU/USD data"
-          action={
-            <Link href="/dashboard/backtest"
-              className="btn-primary w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2">
-              <BarChart4 className="w-4 h-4" />
-              Open Backtest
-            </Link>
           }
         />
 

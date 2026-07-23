@@ -1,101 +1,90 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { TrendingUp, Target, BarChart3, Briefcase, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Target, BarChart3, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { useDashboardData } from "@/lib/data-context";
 
 export function QuickStats() {
-  const { quickStats, stats } = useDashboardData();
-  const todayPnl = stats?.total_pnl ?? quickStats.todayPnl;
+  const { stats, quickStats } = useDashboardData();
   const winRate = stats ? parseFloat((stats.win_rate * 100).toFixed(1)) : quickStats.winRate;
   const totalTrades = stats?.total_trades ?? quickStats.totalTrades;
-  const openPositions = quickStats.openPositions;
-
-  const items = [
-    {
-      label: "Today's P&L",
-      value: `+$${todayPnl.toFixed(2)}`,
-      icon: TrendingUp,
-      accent: "text-status-win",
-      bg: "bg-status-win/10",
-      border: "rgba(var(--status-win-rgb), 0.15)",
-      trend: "up" as const,
-    },
-    {
-      label: "Win Rate",
-      value: `${winRate}%`,
-      icon: Target,
-      accent: "text-accent-gold",
-      bg: "bg-accent-gold/10",
-      border: "rgba(var(--accent-gold-rgb), 0.15)",
-      trend: winRate >= 60 ? ("up" as const) : ("down" as const),
-    },
-    {
-      label: "Total Trades",
-      value: totalTrades.toString(),
-      icon: BarChart3,
-      accent: "text-status-info",
-      bg: "bg-status-info/10",
-      border: "rgba(var(--status-info-rgb), 0.15)",
-      trend: null,
-    },
-    {
-      label: "Open Positions",
-      value: openPositions.toString(),
-      icon: Briefcase,
-      accent: openPositions > 0 ? "text-accent-gold" : "text-text-muted",
-      bg: openPositions > 0 ? "bg-accent-gold/10" : "bg-[var(--glass-bg)]",
-      border: openPositions > 0 ? "rgba(var(--accent-gold-rgb), 0.15)" : "var(--glass-border)",
-      trend: null,
-    },
-  ];
+  const wins = stats?.wins ?? 0;
+  const losses = stats?.losses ?? 0;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      {items.map((stat, i) => {
-        const Icon = stat.icon;
-        return (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.06, duration: 0.35 }}
-            whileHover={{ y: -2, transition: { duration: 0.15 } }}
-            className="relative overflow-hidden rounded-xl p-4"
-            style={{
-              background: "var(--glass-bg)",
-              border: `1px solid ${stat.border}`,
-              backdropFilter: "blur(12px)",
-            }}
-          >
-            {/* Gradient accent line */}
-            <div
-              className="absolute top-0 left-4 right-4 h-[2px] rounded-full"
-              style={{ background: `linear-gradient(90deg, transparent, ${stat.border.replace("0.15", "0.5")}, transparent)` }}
-            />
+    <div className="grid grid-cols-2 gap-2 sm:gap-3">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        whileHover={{ y: -2, transition: { duration: 0.15 } }}
+        className="relative overflow-hidden rounded-xl p-3 sm:p-4"
+        style={{
+          background: "var(--glass-bg)",
+          border: "1px solid rgba(var(--accent-gold-rgb), 0.15)",
+          backdropFilter: "blur(12px)",
+        }}
+      >
+        <div className="absolute top-0 left-4 right-4 h-[2px] rounded-full"
+          style={{ background: "linear-gradient(90deg, transparent, rgba(var(--accent-gold-rgb), 0.5), transparent)" }}
+        />
+        <div className="flex items-center justify-between mb-2 sm:mb-2.5">
+          <span className="text-[10px] sm:text-[11px] font-medium text-text-muted uppercase tracking-wider">Win Rate</span>
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(var(--accent-gold-rgb), 0.1)" }}>
+            <Target className="w-3.5 h-3.5 sm:w-[15px] sm:h-[15px] text-accent-gold" />
+          </div>
+        </div>
+        <div className="flex items-end justify-between">
+          <p className={`text-lg sm:text-xl font-bold font-mono ${winRate >= 60 ? 'text-status-win' : 'text-status-loss'}`}>
+            {winRate}%
+          </p>
+          {winRate >= 60 ? (
+            <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-status-win" />
+          ) : (
+            <ArrowDownRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-status-loss" />
+          )}
+        </div>
+        {totalTrades > 0 && (
+          <div className="mt-1.5 sm:mt-2 flex items-center gap-2 text-[9px] sm:text-[10px] text-text-muted">
+            <span>{wins}W</span>
+            <span className="opacity-30">/</span>
+            <span>{losses}L</span>
+            <span className="ml-auto font-mono">{(wins / Math.max(1, totalTrades) * 100).toFixed(0)}%</span>
+          </div>
+        )}
+      </motion.div>
 
-            <div className="flex items-center justify-between mb-2.5">
-              <span className="text-[11px] font-medium text-text-muted uppercase tracking-wider">{stat.label}</span>
-              <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center`}>
-                <Icon className={`w-[15px] h-[15px] ${stat.accent}`} />
-              </div>
-            </div>
-
-            <div className="flex items-end justify-between">
-              <p className={`text-xl font-bold font-mono ${stat.accent}`}>{stat.value}</p>
-              {stat.trend && (
-                <span className={stat.trend === "up" ? "text-status-win" : "text-status-loss"}>
-                  {stat.trend === "up" ? (
-                    <ArrowUpRight className="w-4 h-4" />
-                  ) : (
-                    <ArrowDownRight className="w-4 h-4" />
-                  )}
-                </span>
-              )}
-            </div>
-          </motion.div>
-        );
-      })}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.06 }}
+        whileHover={{ y: -2, transition: { duration: 0.15 } }}
+        className="relative overflow-hidden rounded-xl p-3 sm:p-4"
+        style={{
+          background: "var(--glass-bg)",
+          border: "1px solid rgba(var(--status-info-rgb), 0.15)",
+          backdropFilter: "blur(12px)",
+        }}
+      >
+        <div className="absolute top-0 left-4 right-4 h-[2px] rounded-full"
+          style={{ background: "linear-gradient(90deg, transparent, rgba(var(--status-info-rgb), 0.5), transparent)" }}
+        />
+        <div className="flex items-center justify-between mb-2 sm:mb-2.5">
+          <span className="text-[10px] sm:text-[11px] font-medium text-text-muted uppercase tracking-wider">Total Trades</span>
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(var(--status-info-rgb), 0.1)" }}>
+            <BarChart3 className="w-3.5 h-3.5 sm:w-[15px] sm:h-[15px] text-status-info" />
+          </div>
+        </div>
+        <p className="text-lg sm:text-xl font-bold font-mono text-text-primary">{totalTrades}</p>
+        {totalTrades > 0 && (
+          <div className="mt-1.5 sm:mt-2 flex items-center gap-2 text-[9px] sm:text-[10px] text-text-muted">
+            <span>Win rate</span>
+            <span className="font-mono font-semibold" style={{ color: winRate >= 60 ? 'var(--status-win)' : 'var(--status-loss)' }}>
+              {winRate}%
+            </span>
+          </div>
+        )}
+      </motion.div>
     </div>
   );
 }

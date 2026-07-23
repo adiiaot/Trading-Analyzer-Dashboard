@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Send, BarChart3, Terminal, Radio, BookOpen, Activity, BarChart4, TrendingUp, ChevronRight, Zap, X } from "lucide-react";
+import { BarChart3, Terminal, Radio, BarChart4, TrendingUp, ChevronRight, Zap, X } from "lucide-react";
 import Link from "next/link";
 import { QuickStats } from "./components/QuickStats";
 import { TradingChart } from "./components/TradingChart";
@@ -24,7 +24,7 @@ const section = {
 const quickLinks = [
   { href: "/dashboard/commands", label: "All Commands", icon: Terminal, desc: "Signal generator, trade logger, journal & more" },
   { href: "/dashboard/signals", label: "Generate Signal", icon: Radio, desc: "Run 4-timeframe XAU/USD analysis" },
-  { href: "/dashboard/backtest", label: "Backtest", icon: BarChart4, desc: "Run historical signal engine backtest" },
+  // { href: "/dashboard/backtest", label: "Backtest", icon: BarChart4, desc: "Run historical signal engine backtest" },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3, desc: "Win rate, P&L, strategy breakdown" },
   { href: "/api/export?format=csv", label: "Export CSV", icon: BarChart4, desc: "Download signal performance data", external: true },
 ];

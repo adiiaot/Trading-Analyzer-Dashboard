@@ -18,7 +18,7 @@ const NAV = [
   { label: "Commands", href: "/dashboard/commands", icon: Terminal },
   { label: "Journal", href: "/dashboard/journal", icon: BookOpen },
   { label: "Compounding", href: "/dashboard/compounding", icon: TrendingUp },
-  { label: "Backtest", href: "/dashboard/backtest", icon: BarChart4 },
+  // { label: "Backtest", href: "/dashboard/backtest", icon: BarChart4 },
   { label: "Learning", href: "/dashboard/learning", icon: GraduationCap },
 ];
 

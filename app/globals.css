@@ -138,7 +138,8 @@ body {
 }
 
 .btn {
-  @apply inline-flex items-center justify-center gap-2 font-semibold rounded-btn px-5 py-2.5 text-sm transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply inline-flex items-center justify-center gap-2 font-semibold rounded-btn px-5 py-2.5 text-sm active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed;
+  transition: all 0.2s ease 0.04s;
   position: relative;
   overflow: hidden;
   isolation: isolate;

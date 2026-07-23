@@ -7,13 +7,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, BarChart3, Radio, GraduationCap,
   ChevronLeft, ChevronRight, X, BarChart4,
-  BookOpen, Terminal, TrendingUp,
+  BookOpen, Terminal, TrendingUp, Activity,
 } from "lucide-react";
 
 const NAV = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { label: "Signals", href: "/dashboard/signals", icon: Radio },
+  { label: "Monitoring", href: "/dashboard/monitoring", icon: Activity },
   { label: "Commands", href: "/dashboard/commands", icon: Terminal },
   { label: "Journal", href: "/dashboard/journal", icon: BookOpen },
   { label: "Compounding", href: "/dashboard/compounding", icon: TrendingUp },

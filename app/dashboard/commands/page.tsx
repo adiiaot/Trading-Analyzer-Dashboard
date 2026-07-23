@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Terminal, Radio, BookOpen, BarChart3, BarChart4, TrendingUp, LineChart, Brain, Activity } from "lucide-react";
+import { Terminal, Radio, BookOpen, BarChart3, BarChart4, TrendingUp, LineChart, Brain, Activity, Upload, Database } from "lucide-react";
 import Link from "next/link";
 import { useDashboardData } from "@/lib/data-context";
 
@@ -278,6 +278,19 @@ export default function CommandsPage() {
               className="btn-secondary w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2">
               <Brain className="w-4 h-4" />
               Open Learning Hub
+            </Link>
+          }
+        />
+
+        <CommandCard
+          icon={<Upload className="w-5 h-5 text-accent-gold" />}
+          title="Import MT5 Trades"
+          description="Upload trade history CSV from MT5 to analyze strategy performance across your demo accounts"
+          action={
+            <Link href="/dashboard/analytics"
+              className="btn-secondary w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2">
+              <Database className="w-4 h-4" />
+              Open Import in Analytics
             </Link>
           }
         />

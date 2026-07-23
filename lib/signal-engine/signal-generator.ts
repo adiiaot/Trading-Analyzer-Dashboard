@@ -46,7 +46,8 @@ function findTP(
   candles: CandleData[],
   sh: number[],
   sl: number[],
-  risk: number
+  risk: number,
+  tpFallbackR?: number,
 ): number {
   let nearestResistance: number | null = null;
   let nearestSupport: number | null = null;
@@ -80,7 +81,8 @@ function findTP(
   if (trend === TrendEnum.DOWN && nearestSupport !== null) {
     return nearestSupport - tpBuf;
   }
-  return entry + CONFIG.TP_FALLBACK_R_MULTIPLE * risk * (trend === TrendEnum.UP ? 1 : -1);
+  const mult = tpFallbackR ?? CONFIG.TP_FALLBACK_R_MULTIPLE;
+  return entry + mult * risk * (trend === TrendEnum.UP ? 1 : -1);
 }
 
 function buildSignal(
@@ -299,15 +301,12 @@ function extractMLFeatures(
     ? (vol3[vol3.length - 1].close - vol3[0].close) / (vol3[0].close || 1)
     : 0;
 
-  const volumeEntry = entryCandles[entryCandles.length - 1];
-  const currentVolume = volumeEntry?.volume ?? 0;
-
-  const dt = new Date();
-  const hour = dt.getUTCHours();
-  const dayOfWeek = dt.getUTCDay();
+  const lastCandle = entryCandles[entryCandles.length - 1];
+  const candleTime = lastCandle?.time ? new Date(lastCandle.time * 1000) : new Date();
+  const hour = candleTime.getUTCHours();
+  const dayOfWeek = candleTime.getUTCDay();
 
   return {
-    volume: currentVolume,
     atr: atr || 0,
     ema20: ema20 || 0,
     ema50: ema50 || 0,
@@ -393,55 +392,84 @@ export async function generateSignal(
 
     const rejectionReasons: string[] = [];
 
-    // Try EMA bounce. If ML predicts a direction with positive confidence,
-    // restrict to ML direction first. Otherwise try default direction then opposite.
-    if (CONFIG.ENABLE_EMA_BOUNCE) {
-      const mlOverride = mlDirection !== 'NEUTRAL'
-        ? (mlDirection === 'LONG' ? TrendEnum.UP : TrendEnum.DOWN)
-        : null;
+    function signalPasses(s: SignalResult): boolean {
+      if (CONFIG.UP_ONLY && s.trend !== TrendEnum.UP) return false;
+      const rawConf = s.confidence;
+      let effConf = rawConf;
+      if (s.trend === TrendEnum.DOWN) effConf *= CONFIG.DOWN_CONFIDENCE_MULTIPLIER;
+      if (CONFIG.MIN_CONFIDENCE > 0 && effConf < CONFIG.MIN_CONFIDENCE) return false;
+      let checkMl = CONFIG.ML_REQUIRE_AGREEMENT;
+      if (s.trend === TrendEnum.DOWN && CONFIG.DOWN_ML_REQUIRE) checkMl = true;
+      if (checkMl && mlDirection !== 'NEUTRAL') {
+        const sigDir = s.trend === TrendEnum.UP ? 'LONG' : 'SHORT';
+        if (sigDir !== mlDirection) return false;
+      }
+      return true;
+    }
 
-      if (mlOverride !== null) {
-        const result = await tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, overrides, mlOverride);
-        if (result[0]) {
-          applyConfidenceBoost(result[0]);
-          return [result[0], `ML ${mlDirection} ${result[1]}`];
-        }
-        rejectionReasons.push(`ML ${mlDirection}: ${result[1]}`);
-      } else {
-        const result = await tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, overrides);
-        if (result[0]) {
-          applyConfidenceBoost(result[0]);
-          return result;
-        }
+    const trySignal = async (fn: () => Promise<[SignalResult | null, string]>): Promise<[SignalResult | null, string]> => {
+      const result = await fn();
+      if (result[0]) {
+        applyConfidenceBoost(result[0]);
+        if (!signalPasses(result[0])) return [null, `Filtered: UP_ONLY/MIN_CONFIDENCE blocked ${result[0].trend} ${result[0].signal_type}`];
+      }
+      return result;
+    };
+
+    const likelyDown = mlDirection === 'SHORT';
+    const downOverrides: Partial<RegimeOverrides> = likelyDown ? {
+      regime_adx_threshold: Math.max(overrides.regime_adx_threshold ?? CONFIG.REGIME_ADX_THRESHOLD, CONFIG.DOWN_ADX_THRESHOLD),
+      sl_atr_multiple: CONFIG.DOWN_SL_ATR_MULTIPLE,
+      tp_fallback_r: CONFIG.DOWN_TP_FALLBACK_R_MULTIPLE,
+      min_rrr: Math.max(overrides.min_rrr ?? CONFIG.MIN_RRR, CONFIG.DOWN_MIN_RRR),
+      momentum_required: CONFIG.DOWN_MOMENTUM_REQUIRED,
+    } : {};
+
+    const mergedOverrides = likelyDown ? { ...overrides, ...downOverrides } : overrides;
+
+    type StrategyDef = {
+      name: string;
+      fn: () => Promise<[SignalResult | null, string]>;
+      enabled: boolean;
+    };
+
+    if (likelyDown && !CONFIG.SIGNAL_TYPE_FILTER) {
+      const strategies: StrategyDef[] = [
+        { name: 'trend_continuation', fn: () => trySignal(() => tryTrendContinuation(regimeCandles, trendCandles, entryCandles, macro, mergedOverrides)), enabled: !!CONFIG.ENABLE_TREND_CONTINUATION && (!sweepConfig.STRICT_MODE || !!sweepConfig.STRICT_KEEP_TREND_CONT) },
+        { name: 'consolidation_breakout', fn: () => trySignal(() => tryConsolidationBreakout(regimeCandles, entryCandles, macro, mergedOverrides)), enabled: !!CONFIG.ENABLE_SESSION_BREAKOUT && (!sweepConfig.STRICT_MODE || !!sweepConfig.STRICT_KEEP_BREAKOUT) },
+      ];
+      for (const s of strategies) {
+        if (!s.enabled) continue;
+        const result = await s.fn();
+        if (result[0]) return result;
         rejectionReasons.push(result[1]);
-
-        // Try opposite direction if neutral and first attempt failed
-        if (mlDirection === 'NEUTRAL') {
-          const opposite = await tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, overrides, null, true);
-          if (opposite[0]) {
-            applyConfidenceBoost(opposite[0]);
-            return opposite;
+      }
+    } else {
+      const strategies: StrategyDef[] = [
+        { name: 'ema_bounce', fn: async () => {
+          const mlOverride = mlDirection !== 'NEUTRAL' ? (mlDirection === 'LONG' ? TrendEnum.UP : TrendEnum.DOWN) : null;
+          if (mlOverride !== null) {
+            const r = await trySignal(() => tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, mergedOverrides, mlOverride));
+            if (r[0]) return r;
+            rejectionReasons.push(`ML ${mlDirection}: ${r[1]}`);
           }
-        }
+          const r = await trySignal(() => tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, mergedOverrides));
+          if (r[0]) return r;
+          if (mlDirection === 'NEUTRAL') {
+            const opposite = await trySignal(() => tryEMABounce(regimeCandles, trendCandles, entryCandles, macro, mergedOverrides, null, true));
+            if (opposite[0]) return opposite;
+          }
+          return [null, 'no ema bounce'] as [SignalResult | null, string];
+        }, enabled: !!CONFIG.ENABLE_EMA_BOUNCE && (!CONFIG.SIGNAL_TYPE_FILTER || CONFIG.SIGNAL_TYPE_FILTER === 'ema_bounce') },
+        { name: 'consolidation_breakout', fn: () => trySignal(() => tryConsolidationBreakout(regimeCandles, entryCandles, macro, mergedOverrides)), enabled: !!CONFIG.ENABLE_SESSION_BREAKOUT && (!CONFIG.SIGNAL_TYPE_FILTER || CONFIG.SIGNAL_TYPE_FILTER === 'consolidation_breakout') && (!sweepConfig.STRICT_MODE || !!sweepConfig.STRICT_KEEP_BREAKOUT) },
+        { name: 'trend_continuation', fn: () => trySignal(() => tryTrendContinuation(regimeCandles, trendCandles, entryCandles, macro, mergedOverrides)), enabled: !!CONFIG.ENABLE_TREND_CONTINUATION && (!CONFIG.SIGNAL_TYPE_FILTER || CONFIG.SIGNAL_TYPE_FILTER === 'trend_continuation') && (!sweepConfig.STRICT_MODE || !!sweepConfig.STRICT_KEEP_TREND_CONT) },
+      ];
+      for (const s of strategies) {
+        if (!s.enabled) continue;
+        const result = await s.fn();
+        if (result[0]) return result;
+        if (s.name !== 'ema_bounce') rejectionReasons.push(result[1]);
       }
-    }
-
-    if (CONFIG.ENABLE_SESSION_BREAKOUT && (!sweepConfig.STRICT_MODE || sweepConfig.STRICT_KEEP_BREAKOUT)) {
-      const result = await tryConsolidationBreakout(regimeCandles, entryCandles, macro, overrides);
-      if (result[0]) {
-        applyConfidenceBoost(result[0]);
-        return result;
-      }
-      rejectionReasons.push(result[1]);
-    }
-
-    if (CONFIG.ENABLE_TREND_CONTINUATION && (!sweepConfig.STRICT_MODE || sweepConfig.STRICT_KEEP_TREND_CONT)) {
-      const result = await tryTrendContinuation(regimeCandles, trendCandles, entryCandles, macro, overrides);
-      if (result[0]) {
-        applyConfidenceBoost(result[0]);
-        return result;
-      }
-      rejectionReasons.push(result[1]);
     }
 
     l2ConfidenceBoost = 0;
@@ -518,7 +546,8 @@ async function tryEMABounce(
 
   const sh = findSwingHighs(trendCandles, CONFIG.SWING_LOOKBACK_N);
   const sl = findSwingLows(trendCandles, CONFIG.SWING_LOOKBACK_N);
-  const takeProfit = findTP(entryPrice, trend, trendCandles, sh, sl, risk);
+  const tpFallbackR = overrides.tp_fallback_r;
+  const takeProfit = findTP(entryPrice, trend, trendCandles, sh, sl, risk, tpFallbackR);
 
   const rr = Math.abs(takeProfit - entryPrice) / Math.abs(entryPrice - stopLoss);
   const minRRR = overrides.min_rrr ?? CONFIG.MIN_RRR;
@@ -687,7 +716,8 @@ async function tryTrendContinuation(
 
   const sh = findSwingHighs(trendCandles, CONFIG.SWING_LOOKBACK_N);
   const sl = findSwingLows(trendCandles, CONFIG.SWING_LOOKBACK_N);
-  const takeProfit = findTP(entryPrice, trend, trendCandles, sh, sl, risk);
+  const tpFallbackR = overrides.tp_fallback_r;
+  const takeProfit = findTP(entryPrice, trend, trendCandles, sh, sl, risk, tpFallbackR);
 
   const rr = Math.abs(takeProfit - entryPrice) / Math.abs(entryPrice - stopLoss);
   const minRRR = overrides.min_rrr ?? CONFIG.TREND_CONT_MIN_RRR;

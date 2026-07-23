@@ -89,6 +89,27 @@ function simulateMultiTP(
   return { outcome: 'expired', realizedR: 0.0 };
 }
 
+function findPendingOrderFill(
+  orderType: string,
+  entryPrice: number,
+  futureCandles: CandleData[],
+  validUntil: number,
+): number | null {
+  for (let i = 0; i < futureCandles.length; i++) {
+    const candle = futureCandles[i];
+    if (candle.time > validUntil) break;
+    const high = candle.high;
+    const low = candle.low;
+    switch (orderType) {
+      case 'buy_limit': if (low <= entryPrice) return i; break;
+      case 'sell_limit': if (high >= entryPrice) return i; break;
+      case 'buy_stop': if (high >= entryPrice) return i; break;
+      case 'sell_stop': if (low <= entryPrice) return i; break;
+    }
+  }
+  return null;
+}
+
 function calibrateConfidence(results: any[]): Record<string, any> {
   const groups: Record<string, any> = {};
 
@@ -255,7 +276,7 @@ export async function runBacktest(
   }
 
   let totalSignals = 0;
-  const outcomes: Record<string, number> = { full_win: 0, partial_win: 0, loss: 0, expired: 0 };
+  const outcomes: Record<string, number> = { full_win: 0, partial_win: 0, loss: 0, expired: 0, not_filled: 0 };
   const trendBreakdown: Record<string, TrendBreak> = {};
   const rrrValues: number[] = [];
   const tradeRValues: number[] = [];
@@ -263,10 +284,6 @@ export async function runBacktest(
   const minHistory = CONFIG.ENTRY_CANDLES + 5;
   let lastBarTime = 0;
   const rejectionLog: Record<string, number> = {};
-
-  // Backtest uses market entries regardless of live pending-order setting
-  const savedPendingOrders = CONFIG.ENABLE_PENDING_ORDERS;
-  CONFIG.ENABLE_PENDING_ORDERS = false;
 
   const startTime = Date.now();
 
@@ -328,7 +345,7 @@ export async function runBacktest(
     totalSignals += 1;
     const trend = signal.trend;
 
-    const futureCandles = candlesEntryRaw.filter(c => c.time > nowTs);
+    let futureCandles = candlesEntryRaw.filter(c => c.time > nowTs);
     const direction = trend === TrendEnum.UP ? 'LONG' : 'SHORT';
     const entryPoint = signal.entries[0];
     const tp1 = signal.tp1 || entryPoint.tp;
@@ -340,6 +357,20 @@ export async function runBacktest(
       ? CONFIG.EMA_BOUNCE_VALIDITY_HOURS
       : CONFIG.BREAKOUT_VALIDITY_HOURS;
     const validUntil = nowTs + validityHours * 3600;
+
+    const orderType = signal.order_type || 'market';
+    if (orderType !== 'market') {
+      const fillIdx = findPendingOrderFill(orderType, entryPrice, futureCandles, validUntil);
+      if (fillIdx === null) {
+        outcomes['not_filled'] += 1;
+        if (!trendBreakdown[trend]) {
+          trendBreakdown[trend] = { full_win: 0, partial_win: 0, loss: 0, expired: 0, count: 0 };
+        }
+        trendBreakdown[trend].count += 1;
+        continue;
+      }
+      futureCandles = futureCandles.slice(fillIdx);
+    }
 
     const { outcome, realizedR } = simulateMultiTP(
       entryPrice, sl, tp1, tp2, nowTs, validUntil, futureCandles, direction,
@@ -356,8 +387,6 @@ export async function runBacktest(
     rrrValues.push(signal.rr_ratio);
     tradeRValues.push(realizedR);
   }
-
-  CONFIG.ENABLE_PENDING_ORDERS = savedPendingOrders;
 
   const confidenceCalibration = calibrateConfidence(
     tradeRValues.map((r, idx) => ({
@@ -417,6 +446,7 @@ export async function runBacktest(
     partial_win: partialWins,
     loss: losses,
     expired,
+    not_filled: outcomes['not_filled'] || 0,
     win_rate: Math.round(winRate * 10000) / 10000,
     full_win_rate: Math.round((fullWins / (decided || 1)) * 10000) / 10000,
     loss_rate: Math.round(lossRate * 10000) / 10000,

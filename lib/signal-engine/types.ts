@@ -64,6 +64,8 @@ export interface RegimeOverrides {
   min_rrr?: number;
   momentum_min_rising?: number;
   regime_adx_threshold?: number;
+  momentum_required?: number;
+  tp_fallback_r?: number;
 }
 
 export interface NewsEvent {

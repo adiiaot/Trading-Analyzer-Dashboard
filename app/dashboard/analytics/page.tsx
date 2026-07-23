@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { Upload, TrendingUp, BarChart3, Download } from "lucide-react";
 import { Card } from "../components/ui/Card";
 import { useDashboardData } from "@/lib/data-context";
 
@@ -14,8 +16,65 @@ const item = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
 };
 
+interface StrategyRow {
+  strategy: string;
+  label: string;
+  totalTrades: number;
+  wins: number;
+  losses: number;
+  winRate: number;
+  totalProfit: number;
+  profitFactor: number;
+  avgProfit: number;
+}
+
 export default function AnalyticsPage() {
   const { stats, trades, balance } = useDashboardData();
+  const [strategies, setStrategies] = useState<StrategyRow[]>([]);
+  const [stratLoading, setStratLoading] = useState(true);
+  const [showImport, setShowImport] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<string | null>(null);
+  const [stratOverall, setStratOverall] = useState({ totalTrades: 0, overallWinRate: 0, overallProfitFactor: 0, totalProfit: 0 });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch('/api/analytics/strategy')
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          setStrategies(data.strategies || []);
+          setStratOverall({
+            totalTrades: data.totalTrades || 0,
+            overallWinRate: data.overallWinRate || 0,
+            overallProfitFactor: data.overallProfitFactor || 0,
+            totalProfit: data.totalProfit || 0,
+          });
+        }
+      })
+      .catch(console.error)
+      .finally(() => setStratLoading(false));
+  }, []);
+
+  const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportLoading(true);
+    setImportResult(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/trades/import', { method: 'POST', body: formData });
+      const data = await res.json();
+      setImportResult(data.success
+        ? `Imported ${data.imported} trades (${data.winRate}% win rate)`
+        : `Error: ${data.error}`);
+    } catch {
+      setImportResult('Network error during import');
+    }
+    setImportLoading(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const winRate = stats ? parseFloat((stats.win_rate * 100).toFixed(1)) : 0;
   const profitFactor = stats?.profit_factor ?? 0;
@@ -93,21 +152,79 @@ export default function AnalyticsPage() {
           </Card>
         </motion.div>
         <motion.div variants={item}>
-          <Card header="Strategy Status">
-            <div className="space-y-2">
-              {["Rejection Levels", "Structure Forming", "Consolidation", "Bullish Bias", "Breakout Confirmed"].map((s, i) => (
-                <motion.div
-                  key={s}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 + i * 0.06, duration: 0.3 }}
-                  className="flex items-center justify-between glass-card rounded-card px-4 py-2.5"
+          <Card header="Strategy Performance (Imported Trades)">
+            {stratLoading ? (
+              <div className="h-[200px] flex items-center justify-center glass-card rounded-card">
+                <span className="text-sm text-text-muted">Loading strategy data...</span>
+              </div>
+            ) : strategies.length === 0 ? (
+              <div className="space-y-3">
+                <div className="h-[120px] flex items-center justify-center glass-card rounded-card">
+                  <span className="text-sm text-text-muted">No imported trades yet</span>
+                </div>
+                <button
+                  onClick={() => setShowImport(!showImport)}
+                  className="w-full flex items-center justify-center gap-2 glass-card rounded-card px-4 py-2.5 text-sm text-accent-gold hover:brightness-110 transition-all"
                 >
-                  <span className="text-sm text-text-primary">{s}</span>
-                  <span className="text-xs font-medium text-status-win">Active</span>
-                </motion.div>
-              ))}
-            </div>
+                  <Upload size={14} /> Import MT5 CSV
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {showImport && (
+                  <div className="glass-card rounded-card p-3 mb-3 space-y-2">
+                    <p className="text-xs text-text-muted">Upload MT5 trade history CSV (export from MT5: File → Export → Trade History → CSV)</p>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".csv"
+                      onChange={handleImportCSV}
+                      className="w-full text-xs text-text-primary file:mr-3 file:py-1.5 file:px-3 file:rounded-pill file:border-0 file:text-xs file:font-medium file:bg-accent-gold/20 file:text-accent-gold hover:file:bg-accent-gold/30"
+                    />
+                    {importLoading && <p className="text-xs text-text-muted">Importing...</p>}
+                    {importResult && <p className="text-xs text-status-info">{importResult}</p>}
+                  </div>
+                )}
+                <div className="flex items-center justify-between glass-card rounded-card px-4 py-2.5">
+                  <span className="text-xs text-text-muted">Overall (all strategies)</span>
+                  <div className="flex items-center gap-3 text-xs font-mono">
+                    <span className="text-text-primary">{stratOverall.totalTrades} trades</span>
+                    <span className="text-accent-gold">{stratOverall.overallWinRate}% WR</span>
+                    <span className={stratOverall.overallProfitFactor >= 1 ? 'text-status-win' : 'text-status-loss'}>{stratOverall.overallProfitFactor}x PF</span>
+                    <span className={stratOverall.totalProfit >= 0 ? 'text-status-win' : 'text-status-loss'}>${stratOverall.totalProfit.toFixed(0)}</span>
+                  </div>
+                </div>
+                {strategies.map((s, i) => (
+                  <motion.div
+                    key={s.strategy}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.06, duration: 0.3 }}
+                    className="glass-card rounded-card px-4 py-2.5"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-medium text-text-primary">{s.label}</span>
+                      <span className="text-xs text-text-muted">{s.totalTrades} trades</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className={s.winRate >= 50 ? 'text-status-win' : 'text-status-loss'}>{s.winRate}% WR</span>
+                      <span className={s.profitFactor >= 1 ? 'text-status-win' : 'text-status-loss'}>{s.profitFactor}x PF</span>
+                      <span className="text-accent-gold">{s.wins}W / {s.losses}L</span>
+                      <span className={s.avgProfit >= 0 ? 'text-status-win' : 'text-status-loss'}>${s.avgProfit.toFixed(1)} avg</span>
+                    </div>
+                    {i < strategies.length - 1 && <div className="mt-2 border-b border-surface-border/30" />}
+                  </motion.div>
+                ))}
+                {!showImport && (
+                  <button
+                    onClick={() => setShowImport(true)}
+                    className="w-full flex items-center justify-center gap-2 glass-card rounded-card px-4 py-2 text-xs text-text-muted hover:text-accent-gold transition-colors"
+                  >
+                    <Upload size={12} /> Import CSV
+                  </button>
+                )}
+              </div>
+            )}
           </Card>
         </motion.div>
       </motion.div>

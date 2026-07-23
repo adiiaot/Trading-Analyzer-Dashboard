@@ -198,7 +198,7 @@ export default function SignalsPage() {
         <Card header="Signal Generator" glow>
           <div className="space-y-3">
             <p className="text-xs text-text-muted">
-              Runs the full signal engine: DXY correlation filter, 4-timeframe analysis (1D→4H→1H→15M), EMA bounce + session breakout strategies, ADX regime filter, Kelly-adjusted sizing.
+              Three-tier XAU/USD signal engine on 15M: EMA bounce + consolidation breakout + trend continuation, ML directional bias pre-filter (64% WR), ADX regime filter, L2 microstructure from Hyperliquid, RSI+BB safety checks.
             </p>
             <button
               onClick={generateSignal}

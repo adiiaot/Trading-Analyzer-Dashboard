@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, BarChart3, Radio, GraduationCap,
-  Settings, ChevronLeft, ChevronRight, X, BarChart4,
+  ChevronLeft, ChevronRight, X, BarChart4,
   BookOpen, Terminal, TrendingUp,
 } from "lucide-react";
 
@@ -19,7 +19,6 @@ const NAV = [
   { label: "Compounding", href: "/dashboard/compounding", icon: TrendingUp },
   { label: "Backtest", href: "/dashboard/backtest", icon: BarChart4 },
   { label: "Learning", href: "/dashboard/learning", icon: GraduationCap },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 const sidebarVariants = {

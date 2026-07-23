@@ -72,8 +72,8 @@ export default function LandingPage() {
             className="text-sm md:text-base leading-relaxed mb-10 max-w-lg"
             style={{ color: "#a0a0b0" }}
           >
-            Real-time XAU/USD signal engine, multi-timeframe analysis,
-            session-based P&L tracking, and a disciplined compounding system — all in one place.
+            Three-tier 15M XAU/USD signal engine with ML directional bias, L2 microstructure,
+            session P&L tracking, compounding system — all in one place.
           </p>
 
           {/* Features */}

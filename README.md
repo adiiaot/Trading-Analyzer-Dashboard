@@ -14,7 +14,7 @@ Next.js 14 dashboard for the AOT Analyzer — live XAU/USD signals, compounding 
 | `/dashboard/journal` | Trades as journal cards, filter by win/loss, stats summary |
 | `/dashboard/backtest` | Walk-forward backtest simulator with Monte Carlo option |
 | `/dashboard/learning` | AI chat (Learn mode + Analyze Chart with screenshot upload) |
-| `/dashboard/settings` | Balance editing, risk parameters, position calculator |
+| (settings removed) | Balance available site-wide via localStorage |
 
 ## Getting Started
 
@@ -29,7 +29,7 @@ Create `web/.env.local` from `.env.example` with Firebase Web SDK config and bot
 
 - **Glassmorphism design** — responsive mobile-first dark theme (#080c24 base, #f0b429 gold accent)
 - **Live data** — Firestore subscriptions with API fallback, no mock data
-- **Signal engine** — TypeScript port (ADX · RSI · Bollinger Bands) with 60s candle cache
+- **Signal engine** — 3-tier 15M (EMA bounce · consolidation breakout · trend continuation) with ML bias, L2 microstructure pre-filter, ADX · RSI · BB indicators, 60s candle cache
 - **User-controlled lot sizing** — editable input with real-time margin + pip value
 - **Session P&L tracking** — groups consecutive signals, auto-expires after 30 min
 - **Compounding planner** — leverage-aware cycle growth projection with target goals

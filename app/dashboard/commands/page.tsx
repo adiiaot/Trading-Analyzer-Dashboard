@@ -137,7 +137,7 @@ export default function CommandsPage() {
         <CommandCard
           icon={<Radio className="w-5 h-5 text-accent-gold" />}
           title="Generate Signal"
-          description="Run the 4-timeframe signal engine (1D→4H→1H→15M) for XAU/USD"
+          description="Three-tier 15M XAU/USD signal engine with ML bias, L2 microstructure, ADX regime, RSI+BB safety"
           action={
             <div className="space-y-3">
               <button
